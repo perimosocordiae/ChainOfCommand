@@ -1,8 +1,8 @@
 MODEL_PATH = "../../models"
 #Constants for motion and rotation
-MOTION_MULTIPLIER = 2.0
-STRAFE_MULTIPLIER = 1.5
-TURN_MULTIPLIER = 2.0
+MOTION_MULTIPLIER = 3.0
+STRAFE_MULTIPLIER = 2.0
+TURN_MULTIPLIER = 3.0
 
 from math import pi,sin,tan,cos, sqrt
 import direct.directbase.DirectStart
@@ -13,6 +13,7 @@ from pandac.PandaModules import Point3
 from pandac.PandaModules import Vec3
 from pandac.PandaModules import Filename,Buffer,Shader
 from direct.showbase.InputStateGlobal import inputState
+from eventHandler import KeyHandler
 
 class Player(object):
 
@@ -51,10 +52,26 @@ class Player(object):
         base.camera.setPos(0, 40, 10)
         #base.camera.setHpr(-45, -10, 0)
         base.camera.setHpr(180, 0, 0)
-   # def turn_left(self,amt):
         
-   # def turn_right(self,amt):
-        
+        #Listen for changing perspective
+        self.keyHandle = KeyHandler(self) 
+   
+    def switchPerspective(self):
+        #Switch between 3 perspectives
+        if base.camera.getY() > 60:
+            base.camera.setPos(0, 0, 10)
+        elif base.camera.getY() > 20:
+            base.camera.setPos(0, 100, 10)
+        else:
+            base.camera.setPos(0, 40, 10)
+    
+    def zoomIn(self):
+        if base.camera.getY() > 0:
+            base.camera.setY(base.camera.getY() - 2)
+            
+    def zoomOut(self):
+        if base.camera.getY() < 100:
+            base.camera.setY(base.camera.getY() + 2)
    # def jump(self):
     
     #Start looping an interval as a function so it can

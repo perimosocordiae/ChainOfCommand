@@ -17,15 +17,15 @@ class Game(object):
         #base.camera.setPos(0, 30, 10)
         #base.camera.setHpr(-45, -10, 0)
         #base.camera.setHpr(180, 0, 0)
-        self.load_env(30)
+        self.load_env(30, 32.0)
         
     def add_player(self,p):
         return None
         
-    def load_env(self,num_tiles):
+    def load_env(self,num_tiles,tile_scale):
         environ = loader.loadModel("%s/yellow_floor.egg"%MODEL_PATH)
         environ.reparentTo(render)
-        environ.setScale(8.0, 8.0, 8.0)
+        environ.setScale(tile_scale, tile_scale, tile_scale)
         environ.setPos(0, 0, 0)
                 
         center = num_tiles/2
