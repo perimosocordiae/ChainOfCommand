@@ -1,3 +1,4 @@
+from math import pi, sin, cos
 import math
  
 import direct.directbase.DirectStart
@@ -7,6 +8,7 @@ from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Point3
 from pandac.PandaModules import Vec3
 from pandac.PandaModules import Filename,Buffer,Shader
+from direct.showbase.InputStateGlobal import inputState
  
  
 #Load the first environment model
@@ -109,20 +111,73 @@ for z in range(0, center / 2):
   tile.setPos(center - 1, center + 1, (2 * z) + 1)
   tile.setHpr(270,90,0)
 #next z
-
+inputState.watch('forward', 'w', 'w-up') 
+inputState.watch('backward', 's', 's-up')
+inputState.watch('moveleft', 'a', 'a-up')
+inputState.watch('moveright', 'd', 'd-up')
+inputState.watch('left', 'arrow_left', 'arrow_left-up')
+inputState.watch('right', 'arrow_right', 'arrow_right-up')
+inputState.watch('up', 'arrow_up', 'arrow_up-up')
+inputState.watch('down', 'arrow_down', 'arrow_down-up')
+        
 #Task to move the camera
-def spinCameraTask(task):
-  angleDegrees = task.time * 6.0
-  angleRadians = angleDegrees * (math.pi / 180.0)
-  base.camera.setPos(20 * math.sin(angleRadians), -20.0 * math.cos(angleRadians), 3)
-  base.camera.setHpr(angleDegrees, 0, 0)
-  return Task.cont
+def updateCameraTask(task):
+    if inputState.isSet('forward') or inputState.isSet('backward') or \
+    inputState.isSet('left') or inputState.isSet('right') or inputState.isSet('up') \
+    or inputState.isSet('down') or inputState.isSet('moveleft') or inputState.isSet('moveright') :
+        if inputState.isSet('forward') :
+            MoveForwards()
+        elif inputState.isSet('backward') :
+            MoveBackwards()
+        if inputState.isSet('moveleft') :
+            MoveLeft()
+        elif inputState.isSet('moveright') :
+            MoveRight()
+        if inputState.isSet('left') :
+            LookLeft()
+        elif inputState.isSet('right') :
+            LookRight()
+        if inputState.isSet('up') :
+            LookUp()
+        elif inputState.isSet('down') :
+            LookDown()
+    return Task.cont
 
-#taskMgr.add(spinCameraTask, "SpinCameraTask")
+def MoveForwards():
+    base.camera.setX(base.camera.getX() - sin(base.camera.getH()*(pi/180.0)))
+    base.camera.setY(base.camera.getY() + cos(base.camera.getH()*(pi/180.0)))
+    #base.camera.setZ(base.camera.getZ() + sin(base.camera.getP()*(pi/180.0)))
+
+def MoveBackwards():
+    base.camera.setX(base.camera.getX() + sin(base.camera.getH()*(pi/180.0)))
+    base.camera.setY(base.camera.getY() - cos(base.camera.getH()*(pi/180.0)))
+    #base.camera.setZ(base.camera.getZ() - sin(base.camera.getP()*(pi/180.0)))
+    
+def MoveLeft():
+    base.camera.setX(base.camera.getX() - sin((base.camera.getH() + 90)*(pi/180.0)))
+    base.camera.setY(base.camera.getY() + cos((base.camera.getH() + 90)*(pi/180.0)))
+    
+def MoveRight():
+    base.camera.setX(base.camera.getX() + sin((base.camera.getH() + 90)*(pi/180.0)))
+    base.camera.setY(base.camera.getY() - cos((base.camera.getH() + 90)*(pi/180.0)))
+    
+def LookLeft():
+    base.camera.setHpr(base.camera.getH()+1, base.camera.getP(), 0)
+
+def LookRight():
+    base.camera.setHpr(base.camera.getH()-1, base.camera.getP(), 0)
+
+def LookUp():
+    base.camera.setHpr(base.camera.getH(), base.camera.getP()+1, 0)
+
+def LookDown():
+    base.camera.setHpr(base.camera.getH(), base.camera.getP()-1, 0)
+    
+taskMgr.add(updateCameraTask, "updateCameraTask")
 base.disableMouse()
-base.camera.setPos(-80, -80, 10)
+base.camera.setPos(-80, -80, 15)
 base.camera.setHpr(-45, -10, 0)
-base.enableMouse()
+#base.enableMouse()
 
 actor = loader.loadModel("../../models/terminal_window.egg")
 actor.setScale(2.0, 2.0, 2.0)
