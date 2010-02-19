@@ -12,7 +12,7 @@
   <Scalar> shininess {12.5}
 }
 <Texture> red_floor_Plane.tga {
-  "./red_floor_Plane.tga"
+  "../../models/red_floor_Plane.tga"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR }
