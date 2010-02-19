@@ -1,6 +1,6 @@
 MODEL_PATH = "../../models"
 
-import math
+from math import pi,sin,tan,cos
 import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
@@ -8,6 +8,7 @@ from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Point3
 from pandac.PandaModules import Vec3
 from pandac.PandaModules import Filename,Buffer,Shader
+from direct.showbase.InputStateGlobal import inputState
 
 class Player(object):
 
@@ -23,40 +24,19 @@ class Player(object):
 
         #Calculate how far to move in (x,y); 30 degrees is pi/12 radians
         dx = 7.2
-        dy = (-dx * (1/math.tan(math.pi / 6)))
-        #turnX = 14
-        #turnY = -28
-        #(12, -24)
+        dy = (-dx * (1/tan(pi / 6)))
         shortRun = tron.actorInterval("running", startFrame=25, endFrame = 46)
-        rotateInterval = tron.hprInterval(0.7, Point3(120, 12, 0), startHpr=Point3(30,12,0), blendType='easeInOut')
-        rotateInterval2 = tron.hprInterval(0.7, Point3(210, 12, 0), blendType='easeInOut')
-        rotateInterval3 = tron.hprInterval(0.7, Point3(300, 12, 0), blendType='easeInOut')
-        rotateInterval4 = tron.hprInterval(0.7, Point3(390, 12, 0), blendType='easeInOut')
         
-        #elliptical run - unfortunately he has to be moved each time to account
-        #for animation displacement, and the calculation isn't very straightforward
-        #Important note - each moveTron call is actually accounting for the DIFFERENCE
-        #BETWEEN THE PREVIOUS ANIMATION'S EFFECTS AND THE CURRENT ONE.  So they can't
-        #just be copy-pasted to achieve the same desired effect in a different scenario
-        runLoop = Sequence(Parallel(shortRun, Func(moveTron, tron, 4, 20, 0)),
-                           Parallel(shortRun, Func(moveTron, tron, dx, dy, 1)),
-                           Parallel(shortRun, rotateInterval, Func(moveTron, tron, dx, dy, 1)),
-                           Parallel(shortRun, rotateInterval2, Func(moveTron, tron, 12, 8, 1)),
-                           Parallel(shortRun, Func(moveTron, tron, -8, 12, 1)),
-                           Parallel(shortRun, Func(moveTron, tron, -dx, -dy, 1)),
-                           Parallel(shortRun, rotateInterval3, Func(moveTron, tron, -dx, -dy, 1)),
-                           Parallel(shortRun, rotateInterval4, Func(moveTron, tron, -12, -8, 1)))
+        inputState.watch('forward', 'w', 'w-up') 
+        inputState.watch('backward', 's', 's-up')
+        inputState.watch('moveleft', 'a', 'a-up')
+        inputState.watch('moveright', 'd', 'd-up')
+        inputState.watch('left', 'arrow_left', 'arrow_left-up')
+        inputState.watch('right', 'arrow_right', 'arrow_right-up')
+        inputState.watch('up', 'arrow_up', 'arrow_up-up')
+        inputState.watch('down', 'arrow_down', 'arrow_down-up')
         
-        #Long, straight line run
-        runLoop2 = Sequence(Parallel(shortRun, Func(moveTron, tron, 4, 20, 0)),
-                           Parallel(shortRun, Func(moveTron, tron, dx, dy, 1)),
-                           Parallel(shortRun, Func(moveTron, tron, dx, dy, 1)),
-                           Parallel(shortRun, Func(moveTron, tron, dx, dy, 1)),
-                           Parallel(shortRun, Func(moveTron, tron, dx, dy, 1)),
-                           Parallel(shortRun, Func(moveTron, tron, dx, dy, 1)))
-        
-        overallLoop = Sequence(runInterval, Func(startLoop, runLoop))
-        overallLoop.start()
+        taskMgr.add(updateCameraTask, "updateCameraTask")
         
    # def turn_left(self,amt):
         
@@ -64,19 +44,55 @@ class Player(object):
         
    # def jump(self):
     
+        
+#Task to move the camera
+def updateCameraTask(task):
+    if inputState.isSet('forward') or inputState.isSet('backward') or \
+    inputState.isSet('left') or inputState.isSet('right') or inputState.isSet('up') \
+    or inputState.isSet('down') or inputState.isSet('moveleft') or inputState.isSet('moveright') :
+        if inputState.isSet('forward') :
+            MoveForwards()
+        elif inputState.isSet('backward') :
+            MoveBackwards()
+        if inputState.isSet('moveleft') :
+            MoveLeft()
+        elif inputState.isSet('moveright') :
+            MoveRight()
+        if inputState.isSet('left') :
+            LookLeft()
+        elif inputState.isSet('right') :
+            LookRight()
+        if inputState.isSet('up') :
+            LookUp()
+        elif inputState.isSet('down') :
+            LookDown()
+    return Task.cont
+
+def MoveForwards():
+    base.camera.setX(base.camera.getX() - sin(base.camera.getH()*(pi/180.0)))
+    base.camera.setY(base.camera.getY() + cos(base.camera.getH()*(pi/180.0)))
+
+def MoveBackwards():
+    base.camera.setX(base.camera.getX() + sin(base.camera.getH()*(pi/180.0)))
+    base.camera.setY(base.camera.getY() - cos(base.camera.getH()*(pi/180.0)))
     
+def MoveLeft():
+    base.camera.setX(base.camera.getX() - sin((base.camera.getH() + 90)*(pi/180.0)))
+    base.camera.setY(base.camera.getY() + cos((base.camera.getH() + 90)*(pi/180.0)))
     
-#************************** Add in Tron **************************
-def moveTron(actr, deltaX, deltaY, isDelta):
-  if isDelta == 1:
-    actr.setPos(actr.getX() + deltaX, actr.getY() + deltaY, 10)
-  else:
-    actr.setPos(deltaX, deltaY, 10)
+def MoveRight():
+    base.camera.setX(base.camera.getX() + sin((base.camera.getH() + 90)*(pi/180.0)))
+    base.camera.setY(base.camera.getY() - cos((base.camera.getH() + 90)*(pi/180.0)))
+    
+def LookLeft():
+    base.camera.setHpr(base.camera.getH()+1, base.camera.getP(), 0)
 
-def startLoop(seq):
-  seq.loop();
+def LookRight():
+    base.camera.setHpr(base.camera.getH()-1, base.camera.getP(), 0)
 
+def LookUp():
+    base.camera.setHpr(base.camera.getH(), base.camera.getP()+1, 0)
 
-
-
+def LookDown():
+    base.camera.setHpr(base.camera.getH(), base.camera.getP()-1, 0)
 

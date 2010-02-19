@@ -13,9 +13,8 @@ class Game(object):
 
     def __init__(self):
         base.disableMouse()
-        base.camera.setPos(-80, -80, 10)
+        base.camera.setPos(-80, -80, 15)
         base.camera.setHpr(-45, -10, 0)
-        base.enableMouse()
         self.load_env(30)
         
     def add_player(self,p):
