@@ -234,23 +234,24 @@ def moveTron(actr, deltaX, deltaY, isDelta):
     actr.setPos(actr.getX() + deltaX, actr.getY() + deltaY, 10)
   else:
     actr.setPos(deltaX, deltaY, 10)
+  base.camera.setPos(0, 40, 10)
 
 def startLoop(seq):
   seq.loop();
 
 glowShader=Shader.load("../../models/glowShader.sha")
-tron = Actor.Actor("../../models/tron", {"running":"../../models/tron_anim"})
+tron = Actor.Actor("../../models/tron", {"running":"../../models/tron_anim_updated"})
 #tron.reparentTo(base.camera)
-tron.reparentTo(base.camera)
-#tron.reparentTo(render)
+base.camera.reparentTo(tron)
+tron.reparentTo(render)
 tron.setScale(0.4, 0.4, 0.4)
 tron.setHpr(30, 12, 0)
 tron.setPos(-4, 34, 10)
 
-base.camera.setPos(-80, -80, 15)
-#base.camera.setPos(-10, 0, 0)
-base.camera.setHpr(-45, -10, 0)
-#base.camera.setHpr(0, 0, 0)
+#base.camera.setPos(-80, -80, 15)
+base.camera.setPos(0, 30, 10)
+#base.camera.setHpr(-45, -10, 0)
+base.camera.setHpr(180, 0, 0)
 #base.enableMouse()
 
 runInterval = tron.actorInterval("running", startFrame=0, endFrame = 46)
@@ -289,7 +290,14 @@ runLoop2 = Sequence(Parallel(shortRun, Func(moveTron, tron, 4, 20, 0)),
                    Parallel(shortRun, Func(moveTron, tron, dx, dy, 1)),
                    Parallel(shortRun, Func(moveTron, tron, dx, dy, 1)))
 
-overallLoop = Sequence(runInterval, Func(startLoop, runLoop))
+runLoop3 = Sequence(shortRun, shortRun,
+                   Parallel(shortRun, rotateInterval),
+                   Parallel(shortRun, rotateInterval2),
+                   shortRun, shortRun,
+                   Parallel(shortRun, rotateInterval3),
+                   Parallel(shortRun, rotateInterval4))
+
+overallLoop = Sequence(runInterval, Func(startLoop, runLoop3))
 
 overallLoop.start()
 #tron.pose("running", 46)
