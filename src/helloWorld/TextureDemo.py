@@ -175,9 +175,6 @@ def LookDown():
     
 taskMgr.add(updateCameraTask, "updateCameraTask")
 base.disableMouse()
-base.camera.setPos(-80, -80, 15)
-base.camera.setHpr(-45, -10, 0)
-#base.enableMouse()
 
 actor = loader.loadModel("../../models/terminal_window.egg")
 actor.setScale(2.0, 2.0, 2.0)
@@ -243,10 +240,18 @@ def startLoop(seq):
 
 glowShader=Shader.load("../../models/glowShader.sha")
 tron = Actor.Actor("../../models/tron", {"running":"../../models/tron_anim"})
-tron.reparentTo(render)
+#tron.reparentTo(base.camera)
+tron.reparentTo(base.camera)
+#tron.reparentTo(render)
 tron.setScale(0.4, 0.4, 0.4)
 tron.setHpr(30, 12, 0)
 tron.setPos(-4, 34, 10)
+
+base.camera.setPos(-80, -80, 15)
+#base.camera.setPos(-10, 0, 0)
+base.camera.setHpr(-45, -10, 0)
+#base.camera.setHpr(0, 0, 0)
+#base.enableMouse()
 
 runInterval = tron.actorInterval("running", startFrame=0, endFrame = 46)
 
