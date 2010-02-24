@@ -1,11 +1,11 @@
 
 import direct.directbase.DirectStart
-from player import Player
 from game import Game
-from program import Program
+from program import Rm,Chmod
 
 if __name__ == '__main__':
     g = Game()
-    t = Player()
-    p = Program()
+    g.add_player('player_1')
+    g.add_program(Rm)
+    g.add_program(Chmod)
     run()

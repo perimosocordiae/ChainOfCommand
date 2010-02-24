@@ -1,6 +1,6 @@
 MODEL_PATH = "../../models"
 
-import math
+from random import randint
 import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
@@ -8,20 +8,23 @@ from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Point3
 from pandac.PandaModules import Vec3
 from pandac.PandaModules import Filename,Buffer,Shader
+from player import Player
 
 class Game(object):
 
     def __init__(self):
+        self.players = []
+        self.programs = []
         base.disableMouse()
-        #base.camera.setPos(-80, -80, 15)
-        #base.camera.setPos(0, 30, 10)
-        #base.camera.setHpr(-45, -10, 0)
-        #base.camera.setHpr(180, 0, 0)
         self.load_env(30, 32.0)
         
-    def add_player(self,p):
-        return None
+    def add_player(self,pname):
+        self.players.append(Player(pname))
         
+    def add_program(self,ptype):
+        pos = (randint(-10,10),randint(-10,10)) # update this w/ real map data later
+        self.programs.append(ptype(pos))
+
     def load_env(self,num_tiles,tile_scale):
         environ = loader.loadModel("%s/yellow_floor.egg"%MODEL_PATH)
         environ.reparentTo(render)

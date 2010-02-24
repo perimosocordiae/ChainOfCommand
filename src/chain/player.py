@@ -5,6 +5,7 @@ STRAFE_MULTIPLIER = 2.0
 TURN_MULTIPLIER = 3.0
 
 from math import pi,sin,tan,cos, sqrt
+from itertools import ifilter
 import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
@@ -17,7 +18,26 @@ from eventHandler import KeyHandler
 
 class Player(object):
 
-    def __init__(self):
+    def __init__(self,name):
+        self.programs = [None,None,None]
+        self.health = 100
+        self.name = name
+        self.load_model()
+        self.setup_camera()
+	
+    def damage(self):
+        d = 10 # arbitrary
+        for p in ifilter(lambda p: p != None,self.programs):
+        	d = p.damage_mod(d)
+        return d
+
+    def shield(self):
+        s = 10 # arbitrary
+        for p in ifilter(lambda p: p != None,self.programs):
+        	s = p.shield_mod(s)
+        return s
+
+    def load_model(self):
         glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
         self.tron = Actor.Actor("%s/tron"%MODEL_PATH, {"running":"%s/tron_anim_updated"%MODEL_PATH})
         self.tron.reparentTo(render)
@@ -29,13 +49,11 @@ class Player(object):
         self.tron.pose("running",46)
         self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame = 46)
 
-        #Calculate how far to move in (x,y); 30 degrees is pi/12 radians
-        #dx = 7.2
-        #dy = (-dx * (1/tan(pi / 6)))
         self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame = 46)
-        self.runLoop = Sequence(self.runInterval, Func(self.startLoop, self.shortRun))
+        self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
-        
+
+    def setup_camera(self):
         inputState.watch('forward', 'w', 'w-up') 
         inputState.watch('backward', 's', 's-up')
         inputState.watch('moveleft', 'a', 'a-up')
@@ -45,17 +63,13 @@ class Player(object):
         inputState.watch('up', 'arrow_up', 'arrow_up-up')
         inputState.watch('down', 'arrow_down', 'arrow_down-up')
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
-        
+		# the camerea follows tron
         base.camera.reparentTo(self.tron)
-        #base.camera.setPos(-80, -80, 15)
-        #base.camera.setPos(80, 60, 10)
         base.camera.setPos(0, 40, 10)
-        #base.camera.setHpr(-45, -10, 0)
         base.camera.setHpr(180, 0, 0)
-        
         #Listen for changing perspective
         self.keyHandle = KeyHandler(self) 
-   
+
     def switchPerspective(self):
         #Switch between 3 perspectives
         if base.camera.getY() > 60:
@@ -73,20 +87,14 @@ class Player(object):
         if base.camera.getY() < 100:
             base.camera.setY(base.camera.getY() + 2)
    # def jump(self):
-    
-    #Start looping an interval as a function so it can
-    #occur inside of a sequence or parallel
-    def startLoop(self, interv): 
-        interv.loop()
         
     #Task to move the camera
     def updateCameraTask(self, task):
         moving = 0
-        if inputState.isSet('forward') or inputState.isSet('backward') or \
-        inputState.isSet('left') or inputState.isSet('right') or inputState.isSet('up') \
-        or inputState.isSet('down') or inputState.isSet('moveleft') or inputState.isSet('moveright') :
+        states = ['forward','backward','moveleft','moveright','left','right','up','down']
+        if any(inputState.isSet(s) for s in states):
             if (inputState.isSet('forward') or inputState.isSet('backward')) and \
-            (inputState.isSet('moveleft') or inputState.isSet('moveright')):
+               (inputState.isSet('moveleft') or inputState.isSet('moveright')):
                 const = sqrt(2.0) / 2.0
                 motionMult = const * MOTION_MULTIPLIER
                 strafeMult = const * STRAFE_MULTIPLIER
@@ -123,52 +131,26 @@ class Player(object):
         return Task.cont
     
     def StartMoving(self):
-        #if not already animating, start the loop
-        if self.running == False:
-            self.running = True
-            #self.runLoop.start()
-            self.shortRun.loop()
-        #end if
+        if self.running: return
+        self.running = True
+        self.shortRun.loop()
         
     def StopMoving(self):
-        #if an animation is running, stop them all
-        if self.running == True:
-            #self.runLoop.finish()
-            self.tron.stop()
-            run = None
-            if self.shortRun.isPlaying():
-                run = self.shortRun
-            #elif self.runInterval.isPlaying():
-            #    run = self.runInterval
-            
-            if not (run == None):
-                #finish the run and let it go to completion
-                t = run.getT()
-                #run.finish()
-            
-            #self.runLoop.finish()
-            
-            if not (run == None):
-                #run = self.shortRun
-                #run.finish()
-            #    print t, " ", run.getDuration()
-                run.start(startT=t)
-            #end if
-            #self.runLoop.finish()
-            self.running = False
-        #end if
+        if not self.running: return
+        self.tron.stop()
+        if self.shortRun.isPlaying():
+            run = self.shortRun
+            t = run.getT()
+            run.start(startT=t)
+        self.running = False
     
     def MoveForwards(self, mult):
         self.tron.setX(self.tron.getX() + mult * sin(self.tron.getH()*(pi/180.0)))
         self.tron.setY(self.tron.getY() - mult * cos(self.tron.getH()*(pi/180.0)))
-        #base.camera.setX(base.camera.getX() - sin(base.camera.getH()*(pi/180.0)))
-        #base.camera.setY(base.camera.getY() + cos(base.camera.getH()*(pi/180.0)))
 
     def MoveBackwards(self, mult):
         self.tron.setX(self.tron.getX() - mult * sin(self.tron.getH()*(pi/180.0)))
         self.tron.setY(self.tron.getY() + mult * cos(self.tron.getH()*(pi/180.0)))
-        #base.camera.setX(base.camera.getX() + sin(base.camera.getH()*(pi/180.0)))
-        #base.camera.setY(base.camera.getY() - cos(base.camera.getH()*(pi/180.0)))
         
     def MoveLeft(self, mult):
         self.tron.setX(self.tron.getX() + mult * sin((self.tron.getH() + 90)*(pi/180.0)))
