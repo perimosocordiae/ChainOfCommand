@@ -10,7 +10,7 @@ import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Point3,Vec3,Filename,Buffer,Shader
+from pandac.PandaModules import Shader, CollisionNode, CollisionSphere
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import KeyHandler
 from agent import Agent
@@ -23,6 +23,7 @@ class Player(Agent):
         self.name = name
         self.inverted = True # look controls
         self.load_model()
+        self.setup_collider()
         self.setup_camera()
         self.keyHandle = KeyHandler(self) 
 	
@@ -62,6 +63,11 @@ class Player(Agent):
         self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame = 46)
         self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
+
+    def setup_collider(self):
+        self.collider = self.tron.attachNewNode(CollisionNode('troncnode'))
+        self.collider.node().addSolid(CollisionSphere(0,0,0,10)) # sphere, for now
+        self.collider.show()
 
     def setup_camera(self):
         inputState.watch('forward', 'w', 'w-up') 

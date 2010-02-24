@@ -6,10 +6,7 @@ import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Point3
-from pandac.PandaModules import Vec3
-from pandac.PandaModules import Filename,Buffer,Shader
-from pandac.PandaModules import TransparencyAttrib
+from pandac.PandaModules import TransparencyAttrib, CollisionHandlerQueue, CollisionTraverser
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from player import Player
@@ -21,11 +18,27 @@ class Game(object):
         self.players, self.programs,self.drones = [],[],[]
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
-        self.redScreen = None
-        self.flashRed = Sequence(Func(self.startRed), Wait(0.25), Func(self.stopRed))
         self.load_env()
+        self.setup_collisions()
         self.initializeHUD()
-        
+
+    def setup_collisions(self):
+        base.cTrav = CollisionTraverser()
+        self.collisionHandler = CollisionHandlerQueue()
+        for p in self.players:
+            base.cTrav.addCollider(p.collider,self.collisionHandler)
+        #for p in self.programs:
+        #    base.cTrav.addCollider(p.collider,self.collisionHandler)
+        for d in self.drones:
+            base.cTrav.addCollider(d.collider,self.collisionHandler)
+        taskMgr.doMethodLater(0.1,self.collision_task,"tsk_traverse")
+
+    def collision_task(self,task=None):
+        #print self.collisionHandler.getNumEntries()
+        if self.collisionHandler.getNumEntries() > 0:
+            print "we have a hit!"
+        if task: return task.again
+
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-1),randint(-self.map_size+1,self.map_size-1))
 
@@ -75,10 +88,16 @@ class Game(object):
     
     def initializeHUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
-        self.crosshair1 = OnscreenImage(image = MODEL_PATH + '/horiz_crosshair.jpg', pos = (-0.025, 0, 0), scale = (0.02, 1, .005))
-        self.crosshair2 = OnscreenImage(image = MODEL_PATH + '/horiz_crosshair.jpg', pos = (0.025, 0, 0), scale = (0.02, 1, .005))
-        self.crosshair3 = OnscreenImage(image = MODEL_PATH + '/vert_crosshair.jpg', pos = (0, 0, -0.025), scale = (0.005, 1, .02))
-        self.crosshair4 = OnscreenImage(image = MODEL_PATH + '/vert_crosshair.jpg', pos = (0, 0, 0.025), scale = (0.005, 1, .02))
+        base.setFrameRateMeter(True)
+        self.crosshairs = []
+        self.crosshairs.append(OnscreenImage(image = MODEL_PATH + '/horiz_crosshair.jpg', pos = (-0.025, 0, 0), scale = (0.02, 1, .005)))
+        self.crosshairs.append(OnscreenImage(image = MODEL_PATH + '/horiz_crosshair.jpg', pos = (0.025, 0, 0), scale = (0.02, 1, .005)))
+        self.crosshairs.append(OnscreenImage(image = MODEL_PATH + '/vert_crosshair.jpg', pos = (0, 0, -0.025), scale = (0.005, 1, .02)))
+        self.crosshairs.append(OnscreenImage(image = MODEL_PATH + '/vert_crosshair.jpg', pos = (0, 0, 0.025), scale = (0.005, 1, .02)))
+        # red flash for indicating hits
+        self.redScreen = None
+        self.flashRed = Sequence(Func(self.startRed), Wait(0.25), Func(self.stopRed))
+        # TODO: health status, chain of programs
         
     def playerHit(self):
         #if the player is hit, flash the screen red.  TODO: Also update health display
