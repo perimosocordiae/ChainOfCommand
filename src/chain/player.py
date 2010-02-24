@@ -10,18 +10,16 @@ import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Point3
-from pandac.PandaModules import Vec3
-from pandac.PandaModules import Filename,Buffer,Shader
+from pandac.PandaModules import Point3,Vec3,Filename,Buffer,Shader
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import KeyHandler
+from agent import Agent
 
-class Player(object):
+class Player(Agent):
 
     def __init__(self,game,name):
-        self.game = game
+        super(Player,self).__init__(game)
         self.programs = [None,None,None]
-        self.health = 100
         self.name = name
         self.load_model()
         self.setup_camera()
@@ -33,10 +31,14 @@ class Player(object):
         return d
 
     def shield(self):
-        s = 10 # arbitrary
+        s = 1 # no shield
         for p in ifilter(lambda p: p != None,self.programs):
         	s = p.shield_mod(s)
         return s
+	
+    def hit(self,amt):
+        super(Player,self).hit(amt)
+        # flash the screen red, maybe?
 
     def load_model(self):
         glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)

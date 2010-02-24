@@ -5,15 +5,19 @@ from direct.actor import Actor
 from pandac.PandaModules import Point3
 from random import randint
 from math import pi, sin, cos
+from agent import Agent
 
-class Drone(object):
+class Drone(Agent):
 
    def __init__(self,game,pos=None):
-       self.game = game
+       super(Drone,self).__init__(game)
        if not pos:
            pos = game.rand_point()
        self.load_model(pos)
-    
+  
+   def damage(self):
+       return 20
+
    def load_model(self,pos):
        self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})
        self.panda.reparentTo(render)
@@ -27,12 +31,15 @@ class Drone(object):
    def WalkTask(self, task):
        if not self.walking:
            self.walking = True
-           self.MoveForwardsRand()
+           #self.MoveForwardsRand()
+           self.follow_tron()
        return Task.cont
    
-   def follow(self,leader):
-       self.panda.lookAt(leader)
+   def follow_tron(self):
+       tron = self.game.players[0].tron
+       self.panda.lookAt(tron)
        #TODO walk forward
+       self.walking = False
 
    def MoveForwardsRand(self):
        moveSpeed = randint(1,1) #um.. why?
@@ -41,6 +48,4 @@ class Drone(object):
        self.panda.setX(self.panda.getX() + moveSpeed * sin(self.panda.getH()*(pi/180.0)))
        self.panda.setY(self.panda.getY() - moveSpeed * cos(self.panda.getH()*(pi/180.0)))
        self.walking = False
-   
-   
    
