@@ -21,9 +21,15 @@ class Player(Agent):
         super(Player,self).__init__(game)
         self.programs = [None,None,None]
         self.name = name
+        self.inverted = True # look controls
         self.load_model()
         self.setup_camera()
+        self.keyHandle = KeyHandler(self) 
 	
+    def shoot(self):
+        print "pew pew!"
+        #TODO: do all that collision stuff
+
     def damage(self):
         d = 10 # arbitrary
         for p in ifilter(lambda p: p != None,self.programs):
@@ -70,8 +76,6 @@ class Player(Agent):
         base.camera.reparentTo(self.tron)
         base.camera.setPos(0, 40, 10)
         base.camera.setHpr(180, 0, 0)
-        #Listen for changing perspective
-        self.keyHandle = KeyHandler(self) 
 
     def switchPerspective(self):
         #Switch between 3 perspectives
@@ -122,9 +126,9 @@ class Player(Agent):
             elif inputState.isSet('right') :
                 self.LookRight()
             if inputState.isSet('up') :
-                self.LookUp()
+                self.LookDown() if self.inverted else self.LookUp()
             elif inputState.isSet('down') :
-                self.LookDown()
+                self.LookUp() if self.inverted else self.LookDown()
             #end if
         #end if
         if moving == 1:
@@ -169,9 +173,11 @@ class Player(Agent):
     def LookRight(self):
         self.tron.setHpr(self.tron.getH()-TURN_MULTIPLIER, self.tron.getP(), 0)
     
-    def LookUp(self):
-        self.tron.setHpr(self.tron.getH(), self.tron.getP()+TURN_MULTIPLIER, 0)
-    
     def LookDown(self):
-        self.tron.setHpr(self.tron.getH(), self.tron.getP()-TURN_MULTIPLIER, 0)
+        p = min(90,self.tron.getP()+TURN_MULTIPLIER)
+        self.tron.setHpr(self.tron.getH(), p, 0)
+    
+    def LookUp(self):
+        p = max(-50,self.tron.getP()-TURN_MULTIPLIER)
+        self.tron.setHpr(self.tron.getH(), p, 0)
 
