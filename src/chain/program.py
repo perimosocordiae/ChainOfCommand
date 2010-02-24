@@ -10,7 +10,10 @@ from pandac.PandaModules import Filename,Buffer,Shader
 
 class Program(object):
 
-    def __init__(self,name,pos=(0,0)):
+    def __init__(self,game,name,pos):
+        self.game = game
+        if not pos:
+            pos = game.rand_point()
         self.name = name
         self.pos = pos
         self.load_model()
@@ -39,16 +42,16 @@ class Program(object):
 
 class Rm(Program):
 	
-    def __init__(self,pos=(0,0)):
-        super(Rm,self).__init__('rm',pos)
+    def __init__(self,game,pos=None):
+        super(Rm,self).__init__(game,'rm',pos)
 	
     def damage_mod(self,d):
         return d*2 # double the player's damage
 
 class Chmod(Program):
 
-    def __init__(self,pos=(0,0)):
-        super(Chmod,self).__init__('chmod',pos)
+    def __init__(self,game,pos=None):
+        super(Chmod,self).__init__(game,'chmod',pos)
 	
     def shield_mod(self,s):
         return s*2 # double the player's shield strength

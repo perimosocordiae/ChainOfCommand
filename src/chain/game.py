@@ -10,11 +10,12 @@ from pandac.PandaModules import Point3
 from pandac.PandaModules import Vec3
 from pandac.PandaModules import Filename,Buffer,Shader
 from player import Player
+from drone import Drone
 
 class Game(object):
 
     def __init__(self,map_size=320,tile_size=16):
-        self.players, self.programs = [],[]
+        self.players, self.programs,self.drones = [],[],[]
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
         self.load_env()
@@ -23,10 +24,13 @@ class Game(object):
         return (randint(-self.map_size+1,self.map_size-1),randint(-self.map_size+1,self.map_size-1))
 
     def add_player(self,pname):
-        self.players.append(Player(pname))
+        self.players.append(Player(self,pname))
         
     def add_program(self,ptype):
-        self.programs.append(ptype(self.rand_point()))
+        self.programs.append(ptype(self))
+
+    def add_drone(self):
+        self.drones.append(Drone(self))
 
     def load_env(self):
         num_tiles = self.map_size/self.tile_size

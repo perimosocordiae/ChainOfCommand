@@ -8,4 +8,6 @@ if __name__ == '__main__':
     g.add_player('player_1')
     g.add_program(Rm)
     g.add_program(Chmod)
+    for _ in range(5):
+        g.add_drone()
     run()

@@ -18,7 +18,8 @@ from eventHandler import KeyHandler
 
 class Player(object):
 
-    def __init__(self,name):
+    def __init__(self,game,name):
+        self.game = game
         self.programs = [None,None,None]
         self.health = 100
         self.name = name
