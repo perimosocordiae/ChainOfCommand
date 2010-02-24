@@ -10,7 +10,9 @@ import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Shader, CollisionNode, CollisionSphere
+from pandac.PandaModules import Shader, CollisionNode, CollisionSphere, TransparencyAttrib
+from direct.gui.OnscreenImage import OnscreenImage
+from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import KeyHandler
 from agent import Agent
@@ -21,10 +23,11 @@ class Player(Agent):
         super(Player,self).__init__(game)
         self.programs = [None,None,None]
         self.name = name
-        self.inverted = True # look controls
+        self.inverted = False # look controls
         self.load_model()
         self.setup_collider()
         self.setup_camera()
+        self.setup_HUD()
         self.keyHandle = KeyHandler(self) 
 	
     def shoot(self):
@@ -45,8 +48,7 @@ class Player(Agent):
 	
     def hit(self,amt):
         super(Player,self).hit(amt)
-        self.game.playerHit()
-        # flash the screen red, maybe?
+        self.flashRed.start() # flash the screen red
 
     def load_model(self):
         glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
@@ -68,6 +70,32 @@ class Player(Agent):
         self.collider = self.tron.attachNewNode(CollisionNode('troncnode'))
         self.collider.node().addSolid(CollisionSphere(0,0,0,10)) # sphere, for now
         self.collider.show()
+
+    def setup_HUD(self):
+        #show health, programs, crosshairs, etc. (some to come, some done now)
+        base.setFrameRateMeter(True)
+        img_horiz = "%s/horiz_crosshair.jpg"%MODEL_PATH
+        img_vert  = "%s/vert_crosshair.jpg"%MODEL_PATH
+        self.crosshairs = [
+            OnscreenImage(image = img_horiz, pos = (-0.025, 0, 0), scale = (0.02, 1, .005)),
+            OnscreenImage(image = img_horiz, pos = ( 0.025, 0, 0), scale = (0.02, 1, .005)),
+            OnscreenImage(image = img_vert,  pos = (0, 0, -0.025), scale = (0.005, 1, .02)),
+            OnscreenImage(image = img_vert,  pos = (0, 0,  0.025), scale = (0.005, 1, .02))
+        ]
+        # red flash for indicating hits
+        self.redScreen = None
+        self.flashRed = Sequence(Func(self.start_red), Wait(0.25), Func(self.stop_red))
+        # TODO: health status, chain of programs
+    
+    def start_red(self):
+        if not self.redScreen:
+            self.redScreen = OnscreenImage(image = MODEL_PATH+'/red_screen.png', pos = (0, 0, 0), scale = (2,1,1))
+            self.redScreen.setTransparency(TransparencyAttrib.MAlpha)
+
+    def stop_red(self):
+        if self.redScreen:
+            self.redScreen.destroy()
+            self.redScreen = None
 
     def setup_camera(self):
         inputState.watch('forward', 'w', 'w-up') 
@@ -100,7 +128,6 @@ class Player(Agent):
     def zoomOut(self):
         if base.camera.getY() < 100:
             base.camera.setY(base.camera.getY() + 2)
-   # def jump(self):
         
     #Task to move the camera
     def updateCameraTask(self, task):

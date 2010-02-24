@@ -20,7 +20,6 @@ class Game(object):
         base.disableMouse()
         self.load_env()
         self.setup_collisions()
-        self.initializeHUD()
 
     def setup_collisions(self):
         base.cTrav = CollisionTraverser()
@@ -86,33 +85,6 @@ class Game(object):
             make_tile(environ,blue_egg,(center,   center+2, 2*z+1),(180,90,0))
             make_tile(environ,blue_egg,(center-1, center+1, 2*z+1),(270,90,0))
     
-    def initializeHUD(self):
-        #show health, programs, crosshairs, etc. (some to come, some done now)
-        base.setFrameRateMeter(True)
-        self.crosshairs = []
-        self.crosshairs.append(OnscreenImage(image = MODEL_PATH + '/horiz_crosshair.jpg', pos = (-0.025, 0, 0), scale = (0.02, 1, .005)))
-        self.crosshairs.append(OnscreenImage(image = MODEL_PATH + '/horiz_crosshair.jpg', pos = (0.025, 0, 0), scale = (0.02, 1, .005)))
-        self.crosshairs.append(OnscreenImage(image = MODEL_PATH + '/vert_crosshair.jpg', pos = (0, 0, -0.025), scale = (0.005, 1, .02)))
-        self.crosshairs.append(OnscreenImage(image = MODEL_PATH + '/vert_crosshair.jpg', pos = (0, 0, 0.025), scale = (0.005, 1, .02)))
-        # red flash for indicating hits
-        self.redScreen = None
-        self.flashRed = Sequence(Func(self.startRed), Wait(0.25), Func(self.stopRed))
-        # TODO: health status, chain of programs
-        
-    def playerHit(self):
-        #if the player is hit, flash the screen red.  TODO: Also update health display
-        self.flashRed.start()
-        
-    def startRed(self):
-        if self.redScreen == None:
-            self.redScreen = OnscreenImage(image = MODEL_PATH + '/red_screen.png', pos = (0, 0, 0), scale = (2,1,1))
-            self.redScreen.setTransparency(TransparencyAttrib.MAlpha)
-        
-    def stopRed(self):
-        if not (self.redScreen == None):
-            self.redScreen.destroy()
-            self.redScreen = None
-        
 # static functions, not in the game class
 def make_tile(parent,fname,pos,hpr):
 	tile = loader.loadModel(fname)

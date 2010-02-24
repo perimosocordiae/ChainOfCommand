@@ -14,10 +14,10 @@ if __name__ == '__main__':
     #ACTUALLY HIT YOU, DELETE THESE LINES
     #Basic idea - if you're hit before it stops flashing, it just
     #continues flashing... this sequence is proof
-    Sequence(Wait(2.0), Func(g.playerHit),
-             Wait(0.4), Func(g.playerHit),
-             Wait(0.1), Func(g.playerHit),
-             Wait(0.2), Func(g.playerHit),
-             Wait(0.2), Func(g.playerHit),
-             Wait(0.3), Func(g.playerHit)).start()
+    #Sequence(Wait(2.0), Func(g.playerHit),
+    #         Wait(0.4), Func(g.playerHit),
+    #         Wait(0.1), Func(g.playerHit),
+    #         Wait(0.2), Func(g.playerHit),
+    #         Wait(0.2), Func(g.playerHit),
+    #         Wait(0.3), Func(g.playerHit)).start()
     run()
