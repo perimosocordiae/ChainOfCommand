@@ -44,6 +44,7 @@ class Player(Agent):
 	
     def hit(self,amt):
         super(Player,self).hit(amt)
+        self.game.playerHit()
         # flash the screen red, maybe?
 
     def load_model(self):

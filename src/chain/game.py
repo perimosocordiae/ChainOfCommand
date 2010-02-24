@@ -1,7 +1,7 @@
 MODEL_PATH = "../../models"
 
 from random import randint
-from itertools import product as iproduct
+#from itertools import product as iproduct
 import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
@@ -9,6 +9,9 @@ from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Point3
 from pandac.PandaModules import Vec3
 from pandac.PandaModules import Filename,Buffer,Shader
+from pandac.PandaModules import TransparencyAttrib
+from direct.gui.OnscreenImage import OnscreenImage
+from direct.gui.OnscreenText import OnscreenText
 from player import Player
 from drone import Drone
 
@@ -18,7 +21,10 @@ class Game(object):
         self.players, self.programs,self.drones = [],[],[]
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
+        self.redScreen = None
+        self.flashRed = Sequence(Func(self.startRed), Wait(0.25), Func(self.stopRed))
         self.load_env()
+        self.initializeHUD()
         
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-1),randint(-self.map_size+1,self.map_size-1))
@@ -41,13 +47,17 @@ class Game(object):
                 
         center = num_tiles/2
         wall_height = 10
-        for i,j in iproduct(range(num_tiles),repeat=2):
+        #for i,j in iproduct(range(num_tiles),repeat=2):
+        for i in range(num_tiles):
+          for j in range(num_tiles):
             egg = get_tile_egg(i,j,center)
             make_tile(environ,egg,(-2*(1+i-center),-2*(1+j-center), 2*wall_height), (0, 0, 180)) #ceiling
             if i == center and j == center: continue #bottom center is already done
             make_tile(environ,egg,(2*(i-center), 2*(j-center), 0),(0, 0, 0)) #floor
 
-        for i,j in iproduct(range(num_tiles),range(wall_height)):
+        #for i,j in iproduct(range(num_tiles),range(wall_height)):
+        for i in range(num_tiles):
+          for j in range(wall_height):
             egg = get_tile_egg(i,j,center)
             make_tile(environ,egg,(-1-2*center,    2*(i-center),  2*(wall_height-j)-1),(0, 0, 90))  #wall 1
             make_tile(environ,egg,(-2*(1+i-center), -1-2*center,  2*(wall_height-j)-1),(0,-90,0))   #wall 2
@@ -62,7 +72,28 @@ class Game(object):
             make_tile(environ,blue_egg,(center+1, center+1, 2*z+1),(90, 90,0))
             make_tile(environ,blue_egg,(center,   center+2, 2*z+1),(180,90,0))
             make_tile(environ,blue_egg,(center-1, center+1, 2*z+1),(270,90,0))
-
+    
+    def initializeHUD(self):
+        #show health, programs, crosshairs, etc. (some to come, some done now)
+        self.crosshair1 = OnscreenImage(image = MODEL_PATH + '/horiz_crosshair.jpg', pos = (-0.025, 0, 0), scale = (0.02, 1, .005))
+        self.crosshair2 = OnscreenImage(image = MODEL_PATH + '/horiz_crosshair.jpg', pos = (0.025, 0, 0), scale = (0.02, 1, .005))
+        self.crosshair3 = OnscreenImage(image = MODEL_PATH + '/vert_crosshair.jpg', pos = (0, 0, -0.025), scale = (0.005, 1, .02))
+        self.crosshair4 = OnscreenImage(image = MODEL_PATH + '/vert_crosshair.jpg', pos = (0, 0, 0.025), scale = (0.005, 1, .02))
+        
+    def playerHit(self):
+        #if the player is hit, flash the screen red.  TODO: Also update health display
+        self.flashRed.start()
+        
+    def startRed(self):
+        if self.redScreen == None:
+            self.redScreen = OnscreenImage(image = MODEL_PATH + '/red_screen.png', pos = (0, 0, 0), scale = (2,1,1))
+            self.redScreen.setTransparency(TransparencyAttrib.MAlpha)
+        
+    def stopRed(self):
+        if not (self.redScreen == None):
+            self.redScreen.destroy()
+            self.redScreen = None
+        
 # static functions, not in the game class
 def make_tile(parent,fname,pos,hpr):
 	tile = loader.loadModel(fname)

@@ -1,10 +1,13 @@
+#Scale factor for panda speed - bigger makes them slower
+CHASE_SCALE = 2.0
 
 import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
 from pandac.PandaModules import Point3
+from pandac.PandaModules import Vec3
 from random import randint
-from math import pi, sin, cos
+from math import pi, sin, cos, sqrt, pow
 from agent import Agent
 
 class Drone(Agent):
@@ -25,6 +28,7 @@ class Drone(Agent):
        self.panda.setHpr(0,0,0)
        self.panda.setPos(pos[0],pos[1],0)
        self.walk = self.panda.actorInterval("walk")
+       self.walk.loop()
        self.walking = False
        taskMgr.add(self.WalkTask, "WalkTask")
 
@@ -38,7 +42,14 @@ class Drone(Agent):
    def follow_tron(self):
        tron = self.game.players[0].tron
        self.panda.lookAt(tron)
+       self.panda.setH(self.panda.getH() + 180)
        #TODO walk forward
+       mag = pow(tron.getX() - self.panda.getX(), 2) + pow(tron.getY() - self.panda.getY(), 2)
+       mag = sqrt(mag) * CHASE_SCALE
+       tronVec = Vec3((tron.getX() - self.panda.getX()) / mag,
+                      (tron.getY() - self.panda.getY()) / mag, 0)
+       #move one "unit" towards tron
+       self.panda.setPos(self.panda.getX() + tronVec.getX(), self.panda.getY() + tronVec.getY(), 0)
        self.walking = False
 
    def MoveForwardsRand(self):
