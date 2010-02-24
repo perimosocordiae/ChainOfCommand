@@ -40,36 +40,30 @@ class Game(object):
         environ.setPos(0, 0, 0)
                 
         center = num_tiles/2
+        wall_height = 10
         for i,j in iproduct(range(num_tiles),repeat=2):
-            if i < center and j < center:
-                fl = "%s/blue_floor.egg"%MODEL_PATH
-            elif i < center:
-                fl = "%s/green_floor.egg"%MODEL_PATH
-            elif j < center:
-                fl = "%s/red_floor.egg"%MODEL_PATH
-            else:
-                fl = "%s/yellow_floor.egg"%MODEL_PATH
-            #end if
-              
-            if i != center or j != center: #bottom center is already done
-                make_tile(environ,fl,(2*(i-center), 2*(j-center), 0),(0, 0, 0)) #floor
+            egg = get_tile_egg(i,j,center)
+            make_tile(environ,egg,(-2*(1+i-center),-2*(1+j-center), 2*wall_height), (0, 0, 180)) #ceiling
+            if i == center and j == center: continue #bottom center is already done
+            make_tile(environ,egg,(2*(i-center), 2*(j-center), 0),(0, 0, 0)) #floor
 
-            make_tile(environ,fl,(-2*(1+i-center),-2*(1+j-center), 2*num_tiles),    (0, 0, 190)) #ceiling
-            make_tile(environ,fl,(-1-2*center,    2*(j-center),  2*(num_tiles-i)-1),(0, 0, 90))  #wall 1
-            make_tile(environ,fl,(-2*(1+i-center), -1-2*center,  2*(num_tiles-j)-1),(0,-90,0))   #wall 2
-            make_tile(environ,fl,( 2*center-1,     2*(j-center), 2*i+1),            (0, 0, -90)) #wall 3
-            make_tile(environ,fl,(-2*(1+i-center), 2*center-1,   2*j+1),            (0, 90,0))   #wall 4
+        for i,j in iproduct(range(num_tiles),range(wall_height)):
+            egg = get_tile_egg(i,j,center)
+            make_tile(environ,egg,(-1-2*center,    2*(i-center),  2*(wall_height-j)-1),(0, 0, 90))  #wall 1
+            make_tile(environ,egg,(-2*(1+i-center), -1-2*center,  2*(wall_height-j)-1),(0,-90,0))   #wall 2
+            make_tile(environ,egg,( 2*center-1,     2*(i-center), 2*j+1),            (0, 0, -90)) #wall 3
+            make_tile(environ,egg,(-2*(1+i-center), 2*center-1,   2*j+1),            (0, 90,0))   #wall 4
 
-		# random column TODO: abstract this out
+		# random column 
+		#TODO: abstract this out
         blue_egg = "%s/blue_floor.egg"%MODEL_PATH
         for z in range(center / 2):
             make_tile(environ,blue_egg,(center,   center,   2*z+1),(0,  90,0))
             make_tile(environ,blue_egg,(center+1, center+1, 2*z+1),(90, 90,0))
             make_tile(environ,blue_egg,(center,   center+2, 2*z+1),(180,90,0))
             make_tile(environ,blue_egg,(center-1, center+1, 2*z+1),(270,90,0))
-            #next z
 
-# static function, not in the game class
+# static functions, not in the game class
 def make_tile(parent,fname,pos,hpr):
 	tile = loader.loadModel(fname)
 	tile.reparentTo(parent)
@@ -77,3 +71,11 @@ def make_tile(parent,fname,pos,hpr):
 	tile.setPos(*pos)
 	tile.setHpr(*hpr)
 
+def get_tile_egg(i,j,center):
+	if i < center and j < center:
+		return "%s/blue_floor.egg"%MODEL_PATH
+	if i < center:
+		return "%s/green_floor.egg"%MODEL_PATH
+	if j < center:
+		return "%s/red_floor.egg"%MODEL_PATH
+	return "%s/yellow_floor.egg"%MODEL_PATH
