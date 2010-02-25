@@ -3,7 +3,9 @@ MODEL_PATH = "../../models"
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Point3,Filename,Buffer,Shader, CollisionNode, CollisionSphere
+from pandac.PandaModules import Point3,Filename,Buffer,Shader, CollisionNode, CollisionSphere, BitMask32
+
+DRONE_COLLIDER_MASK = BitMask32.bit(1)
 
 class Program(object):
 
@@ -42,6 +44,7 @@ class Program(object):
     def setup_collider(self):
         self.collider = self.model.attachNewNode(CollisionNode(self.unique_str()))
         self.collider.node().addSolid(CollisionSphere(0, 0, 0, 2))
+        self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         #self.collider.show()
 
     # modifiers: generic program has no effect

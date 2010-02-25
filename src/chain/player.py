@@ -5,7 +5,6 @@ from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Shader, CollisionNode, CollisionRay, CollisionSphere,CollisionHandlerQueue, TransparencyAttrib, BitMask32
 from direct.gui.OnscreenImage import OnscreenImage
-from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import PlayerEventHandler
 from projectile import Projectile

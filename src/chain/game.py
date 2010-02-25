@@ -7,16 +7,27 @@ from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser
 from player import Player
 from drone import Drone
+from direct.gui.OnscreenText import OnscreenText
+from direct.task import Task
+from time import time
+import sys
+
 
 class Game(object):
 
-    def __init__(self,map_size=320,tile_size=16):
+    def __init__(self,map_size=320,tile_size=16, gameLength=180):
         base.cTrav = CollisionTraverser()
         #base.cTrav.showCollisions(render)
         self.players, self.programs,self.drones = {},{},{}
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
         self.load_env()
+        self.timer = OnscreenText(text="Time: 2:00", pos=(0,0.9), scale=(0.08), fg=(0,0,1,0.8), bg=(1,1,1,0.8), mayChange=True)
+        self.startTime = time()
+        self.endTime = self.startTime + gameLength
+        self.gameTime = self.endTime - time()
+ 
+        myTask = taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-2),randint(-self.map_size+1,self.map_size-2))
@@ -67,6 +78,16 @@ class Game(object):
         # make some random bunkers
         for _ in range(4):
             make_column(environ, choice(eggs), randint(-num_tiles,num_tiles), randint(-num_tiles,num_tiles), randint(2,wall_height))
+        
+    def timerTask(self, task):
+        self.gameTime = self.endTime - time()
+        self.timer.setText("Time: %.2f seconds"%(self.gameTime))
+        if 0 < self.gameTime < 10:
+            self.timer.setFg((1,0,0,0.8))
+        elif self.gameTime <= 0:
+            print "Game over"
+            sys.exit()
+        return task.again
         
 def make_column(parent,egg,x,y,h):
     for z in range(h):

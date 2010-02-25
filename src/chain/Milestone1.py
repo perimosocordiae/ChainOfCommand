@@ -2,7 +2,7 @@ from game import Game
 from program import Rm,Chmod,Ls
 
 if __name__ == '__main__':
-    g = Game(360,12)
+    g = Game(360,12,180)
     g.add_player('player_1')
     for _ in range(4):
         g.add_program(Rm)
