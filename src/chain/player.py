@@ -8,7 +8,9 @@ from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import PlayerEventHandler
+from projectile import Projectile
 from agent import Agent
+from pandac.PandaModules import Vec3, Point3
 
 MODEL_PATH = "../../models"
 #Constants for motion and rotation
@@ -37,7 +39,6 @@ class Player(Agent):
     def initialize_camera(self):
         self.cameraNode = CollisionNode('cameracnode')
         self.cameraNP = base.camera.attachNewNode(self.cameraNode)
-        #self.cameraNode.setFromCollideMask(GeomNode.getDefaultCollideMask())
         self.cameraRay = CollisionRay(0,0,0,0,1,0)
         self.cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(self.cameraNP, self.collisionQueue)
@@ -54,16 +55,34 @@ class Player(Agent):
                 self.killcount += 1
                 d.die()
                 del self.game.drones[objHit]
+        self.fire_laser(None)
+    
+    def fire_laser(self, spot):
+        #fire a laser at that spot in the world
+        startPos = self.tron.getPos()
+        startPos.setZ(startPos.getZ() + 2)
+        laser = Projectile("%s/laser.egg"%MODEL_PATH)
+        laser.set_pos(startPos)
+        laser.model.setScale(16.0)
+        laser.model.setHpr(self.tron.getHpr())
+        
+        mult = 500
+        dx = mult*sin(radians(self.tron.getH()))
+        dy = -mult*cos(radians(self.tron.getH()))
+        dz = -mult*sin(radians(self.tron.getP()))
+        laser.set_trajectory(Vec3(dx,dy,dz))
+            
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
-        if self.collisionQueue.getNumEntries() == 0: return ""
+        if self.collisionQueue.getNumEntries() == 0: return "", None
         # This is so we get the closest object
         self.collisionQueue.sortEntries()
         for i in range(self.collisionQueue.getNumEntries()):
             pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
             if 'donthitthis' in pickedObj: continue 
             if self.name != pickedObj: break
+        
         return pickedObj
 
     def damage(self):

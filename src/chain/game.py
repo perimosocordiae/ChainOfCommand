@@ -32,7 +32,7 @@ class Game(object):
     def add_program(self,ptype):
         prog = ptype(self)
         self.programs[prog.unique_str()] = prog
-
+        
     def add_drone(self):
         d = Drone(self)
         self.drones[str(hash(d))] = d 
