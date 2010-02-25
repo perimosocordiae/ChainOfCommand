@@ -1,20 +1,21 @@
-MODEL_PATH = "../../models"
-#Constants for motion and rotation
-MOTION_MULTIPLIER = 3.0
-STRAFE_MULTIPLIER = 2.0
-TURN_MULTIPLIER = 3.0
-
 from math import sin,cos,radians,sqrt
 from itertools import ifilter
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Shader, CollisionHandlerQueue, CollisionRay, CollisionNode, CollisionSphere, TransparencyAttrib, GeomNode
+from pandac.PandaModules import Shader, CollisionNode, CollisionRay, CollisionSphere,CollisionHandlerQueue, TransparencyAttrib, BitMask32
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import PlayerEventHandler
 from agent import Agent
+
+MODEL_PATH = "../../models"
+#Constants for motion and rotation
+MOTION_MULTIPLIER = 3.0
+STRAFE_MULTIPLIER = 2.0
+TURN_MULTIPLIER = 3.0
+DRONE_COLLIDER_MASK = BitMask32.bit(1)
 
 class Player(Agent):
 
@@ -105,6 +106,8 @@ class Player(Agent):
     def setup_collider(self):
         self.collider = self.tron.attachNewNode(CollisionNode(self.name))
         self.collider.node().addSolid(CollisionSphere(0,0,0,10)) # sphere, for now
+        self.collider.node().setFromCollideMask(DRONE_COLLIDER_MASK)
+        self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         self.collider.show()
 
     def setup_HUD(self):

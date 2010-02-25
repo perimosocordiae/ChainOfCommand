@@ -35,7 +35,7 @@ class GameEventHandler(DirectObject):
             base.cTrav.addCollider(t.collider,self.collisionHandler)
         for d in game.drones.itervalues():
             base.cTrav.addCollider(d.pusher,self.pusherHandler)
-            base.cTrav.addCollider(d.collider,self.collisionHandler)
+            #base.cTrav.addCollider(d.collider,self.collisionHandler)
             self.pusherHandler.addCollider(d.pusher, d.panda)
         
         drones = game.drones.keys()
@@ -44,11 +44,11 @@ class GameEventHandler(DirectObject):
             for p in progs:
                 self.accept("%s-into-%s"%(t,p),  self.tronHitsProg)
             for d in drones:
-                self.accept("%s-into-%s"%(d,t),  self.droneHitsTron)
-                self.accept("%s-repeat-%s"%(d,t),self.droneHitsTron)
+                self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)
+                self.accept("%s-repeat-%s"%(t,d),self.tronHitsDrone)
     
-    def droneHitsTron(self,entry):
-        dn,tn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+    def tronHitsDrone(self,entry):
+        tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
         drone,tron = self.game.drones[dn], self.game.players[tn]
         tron.hit(drone.damage())
         

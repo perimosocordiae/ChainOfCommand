@@ -7,8 +7,7 @@ if __name__ == '__main__':
     for _ in range(4):
         g.add_program(Rm)
         g.add_program(Chmod)
-    for _ in range(2):
+    for _ in range(5):
         g.add_drone()
     g.add_event_handler()
     run()
-

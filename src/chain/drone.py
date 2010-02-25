@@ -1,6 +1,6 @@
 from direct.task import Task
 from direct.actor import Actor
-from pandac.PandaModules import CollisionNode, CollisionSphere, BitMask32
+from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32
 from random import randint
 from math import pi, sin, cos
 from agent import Agent
@@ -38,18 +38,23 @@ class Drone(Agent):
         # Get the size of the object for the collision sphere.
         bounds = self.panda.getChild(0).getBounds()
         center = bounds.getCenter()
-        radius = bounds.getRadius() * 0.8
-        # Create a collision sphere and name it something understandable.
+        radius = bounds.getRadius() * 0.85
+        radius2 = bounds.getRadius() * 0.43
+        x = center.getX()
+        z = center.getZ()
+        posY = center.getY() + radius - radius2
+        negY = center.getY() - radius + radius2
+        
+        # Create a collision tube
         cNode = CollisionNode(key)
-        cNode.addSolid(CollisionSphere(center, radius))
+        cNode.addSolid(CollisionTube(x, posY, z, x, negY, z, radius2))
         self.collider = self.panda.attachNewNode(cNode)
         self.collider.node().setFromCollideMask(DRONE_COLLIDER_MASK)
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
-        
-        # Create a second slightly smaller collision sphere for 
-        radius2 = bounds.getRadius() * 0.7
+            
+        # Create a pusher sphere
         cNode2 = CollisionNode(key+'2')
-        cNode2.addSolid(CollisionSphere(center, radius2))
+        cNode2.addSolid(CollisionSphere(center, radius))
         self.pusher = self.panda.attachNewNode(cNode2)
         self.pusher.node().setFromCollideMask(DRONE_PUSHER_MASK)
         self.pusher.node().setIntoCollideMask(DRONE_PUSHER_MASK)
