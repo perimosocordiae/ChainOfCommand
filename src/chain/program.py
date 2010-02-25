@@ -49,6 +49,8 @@ class Program(object):
         return d
     def shield_mod(self,s):
         return s
+    def accuracy_mod(self, a):
+        return a
 
 class Rm(Program):
     
@@ -66,3 +68,10 @@ class Chmod(Program):
     def shield_mod(self,s):
         return s*2 # double the player's shield strength
 
+class Ls(Program):
+
+    def __init__(self,game,pos=None):
+        super(Ls,self).__init__(game,'ls',pos)
+    
+    def accuracy_mod(self,a):
+        return a/2 # double the player's accuracy

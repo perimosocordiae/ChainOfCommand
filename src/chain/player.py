@@ -77,6 +77,13 @@ class Player(Agent):
             s = p.shield_mod(s)
         return s
     
+    def accuracy(self):
+        a = 8; # arbitrary
+        for p in ifilter(lambda p: p != None,self.programs):
+            a = a.accuracy_mod(a)
+        return a
+        
+    
     def hit(self,amt=0):
         super(Player,self).hit(amt)
         self.flashRed.start() # flash the screen red
