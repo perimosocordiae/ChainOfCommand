@@ -29,7 +29,7 @@ class Game(object):
         self.startTime = time()
         self.endTime = self.startTime + gameLength
         self.gameTime = self.endTime - time()
- 
+        
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
 
     def rand_point(self): # get a random point that's also a valid play location
@@ -50,6 +50,14 @@ class Game(object):
     def add_drone(self):
         d = Drone(self)
         self.drones[str(hash(d))] = d 
+    
+    def add_background_music(self):
+        # from http://www.newgrounds.com/audio/listen/287442
+        backgroundMusic = loader.loadSfx("../../sounds/City_in_Flight.mp3")
+        backgroundMusic.setVolume(0.3)
+        backgroundMusic.setTime(35)  # music automatically starts playing when this command is issued
+        print "Track: City in Flight in Neon Light" # attribution
+        print "Author: Trevor Dericks"
 
     def load_env(self):
         eggs = map(lambda s:"%s/%s_floor.egg"%(MODEL_PATH,s),['yellow','blue','green','red'])

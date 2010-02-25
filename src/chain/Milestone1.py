@@ -11,4 +11,5 @@ if __name__ == '__main__':
     for _ in range(5):
         g.add_drone()
     g.add_event_handler()
+    g.add_background_music()
     run()

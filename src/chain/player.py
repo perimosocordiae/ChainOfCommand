@@ -14,6 +14,7 @@ from pandac.PandaModules import Vec3, Point3
 import sys
 
 MODEL_PATH = "../../models"
+SOUND_PATH = "../../sounds"
 #Constants for motion and rotation
 MOTION_MULTIPLIER = 3.0
 STRAFE_MULTIPLIER = 2.0
@@ -34,7 +35,14 @@ class Player(Agent):
         self.setup_camera()
         self.setup_HUD()
         self.eventHandle = PlayerEventHandler(self)
-        
+        self.laserSound = loader.loadSfx(SOUND_PATH + "/hilas.mp3") # load laser sound
+        self.laserSound.setVolume(0.3)
+        self.collectSound = loader.loadSfx(SOUND_PATH + "/Collect_success.mp3") # load prog collect sound
+        self.collectSound.setVolume(0.3)
+        self.collectSoundFail = loader.loadSfx(SOUND_PATH + "/Collect_fail.mp3") # load prog collect sound
+        self.collectSoundFail.setVolume(0.3)
+        self.snarlSound = loader.loadSfx(SOUND_PATH + "/Snarl.mp3")
+        dummy = Projectile("%s/laser.egg"%MODEL_PATH) # no jerkiness on first shot
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
     
@@ -61,6 +69,9 @@ class Player(Agent):
     
     def fire_laser(self, spot):
         #fire a laser at that spot in the world
+        #sound from http://www.freesound.org/samplesViewSingle.php?id=18379
+        self.laserSound.play()
+
         startPos = self.tron.getPos()
         startPos.setZ(startPos.getZ() + 2)
         laser = Projectile("%s/laser.egg"%MODEL_PATH)
@@ -73,7 +84,6 @@ class Player(Agent):
         dy = -mult*cos(radians(self.tron.getH()))
         dz = -mult*sin(radians(self.tron.getP()))
         laser.set_trajectory(Vec3(dx,dy,dz))
-            
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
@@ -108,6 +118,7 @@ class Player(Agent):
     
     def hit(self,amt=0):
         super(Player,self).hit(amt)
+        self.snarlSound.play()
         self.flashRed.start() # flash the screen red
         print "hit! health = %d"%self.health
         self.healthHUD.setText("HP: %d"%self.health)
@@ -118,8 +129,12 @@ class Player(Agent):
         for i,p in enumerate(self.programs):
             if not p: break
         else:
+            # sound from http://www.freesound.org/samplesViewSingle.php?id=33109
+            self.collectSoundFail.play() 
             print "No empty slots!"
             return
+        # sound from http://www.freesound.org/samplesViewSingle.php?id=33108
+        self.collectSound.play()
         print "Program get: %s"%prog.name
         self.programs[i] = prog
         self.programHUD[i].setText("|  %s  |"%prog.name)
