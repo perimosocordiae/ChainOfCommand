@@ -4,7 +4,7 @@ from random import randint, choice
 #from itertools import product as iproduct
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
-from pandac.PandaModules import CollisionTraverser, BitMask32, CollisionNode, CollisionPlane, Plane
+from pandac.PandaModules import CollisionTraverser, CollisionSphere, BitMask32, CollisionNode, CollisionPlane, Plane
 from player import Player
 from drone import Drone
 from direct.gui.OnscreenText import OnscreenText
@@ -20,7 +20,7 @@ class Game(object):
 
     def __init__(self,map_size=320,tile_size=16, gameLength=180):
         base.cTrav = CollisionTraverser()
-        #base.cTrav.showCollisions(render)
+        #wsbase.cTrav.showCollisions(render)
         self.players, self.programs,self.drones = {},{},{}
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
@@ -120,6 +120,11 @@ def make_column(parent,egg,x,y,h):
         make_tile(parent,egg,(x,   y+2, 2*z+1),(180,90,0))
         make_tile(parent,egg,(x+1, y+1, 2*z+1),(90, 90,0))
         make_tile(parent,egg,(x-1, y+1, 2*z+1),(270,90,0))
+    # add a pusher for the bottom of the tower - do INSIDE the loop if
+    #Tron can jump... for now this is more esfficient
+    towerCollider = parent.attachNewNode(CollisionNode("tower_base"))
+    towerCollider.node().addSolid(CollisionSphere(Point3(x, y, 1.0), 2.0))
+    towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
     
 # static functions, not in the game class
 def make_tile(parent,fname,pos,hpr):

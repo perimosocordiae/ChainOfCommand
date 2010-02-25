@@ -45,7 +45,7 @@ class GameEventHandler(DirectObject):
                 self.accept("%s-into-%s"%(t,p),  self.tronHitsProg)
             for d in drones:
                 self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)
-                self.accept("%s-repeat-%s"%(t,d),self.tronHitsDrone)
+                self.accept("%s-repeat-%s"%(t,d),self.tronRepeatsDrone)
     
     def tronHitsDrone(self,entry):
         tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
@@ -53,6 +53,13 @@ class GameEventHandler(DirectObject):
             drone,tron = self.game.drones[dn], self.game.players[tn]
         except KeyError: return
         tron.hit(drone.damage())
+        
+    def tronRepeatsDrone(self, entry):
+        tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+        try:
+            drone,tron = self.game.drones[dn], self.game.players[tn]
+        except KeyError: return
+        tron.hit(drone.repeat_damage())
         
     def tronHitsProg(self,entry):
         tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
