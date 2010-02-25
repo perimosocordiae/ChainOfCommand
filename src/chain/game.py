@@ -9,25 +9,27 @@ from drone import Drone
 class Game(object):
 
     def __init__(self,map_size=320,tile_size=16):
-        self.players, self.programs,self.drones = [],[],[]
+        self.players, self.programs,self.drones = {},{},{}
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
         self.load_env()
 
     def rand_point(self): # get a random point that's also a valid play location
-        return (randint(-self.map_size+1,self.map_size-1),randint(-self.map_size+1,self.map_size-1))
+        return (randint(-self.map_size+1,self.map_size-2),randint(-self.map_size+1,self.map_size-2))
 
     def add_event_handler(self):
         self.eventHandle = GameEventHandler(self)
     
     def add_player(self,pname):
-        self.players.append(Player(self,pname))
+        self.players[pname] = Player(self,pname)
         
     def add_program(self,ptype):
-        self.programs.append(ptype(self))
+        prog = ptype(self)
+        self.programs[prog.unique_str()] = prog
 
     def add_drone(self):
-        self.drones.append(Drone(self))
+        d = Drone(self)
+        self.drones[str(hash(d))] = d 
 
     def load_env(self):
         num_tiles = self.map_size/self.tile_size

@@ -14,33 +14,33 @@ DRONE_PUSHER_MASK = BitMask32.bit(2)
 class Drone(Agent):
 
     def __init__(self,game,pos=None):
-       super(Drone,self).__init__(game)
-       if not pos:
-           pos = game.rand_point()
-       self.load_model(pos)
-       self.setup_collision(len(self.game.drones))
+        super(Drone,self).__init__(game)
+        if not pos: pos = game.rand_point()
+        self.load_model(pos)
+        self.setup_collider()
   
     def damage(self):
-       return 20
+        return 20
 
     def load_model(self,pos):
-       self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})
-       self.panda.reparentTo(render)
-       self.panda.setScale(0.05)
-       self.panda.setHpr(0,0,0)
-       self.panda.setPos(pos[0],pos[1],0)
-       self.walk = self.panda.actorInterval("walk")
-       self.walk.loop()
-       self.walking = False
-       taskMgr.add(self.WalkTask, "WalkTask")
+        self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})
+        self.panda.reparentTo(render)
+        self.panda.setScale(0.05)
+        self.panda.setHpr(0,0,0)
+        self.panda.setPos(pos[0],pos[1],0)
+        self.walk = self.panda.actorInterval("walk")
+        self.walk.loop()
+        self.walking = False
+        taskMgr.add(self.WalkTask, "WalkTask")
 
-    def setup_collision(self,i):
+    def setup_collider(self):
+        key = str(hash(self))
         # Get the size of the object for the collision sphere.
         bounds = self.panda.getChild(0).getBounds()
         center = bounds.getCenter()
         radius = bounds.getRadius() * 0.8
         # Create a collision sphere and name it something understandable.
-        cNode = CollisionNode('dronecnode_%d'%i)
+        cNode = CollisionNode(key)
         cNode.addSolid(CollisionSphere(center, radius))
         self.collider = self.panda.attachNewNode(cNode)
         self.collider.node().setFromCollideMask(DRONE_COLLIDER_MASK)
@@ -48,7 +48,7 @@ class Drone(Agent):
         
         # Create a second slightly smaller collision sphere for 
         radius2 = bounds.getRadius() * 0.7
-        cNode2 = CollisionNode('dronecnode_%d2'%i)
+        cNode2 = CollisionNode(key+'2')
         cNode2.addSolid(CollisionSphere(center, radius2))
         self.pusher = self.panda.attachNewNode(cNode2)
         self.pusher.node().setFromCollideMask(DRONE_PUSHER_MASK)
@@ -64,7 +64,7 @@ class Drone(Agent):
         return Task.cont
    
     def follow_tron(self):
-        tron = self.game.players[0].tron
+        tron = self.game.players['player_1'].tron
         self.panda.lookAt(tron)
         self.panda.setH(self.panda.getH() + 180)
         #move one "unit" towards tron

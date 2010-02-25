@@ -14,14 +14,21 @@ class Program(object):
         self.name = name
         self.pos = pos
         self.load_model()
-        self.setup_collider(len(self.game.programs))
+        self.setup_collider()
+    
+    def unique_str(self):
+        return self.name+str(hash(self))
+    
+    def disappear(self):
+        self.model.stash()
+        self.collider.stash()
 
     def load_model(self):
         self.model = loader.loadModel("%s/terminal_window.egg"%MODEL_PATH)
         self.model.setScale(2, 2, 2)
         self.model.setPos(self.pos[0], self.pos[1], 10)
         self.model.reparentTo(render)
-		# TODO: draw program name on the terminal
+        #TODO: draw program name on the terminal
         
         #Create the intervals needed to spin and expand/contract
         hpr1 = self.model.hprInterval(1.5, Point3(180, 0, 0), startHpr=Point3(0, 0, 0))
@@ -32,8 +39,8 @@ class Program(object):
         #Create and play the sequence that coordinates the intervals  
         Sequence(Parallel(scale1, hpr1), Parallel(scale2, hpr2)).loop()
     
-    def setup_collider(self,i):
-        self.collider = self.model.attachNewNode(CollisionNode('progcnode_%d'%i))
+    def setup_collider(self):
+        self.collider = self.model.attachNewNode(CollisionNode(self.unique_str()))
         self.collider.node().addSolid(CollisionSphere(0, 0, 0, 2))
         self.collider.show()
 
@@ -44,10 +51,10 @@ class Program(object):
         return s
 
 class Rm(Program):
-	
+    
     def __init__(self,game,pos=None):
         super(Rm,self).__init__(game,'rm',pos)
-	
+    
     def damage_mod(self,d):
         return d*2 # double the player's damage
 
@@ -55,7 +62,7 @@ class Chmod(Program):
 
     def __init__(self,game,pos=None):
         super(Chmod,self).__init__(game,'chmod',pos)
-	
+    
     def shield_mod(self,s):
         return s*2 # double the player's shield strength
 

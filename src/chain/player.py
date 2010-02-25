@@ -4,7 +4,7 @@ MOTION_MULTIPLIER = 3.0
 STRAFE_MULTIPLIER = 2.0
 TURN_MULTIPLIER = 3.0
 
-from math import sin,tan,cos,radians,sqrt
+from math import sin,cos,radians,sqrt
 from itertools import ifilter
 from direct.task import Task
 from direct.actor import Actor
@@ -24,11 +24,11 @@ class Player(Agent):
         self.name = name
         self.inverted = False # look controls
         self.load_model()
-        self.setup_collider(len(self.game.players))
+        self.setup_collider()
         self.setup_camera()
         self.setup_HUD()
         self.eventHandle = PlayerEventHandler(self) 
-	
+    
     def shoot(self):
         print "pew pew!"
         #TODO: do all that collision stuff
@@ -36,25 +36,33 @@ class Player(Agent):
     def damage(self):
         d = 10 # arbitrary
         for p in ifilter(lambda p: p != None,self.programs):
-        	d = p.damage_mod(d)
+            d = p.damage_mod(d)
         return d
 
     def shield(self):
         s = 1 # no shield
         for p in ifilter(lambda p: p != None,self.programs):
-        	s = p.shield_mod(s)
+            s = p.shield_mod(s)
         return s
-	
+    
     def hit(self,amt=0):
         super(Player,self).hit(amt)
         self.flashRed.start() # flash the screen red
+        print "hit! health = %d"%self.health
     
     def collect(self,prog):
+        for i,p in enumerate(self.programs):
+            if not p: break
+        else:
+            print "No empty slots!"
+            return
         print "Program get: %s"%prog.name
-        self.programs[0] = prog
+        self.programs[i] = prog
+        prog.disappear()
+        del self.game.programs[prog.unique_str()]
         
     def load_model(self):
-        glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
+        #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
         self.tron = Actor.Actor("%s/tron"%MODEL_PATH, {"running":"%s/tron_anim_updated"%MODEL_PATH})
         self.tron.reparentTo(render)
         self.tron.setScale(0.4, 0.4, 0.4)
@@ -67,8 +75,8 @@ class Player(Agent):
         self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
 
-    def setup_collider(self,i):
-        self.collider = self.tron.attachNewNode(CollisionNode('troncnode_%d'%i))
+    def setup_collider(self):
+        self.collider = self.tron.attachNewNode(CollisionNode(self.name))
         self.collider.node().addSolid(CollisionSphere(0,0,0,10)) # sphere, for now
         self.collider.show()
 
@@ -86,7 +94,7 @@ class Player(Agent):
         # red flash for indicating hits
         self.redScreen = None
         self.flashRed = Sequence(Func(self.start_red), Wait(0.25), Func(self.stop_red))
-        # TODO: health status, chain of programs
+        #TODO: health status, chain of programs
     
     def start_red(self):
         if not self.redScreen:
@@ -108,7 +116,7 @@ class Player(Agent):
         inputState.watch('up', 'arrow_up', 'arrow_up-up')
         inputState.watch('down', 'arrow_down', 'arrow_down-up')
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
-		# the camerea follows tron
+        # the camerea follows tron
         base.camera.reparentTo(self.tron)
         base.camera.setPos(0, 40, 10)
         base.camera.setHpr(180, 0, 0)

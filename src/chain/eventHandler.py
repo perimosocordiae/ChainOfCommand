@@ -31,46 +31,28 @@ class GameEventHandler(DirectObject):
         self.collisionHandler = CollisionHandlerEvent()
         self.collisionHandler.addInPattern('%fn-into-%in')
         self.collisionHandler.addAgainPattern('%fn-repeat-%in')
-        for p in game.players:
-            base.cTrav.addCollider(p.collider,self.collisionHandler)
-        for d in game.drones:
+        for t in game.players.itervalues():
+            base.cTrav.addCollider(t.collider,self.collisionHandler)
+        for d in game.drones.itervalues():
             base.cTrav.addCollider(d.pusher,self.pusherHandler)
             base.cTrav.addCollider(d.collider,self.collisionHandler)
             self.pusherHandler.addCollider(d.pusher, d.panda)
         
-        drones = ["dronecnode_%d"%i for i in range(len(game.drones))]
-        trons  = ["troncnode_%d"%i  for i in range(len(game.players))]
-        progs  = ["progcnode_%d"%i  for i in range(len(game.programs))]
-        for d in drones:
-            for t in trons:
+        drones = game.drones.keys()
+        progs  = game.programs.keys()
+        for t in game.players.iterkeys():
+            for p in progs:
+                self.accept("%s-into-%s"%(t,p),  self.tronHitsProg)
+            for d in drones:
                 self.accept("%s-into-%s"%(d,t),  self.droneHitsTron)
                 self.accept("%s-repeat-%s"%(d,t),self.droneHitsTron)
-            for d2 in drones:
-                self.accept("%s-into-%s"%(d,d2), self.droneHitsDrone)
-        for t in trons:
-            for p in progs:
-                self.accept("%s-into-%s"%(t,p),   self.tronHitsProg)
     
     def droneHitsTron(self,entry):
-        di = get_index_from_name(entry.getFromNodePath().getName())
-        ti = get_index_from_name(entry.getIntoNodePath().getName())
-        drone = self.game.drones[di]
-        tron = self.game.players[ti]
+        dn,tn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+        drone,tron = self.game.drones[dn], self.game.players[tn]
         tron.hit(drone.damage())
         
     def tronHitsProg(self,entry):
-        ti = get_index_from_name(entry.getFromNodePath().getName())
-        pi = get_index_from_name(entry.getIntoNodePath().getName())
-        tron = self.game.players[ti]
-        prog = self.game.programs[pi]
+        tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+        tron,prog = self.game.players[tn], self.game.programs[pn]
         tron.collect(prog)
-    
-    def droneHitsDrone(self,entry):
-        d1 = get_index_from_name(entry.getFromNodePath().getName())
-        d2 = get_index_from_name(entry.getIntoNodePath().getName())
-        drone1 = self.game.drones[d1]
-        drone2 = self.game.drones[d2]
-        print "drones hit each other"
-        
-def get_index_from_name(name):
-    return int(name.split('_')[-1])
