@@ -22,12 +22,12 @@ class Game(object):
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
         self.load_env()
-        self.timer = OnscreenText(text="Time: 2:00", pos=(0,0.9), scale=(0.08), fg=(0,0,1,0.8), bg=(1,1,1,0.8), mayChange=True)
+        self.timer = OnscreenText(text="Time:", pos=(0,0.9), scale=(0.08), fg=(0,0,1,0.8), bg=(1,1,1,0.8), mayChange=True)
         self.startTime = time()
         self.endTime = self.startTime + gameLength
         self.gameTime = self.endTime - time()
  
-        myTask = taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
+        taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-2),randint(-self.map_size+1,self.map_size-2))

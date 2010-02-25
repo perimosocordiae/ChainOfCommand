@@ -5,11 +5,13 @@ from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Shader, CollisionNode, CollisionRay, CollisionSphere,CollisionHandlerQueue, TransparencyAttrib, BitMask32
 from direct.gui.OnscreenImage import OnscreenImage
+from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import PlayerEventHandler
 from projectile import Projectile
 from agent import Agent
 from pandac.PandaModules import Vec3, Point3
+import sys
 
 MODEL_PATH = "../../models"
 #Constants for motion and rotation
@@ -107,6 +109,8 @@ class Player(Agent):
         super(Player,self).hit(amt)
         self.flashRed.start() # flash the screen red
         print "hit! health = %d"%self.health
+        if self.health <= 0:
+            sys.exit()
     
     def collect(self,prog):
         for i,p in enumerate(self.programs):
@@ -116,8 +120,11 @@ class Player(Agent):
             return
         print "Program get: %s"%prog.name
         self.programs[i] = prog
+        self.programsList[i].setText("|  " + prog.name + "  |")
         prog.disappear()
         del self.game.programs[prog.unique_str()]
+
+                
         
     def load_model(self):
         #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
@@ -151,6 +158,11 @@ class Player(Agent):
             OnscreenImage(image = img_vert,  pos = (0, 0, -0.025), scale = (0.005, 1, .02)),
             OnscreenImage(image = img_vert,  pos = (0, 0,  0.025), scale = (0.005, 1, .02))
         ]
+        self.programsList = [None,None,None]
+        self.programsList[0] = OnscreenText(text="|  None  |", pos=(-0.3,-0.9), scale=(0.08), fg=(0,0,0,0.8), bg=(1,1,1,0.8), mayChange=True)
+        self.programsList[1] = OnscreenText(text="|  None  |", pos=(0,-0.9), scale=(0.08), fg=(0,0,0,0.8), bg=(1,1,1,0.8), mayChange=True)
+        self.programsList[2] = OnscreenText(text="|  None  |", pos=(0.3,-0.9), scale=(0.08), fg=(0,0,0,0.8), bg=(1,1,1,0.8), mayChange=True)
+        
         # red flash for indicating hits
         self.redScreen = None
         self.flashRed = Sequence(Func(self.start_red), Wait(0.25), Func(self.stop_red))

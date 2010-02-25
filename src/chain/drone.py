@@ -2,6 +2,7 @@ from direct.task import Task
 from direct.actor import Actor
 from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32
 from agent import Agent
+from random import randint, random
 
 #Scale factor for panda speed - bigger makes them faster
 CHASE_SCALE = 1.0
@@ -16,9 +17,10 @@ class Drone(Agent):
         if not pos: pos = game.rand_point()
         self.load_model(pos)
         self.setup_collider()
+        self.speed = randint(1,5)
   
     def damage(self):
-        return 20
+        return 10
 
     def die(self):
         self.panda.stash()
@@ -28,7 +30,7 @@ class Drone(Agent):
     def load_model(self,pos):
         self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})
         self.panda.reparentTo(render)
-        self.panda.setScale(0.05)
+        self.panda.setScale(max(0.01,random()*0.05))
         self.panda.setHpr(0,0,0)
         self.panda.setPos(pos[0],pos[1],0)
         self.walk = self.panda.actorInterval("walk")
@@ -78,7 +80,7 @@ class Drone(Agent):
         #move one "unit" towards tron
         tronVec = tron.getPos() - self.panda.getPos()
         tronVec.normalize()
-        newPos = self.panda.getPos() + tronVec*CHASE_SCALE
+        newPos = self.panda.getPos() + tronVec*self.speed
         self.panda.setFluidPos(newPos.getX(), newPos.getY(), 0)
         self.walking = False
 
