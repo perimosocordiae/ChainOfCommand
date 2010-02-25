@@ -2,7 +2,7 @@ from direct.task import Task
 from direct.actor import Actor
 from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32
 from agent import Agent
-from random import randint, random
+from random import random
 
 #Scale factor for panda speed - bigger makes them faster
 CHASE_SCALE = 1.0
@@ -17,7 +17,7 @@ class Drone(Agent):
         if not pos: pos = game.rand_point()
         self.load_model(pos)
         self.setup_collider()
-        self.speed = randint(1,5)
+        self.speed = random()+0.5
   
     def damage(self):
         return 10
