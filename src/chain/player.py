@@ -23,6 +23,7 @@ class Player(Agent):
         super(Player,self).__init__(game)
         self.programs = [None,None,None]
         self.name = name
+        self.killcount = 0
         self.inverted = False # look controls
         self.load_model()
         self.setup_collider()
@@ -44,14 +45,15 @@ class Player(Agent):
     def shoot(self):
         #first get a ray coming from the camera and see what it first collides with
         objHit = self.findCrosshairHit()
-        if objHit in self.game.drones:
-            d = self.game.drones[objHit]
-            d.hit(self.damage())
-            print "hit drone %s for %d damage"%(objHit,self.damage())
-            if d.is_dead():
-                print "killed it!"
-                d.die()
-                del self.game.drones[objHit]
+        if not objHit in self.game.drones: return
+        d = self.game.drones[objHit]
+        d.hit(self.damage())
+        print "hit drone %s for %d damage"%(objHit,self.damage())
+        if d.is_dead():
+            print "killed it!"
+            self.killcount += 1
+            d.die()
+            del self.game.drones[objHit]
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
