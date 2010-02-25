@@ -14,7 +14,7 @@ from pandac.PandaModules import Shader, CollisionNode, CollisionSphere, Transpar
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
-from eventHandler import KeyHandler
+from eventHandler import PlayerEventHandler
 from agent import Agent
 
 class Player(Agent):
@@ -25,10 +25,10 @@ class Player(Agent):
         self.name = name
         self.inverted = False # look controls
         self.load_model()
-        self.setup_collider()
+        self.setup_collider(len(self.game.players))
         self.setup_camera()
         self.setup_HUD()
-        self.keyHandle = KeyHandler(self) 
+        self.eventHandle = PlayerEventHandler(self) 
 	
     def shoot(self):
         print "pew pew!"
@@ -46,10 +46,14 @@ class Player(Agent):
         	s = p.shield_mod(s)
         return s
 	
-    def hit(self,amt):
+    def hit(self,amt=0):
         super(Player,self).hit(amt)
         self.flashRed.start() # flash the screen red
-
+    
+    def collect(self,prog):
+        print "Program get: %s"%prog.name
+        self.programs[0] = prog
+        
     def load_model(self):
         glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
         self.tron = Actor.Actor("%s/tron"%MODEL_PATH, {"running":"%s/tron_anim_updated"%MODEL_PATH})
@@ -66,8 +70,8 @@ class Player(Agent):
         self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
 
-    def setup_collider(self):
-        self.collider = self.tron.attachNewNode(CollisionNode('troncnode'))
+    def setup_collider(self,i):
+        self.collider = self.tron.attachNewNode(CollisionNode('troncnode_%d'%i))
         self.collider.node().addSolid(CollisionSphere(0,0,0,10)) # sphere, for now
         self.collider.show()
 

@@ -6,9 +6,10 @@ import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import TransparencyAttrib, CollisionHandlerQueue, CollisionTraverser
+from pandac.PandaModules import CollisionHandlerEvent, CollisionTraverser
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
+from eventHandler import GameEventHandler
 from player import Player
 from drone import Drone
 
@@ -20,23 +21,18 @@ class Game(object):
         base.disableMouse()
         self.load_env()
         self.setup_collisions()
+        self.eventHandle = GameEventHandler(self)
 
     def setup_collisions(self):
-        base.cTrav = CollisionTraverser()
-        self.collisionHandler = CollisionHandlerQueue()
+        base.cTrav = CollisionTraverser('ctrav')
+        base.cTrav.showCollisions(render)
+        self.collisionHandler = CollisionHandlerEvent()
         for p in self.players:
             base.cTrav.addCollider(p.collider,self.collisionHandler)
-        #for p in self.programs:
-        #    base.cTrav.addCollider(p.collider,self.collisionHandler)
         for d in self.drones:
             base.cTrav.addCollider(d.collider,self.collisionHandler)
-        taskMgr.doMethodLater(0.1,self.collision_task,"tsk_traverse")
-
-    def collision_task(self,task=None):
-        #print self.collisionHandler.getNumEntries()
-        if self.collisionHandler.getNumEntries() > 0:
-            print "we have a hit!"
-        if task: return task.again
+        self.collisionHandler.addInPattern('%fn-into-%in')
+        self.collisionHandler.addAgainPattern('%fn-repeat-%in')
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-1),randint(-self.map_size+1,self.map_size-1))

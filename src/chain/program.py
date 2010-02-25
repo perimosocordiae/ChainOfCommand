@@ -15,7 +15,7 @@ class Program(object):
         self.name = name
         self.pos = pos
         self.load_model()
-        self.setup_collider()
+        self.setup_collider(len(self.game.programs))
 
     def load_model(self):
         self.model = loader.loadModel("%s/terminal_window.egg"%MODEL_PATH)
@@ -33,8 +33,8 @@ class Program(object):
         #Create and play the sequence that coordinates the intervals  
         Sequence(Parallel(scale1, hpr1), Parallel(scale2, hpr2)).loop()
     
-    def setup_collider(self):
-        self.collider = self.model.attachNewNode(CollisionNode('progcnode'))
+    def setup_collider(self,i):
+        self.collider = self.model.attachNewNode(CollisionNode('progcnode_%d'%i))
         self.collider.node().addSolid(CollisionSphere(0, 0, 0, 2))
         self.collider.show()
 

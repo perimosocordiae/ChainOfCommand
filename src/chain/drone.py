@@ -16,7 +16,7 @@ class Drone(Agent):
        if not pos:
            pos = game.rand_point()
        self.load_model(pos)
-       self.setup_collision()
+       self.setup_collision(len(self.game.drones))
   
     def damage(self):
        return 20
@@ -32,8 +32,8 @@ class Drone(Agent):
        self.walking = False
        taskMgr.add(self.WalkTask, "WalkTask")
 
-    def setup_collision(self):
-        self.collider = self.panda.attachNewNode(CollisionNode('dronecnode'))
+    def setup_collision(self,i):
+        self.collider = self.panda.attachNewNode(CollisionNode('dronecnode_%d'%i))
         self.collider.node().addSolid(CollisionSphere(0,0,300,300)) # sphere for now
         self.collider.show()
 
