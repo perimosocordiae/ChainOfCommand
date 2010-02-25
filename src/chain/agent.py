@@ -1,10 +1,4 @@
 
-import direct.directbase.DirectStart
-from direct.task import Task
-from direct.actor import Actor
-from pandac.PandaModules import Point3
-from random import randint
-from math import pi, sin, cos
 
 class Agent(object):
 

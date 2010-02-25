@@ -2,6 +2,7 @@ MODEL_PATH = "../../models"
 
 from random import randint
 #from itertools import product as iproduct
+import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser
 from player import Player

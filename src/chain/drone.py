@@ -1,8 +1,6 @@
 from direct.task import Task
 from direct.actor import Actor
 from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32
-from random import randint
-from math import pi, sin, cos
 from agent import Agent
 
 #Scale factor for panda speed - bigger makes them faster
@@ -21,6 +19,11 @@ class Drone(Agent):
   
     def damage(self):
         return 20
+
+    def die(self):
+        self.panda.stash()
+        self.collider.stash()
+        self.pusher.stash()
 
     def load_model(self,pos):
         self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})

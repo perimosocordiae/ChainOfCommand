@@ -44,22 +44,24 @@ class Player(Agent):
     def shoot(self):
         #first get a ray coming from the camera and see what it first collides with
         objHit = self.findCrosshairHit()
-        if not (self.name == objHit):
-            print objHit
+        if objHit in self.game.drones:
+            d = self.game.drones[objHit]
+            d.hit(self.damage())
+            print "hit drone %s for %d damage"%(objHit,self.damage())
+            if d.is_dead():
+                print "killed it!"
+                d.die()
+                del self.game.drones[objHit]
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
-        if self.collisionQueue.getNumEntries() > 0:
-            # This is so we get the closest object
-            self.collisionQueue.sortEntries()
-            for i in range(self.collisionQueue.getNumEntries()):
-                pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
-                #TODO for now make sure it's not tron - future make sure it's not "me"
-                if not (self.name == pickedObj):
-                    break
-            
-            return pickedObj
-        return ""
+        if self.collisionQueue.getNumEntries() == 0: return ""
+        # This is so we get the closest object
+        self.collisionQueue.sortEntries()
+        for i in range(self.collisionQueue.getNumEntries()):
+            pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
+            if self.name != pickedObj: break
+        return pickedObj
 
     def damage(self):
         d = 10 # arbitrary
@@ -148,7 +150,7 @@ class Player(Agent):
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
         # the camerea follows tron
         base.camera.reparentTo(self.tron)
-        base.camera.setPos(0, 40, 10)
+        base.camera.setPos(0, 40, 0)
         base.camera.setHpr(180, 0, 0)
 
     def switchPerspective(self):

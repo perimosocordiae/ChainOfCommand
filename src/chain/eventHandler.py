@@ -49,7 +49,9 @@ class GameEventHandler(DirectObject):
     
     def tronHitsDrone(self,entry):
         tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
-        drone,tron = self.game.drones[dn], self.game.players[tn]
+        try:
+            drone,tron = self.game.drones[dn], self.game.players[tn]
+        except KeyError: return
         tron.hit(drone.damage())
         
     def tronHitsProg(self,entry):
