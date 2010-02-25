@@ -25,8 +25,6 @@ class GameEventHandler(DirectObject):
     
     def __init__(self, game):
         self.game = game
-        base.cTrav = CollisionTraverser()
-        base.cTrav.showCollisions(render)
         self.pusherHandler = CollisionHandlerPusher()
         self.collisionHandler = CollisionHandlerEvent()
         self.collisionHandler.addInPattern('%fn-into-%in')

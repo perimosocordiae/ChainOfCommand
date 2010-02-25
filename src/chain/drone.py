@@ -56,14 +56,14 @@ class Drone(Agent):
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
             
         # Create a pusher sphere
-        cNode2 = CollisionNode(key+'2')
+        cNode2 = CollisionNode(key+'donthitthis')
         cNode2.addSolid(CollisionSphere(center, radius))
         self.pusher = self.panda.attachNewNode(cNode2)
         self.pusher.node().setFromCollideMask(DRONE_PUSHER_MASK)
         self.pusher.node().setIntoCollideMask(DRONE_PUSHER_MASK)
         
-        self.collider.show()
-        self.pusher.show()
+        #self.collider.show()
+        #self.pusher.show()
 
     def WalkTask(self, task):
         if not self.walking:

@@ -42,7 +42,7 @@ class Program(object):
     def setup_collider(self):
         self.collider = self.model.attachNewNode(CollisionNode(self.unique_str()))
         self.collider.node().addSolid(CollisionSphere(0, 0, 0, 2))
-        self.collider.show()
+        #self.collider.show()
 
     # modifiers: generic program has no effect
     def damage_mod(self,d):

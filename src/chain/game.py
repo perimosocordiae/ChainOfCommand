@@ -12,6 +12,7 @@ class Game(object):
 
     def __init__(self,map_size=320,tile_size=16):
         base.cTrav = CollisionTraverser()
+        #base.cTrav.showCollisions(render)
         self.players, self.programs,self.drones = {},{},{}
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()

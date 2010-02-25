@@ -14,7 +14,7 @@ MODEL_PATH = "../../models"
 #Constants for motion and rotation
 MOTION_MULTIPLIER = 3.0
 STRAFE_MULTIPLIER = 2.0
-TURN_MULTIPLIER = 3.0
+TURN_MULTIPLIER = 2.0
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 
 class Player(Agent):
@@ -45,15 +45,15 @@ class Player(Agent):
     def shoot(self):
         #first get a ray coming from the camera and see what it first collides with
         objHit = self.findCrosshairHit()
-        if not objHit in self.game.drones: return
-        d = self.game.drones[objHit]
-        d.hit(self.damage())
-        print "hit drone %s for %d damage"%(objHit,self.damage())
-        if d.is_dead():
-            print "killed it!"
-            self.killcount += 1
-            d.die()
-            del self.game.drones[objHit]
+        if objHit in self.game.drones:
+            d = self.game.drones[objHit]
+            d.hit(self.damage())
+            print "hit drone %s for %d damage"%(objHit,self.damage())
+            if d.is_dead():
+                print "killed it!"
+                self.killcount += 1
+                d.die()
+                del self.game.drones[objHit]
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
@@ -62,6 +62,7 @@ class Player(Agent):
         self.collisionQueue.sortEntries()
         for i in range(self.collisionQueue.getNumEntries()):
             pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
+            if 'donthitthis' in pickedObj: continue 
             if self.name != pickedObj: break
         return pickedObj
 
@@ -105,7 +106,7 @@ class Player(Agent):
         self.tron = Actor.Actor("%s/tron"%MODEL_PATH, {"running":"%s/tron_anim_updated"%MODEL_PATH})
         self.tron.reparentTo(render)
         self.tron.setScale(0.4, 0.4, 0.4)
-        self.tron.setHpr(0, 12, 0)
+        self.tron.setHpr(0, 0, 0)
         self.tron.setPos(-4, 34, 10)
         self.tron.pose("running",46)
         self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame = 46)
@@ -119,7 +120,7 @@ class Player(Agent):
         self.collider.node().addSolid(CollisionSphere(0,0,0,10)) # sphere, for now
         self.collider.node().setFromCollideMask(DRONE_COLLIDER_MASK)
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
-        self.collider.show()
+        #self.collider.show()
 
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
@@ -159,7 +160,7 @@ class Player(Agent):
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
         # the camerea follows tron
         base.camera.reparentTo(self.tron)
-        base.camera.setPos(0, 40, 0)
+        base.camera.setPos(0, 40, 10)
         base.camera.setHpr(180, 0, 0)
 
     def switchPerspective(self):
