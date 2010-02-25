@@ -3,12 +3,14 @@ MODEL_PATH = "../../models"
 from random import randint
 #from itertools import product as iproduct
 from eventHandler import GameEventHandler
+from pandac.PandaModules import CollisionTraverser
 from player import Player
 from drone import Drone
 
 class Game(object):
 
     def __init__(self,map_size=320,tile_size=16):
+        base.cTrav = CollisionTraverser()
         self.players, self.programs,self.drones = {},{},{}
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
@@ -19,6 +21,8 @@ class Game(object):
 
     def add_event_handler(self):
         self.eventHandle = GameEventHandler(self)
+        for player in self.players.itervalues():
+            player.initialize_camera()
     
     def add_player(self,pname):
         self.players[pname] = Player(self,pname)

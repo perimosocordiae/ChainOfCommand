@@ -9,7 +9,7 @@ from itertools import ifilter
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Shader, CollisionNode, CollisionSphere, TransparencyAttrib
+from pandac.PandaModules import Shader, CollisionHandlerQueue, CollisionRay, CollisionNode, CollisionSphere, TransparencyAttrib, GeomNode
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
@@ -27,11 +27,38 @@ class Player(Agent):
         self.setup_collider()
         self.setup_camera()
         self.setup_HUD()
-        self.eventHandle = PlayerEventHandler(self) 
+        self.eventHandle = PlayerEventHandler(self)
+        
+        #add the camera collider:
+        self.collisionQueue = CollisionHandlerQueue()
+    
+    def initialize_camera(self):
+        self.cameraNode = CollisionNode('cameracnode')
+        self.cameraNP = base.camera.attachNewNode(self.cameraNode)
+        #self.cameraNode.setFromCollideMask(GeomNode.getDefaultCollideMask())
+        self.cameraRay = CollisionRay(0,0,0,0,1,0)
+        self.cameraNode.addSolid(self.cameraRay)
+        base.cTrav.addCollider(self.cameraNP, self.collisionQueue)
     
     def shoot(self):
-        print "pew pew!"
-        #TODO: do all that collision stuff
+        #first get a ray coming from the camera and see what it first collides with
+        objHit = self.findCrosshairHit()
+        if not (self.name == objHit):
+            print objHit
+    
+    def findCrosshairHit(self):
+        base.cTrav.traverse(render)
+        if self.collisionQueue.getNumEntries() > 0:
+            # This is so we get the closest object
+            self.collisionQueue.sortEntries()
+            for i in range(self.collisionQueue.getNumEntries()):
+                pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
+                #TODO for now make sure it's not tron - future make sure it's not "me"
+                if not (self.name == pickedObj):
+                    break
+            
+            return pickedObj
+        return ""
 
     def damage(self):
         d = 10 # arbitrary
