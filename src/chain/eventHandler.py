@@ -1,5 +1,5 @@
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import CollisionHandlerEvent, CollisionTraverser
+from pandac.PandaModules import CollisionHandlerEvent, CollisionTraverser, CollisionHandlerPusher
 
 class PlayerEventHandler(DirectObject):
     
@@ -27,13 +27,16 @@ class GameEventHandler(DirectObject):
         self.game = game
         base.cTrav = CollisionTraverser()
         base.cTrav.showCollisions(render)
+        self.pusherHandler = CollisionHandlerPusher()
         self.collisionHandler = CollisionHandlerEvent()
         self.collisionHandler.addInPattern('%fn-into-%in')
         self.collisionHandler.addAgainPattern('%fn-repeat-%in')
         for p in game.players:
             base.cTrav.addCollider(p.collider,self.collisionHandler)
         for d in game.drones:
+            base.cTrav.addCollider(d.pusher,self.pusherHandler)
             base.cTrav.addCollider(d.collider,self.collisionHandler)
+            self.pusherHandler.addCollider(d.pusher, d.panda)
         
         drones = ["dronecnode_%d"%i for i in range(len(game.drones))]
         trons  = ["troncnode_%d"%i  for i in range(len(game.players))]
@@ -67,7 +70,7 @@ class GameEventHandler(DirectObject):
         d2 = get_index_from_name(entry.getIntoNodePath().getName())
         drone1 = self.game.drones[d1]
         drone2 = self.game.drones[d2]
-        print "drones hit"
+        print "drones hit each other"
         
 def get_index_from_name(name):
     return int(name.split('_')[-1])

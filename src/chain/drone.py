@@ -1,12 +1,15 @@
-#Scale factor for panda speed - bigger makes them faster
-CHASE_SCALE = 1.0
-
 from direct.task import Task
 from direct.actor import Actor
-from pandac.PandaModules import CollisionNode, CollisionSphere
+from pandac.PandaModules import CollisionNode, CollisionSphere, BitMask32
 from random import randint
 from math import pi, sin, cos
 from agent import Agent
+
+#Scale factor for panda speed - bigger makes them faster
+CHASE_SCALE = 1.0
+DRONE_COLLIDER_MASK = BitMask32.bit(1)
+DRONE_PUSHER_MASK = BitMask32.bit(2)
+
 
 class Drone(Agent):
 
@@ -40,7 +43,19 @@ class Drone(Agent):
         cNode = CollisionNode('dronecnode_%d'%i)
         cNode.addSolid(CollisionSphere(center, radius))
         self.collider = self.panda.attachNewNode(cNode)
+        self.collider.node().setFromCollideMask(DRONE_COLLIDER_MASK)
+        self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
+        
+        # Create a second slightly smaller collision sphere for 
+        radius2 = bounds.getRadius() * 0.7
+        cNode2 = CollisionNode('dronecnode_%d2'%i)
+        cNode2.addSolid(CollisionSphere(center, radius2))
+        self.pusher = self.panda.attachNewNode(cNode2)
+        self.pusher.node().setFromCollideMask(DRONE_PUSHER_MASK)
+        self.pusher.node().setIntoCollideMask(DRONE_PUSHER_MASK)
+        
         self.collider.show()
+        self.pusher.show()
 
     def WalkTask(self, task):
         if not self.walking:
