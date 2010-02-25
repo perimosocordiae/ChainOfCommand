@@ -4,14 +4,17 @@ from random import randint, choice
 #from itertools import product as iproduct
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
-from pandac.PandaModules import CollisionTraverser
+from pandac.PandaModules import CollisionTraverser, BitMask32, CollisionNode, CollisionPlane, Plane
 from player import Player
 from drone import Drone
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
 from time import time
+from pandac.PandaModules import Vec3, Point3
 import sys
 
+
+WALL_COLLIDER_MASK = BitMask32.bit(0)
 
 class Game(object):
 
@@ -65,7 +68,7 @@ class Game(object):
             make_tile(environ,egg,(-2*(1+i-center),-2*(1+j-center), 2*wall_height), (0, 0, 180)) #ceiling
             if i == center and j == center: continue #bottom center is already done
             make_tile(environ,egg,(2*(i-center), 2*(j-center), 0),(0, 0, 0)) #floor
-
+        
         #for i,j in iproduct(range(num_tiles),range(wall_height)):
         for i in range(num_tiles):
           for j in range(wall_height):
@@ -74,7 +77,29 @@ class Game(object):
             make_tile(environ,egg,(-2*(1+i-center), -1-2*center,  2*(wall_height-j)-1),(0,-90,0))   #wall 2
             make_tile(environ,egg,( 2*center-1,     2*(i-center), 2*j+1),            (0, 0, -90)) #wall 3
             make_tile(environ,egg,(-2*(1+i-center), 2*center-1,   2*j+1),            (0, 90,0))   #wall 4
-            
+        
+        #Walls are at planes (x=-1-2*CENTER), (x=2*center-1), (y=-1-2*center), and (y=2*center-1) 
+        self.wallCollider1 = environ.attachNewNode(CollisionNode("wall1"))
+        self.wallCollider2 = environ.attachNewNode(CollisionNode("wall2"))
+        self.wallCollider3 = environ.attachNewNode(CollisionNode("wall3"))
+        self.wallCollider4 = environ.attachNewNode(CollisionNode("wall4"))
+        self.wallCollider5 = environ.attachNewNode(CollisionNode("wall5"))
+        self.wallCollider1.node().addSolid(CollisionPlane(Plane(Vec3(1, 0, 0), Point3(-1-2*center, 0, 0))))
+        self.wallCollider2.node().addSolid(CollisionPlane(Plane(Vec3(-1, 0, 0), Point3(2*center - 1, 0, 0))))
+        self.wallCollider3.node().addSolid(CollisionPlane(Plane(Vec3(0, -1, 0), Point3(0, 2*center - 1, 0))))
+        self.wallCollider4.node().addSolid(CollisionPlane(Plane(Vec3(0, 1, 0), Point3(0, -1-2*center, 0))))
+        self.wallCollider5.node().addSolid(CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0))))
+        self.wallCollider1.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider2.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider3.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider4.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider5.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider1.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider2.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider3.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider4.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider5.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        
         # make some random bunkers
         for _ in range(4):
             make_column(environ, choice(eggs), randint(-num_tiles,num_tiles), randint(-num_tiles,num_tiles), randint(2,wall_height))

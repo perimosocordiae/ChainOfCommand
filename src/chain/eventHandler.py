@@ -31,6 +31,8 @@ class GameEventHandler(DirectObject):
         self.collisionHandler.addAgainPattern('%fn-repeat-%in')
         for t in game.players.itervalues():
             base.cTrav.addCollider(t.collider,self.collisionHandler)
+            base.cTrav.addCollider(t.pusher,self.pusherHandler)
+            self.pusherHandler.addCollider(t.pusher, t.tron)
         for d in game.drones.itervalues():
             base.cTrav.addCollider(d.pusher,self.pusherHandler)
             #base.cTrav.addCollider(d.collider,self.collisionHandler)

@@ -19,6 +19,7 @@ MOTION_MULTIPLIER = 3.0
 STRAFE_MULTIPLIER = 2.0
 TURN_MULTIPLIER = 2.0
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
+WALL_COLLIDER_MASK = BitMask32.bit(0)
 
 class Player(Agent):
 
@@ -40,7 +41,7 @@ class Player(Agent):
     def initialize_camera(self):
         self.cameraNode = CollisionNode('cameracnode')
         self.cameraNP = base.camera.attachNewNode(self.cameraNode)
-        self.cameraRay = CollisionRay(0,0,0,0,1,0)
+        self.cameraRay = CollisionRay(0,base.camera.getY(),0,0,1,0)
         self.cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(self.cameraNP, self.collisionQueue)
     
@@ -82,7 +83,7 @@ class Player(Agent):
         for i in range(self.collisionQueue.getNumEntries()):
             pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
             if 'donthitthis' in pickedObj: continue 
-            if self.name != pickedObj: break
+            if not (self.name in pickedObj): break
         
         return pickedObj
 
@@ -145,7 +146,12 @@ class Player(Agent):
         self.collider.node().addSolid(CollisionSphere(0,0,0,10)) # sphere, for now
         self.collider.node().setFromCollideMask(DRONE_COLLIDER_MASK)
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
-        #self.collider.show()
+        
+        self.pusher = self.tron.attachNewNode(CollisionNode(self.name + "_wall"))
+        self.pusher.node().addSolid(CollisionSphere(0,0,0,12)) # sphere, for now
+        self.pusher.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.pusher.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        #self.pusher.show()
 
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
@@ -201,14 +207,17 @@ class Player(Agent):
             base.camera.setPos(0, 100, 10)
         else:
             base.camera.setPos(0, 40, 10)
+        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
     
     def zoomIn(self):
         if base.camera.getY() > 0:
             base.camera.setY(base.camera.getY() - 2)
+        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
             
     def zoomOut(self):
         if base.camera.getY() < 100:
             base.camera.setY(base.camera.getY() + 2)
+        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
         
     #Task to move the camera
     def updateCameraTask(self, task):
@@ -267,7 +276,7 @@ class Player(Agent):
         self.running = False
     
     def move(self,dx,dy):
-        self.tron.setFluidPos(self.tron.getX()+dx,self.tron.getY()+dy,self.tron.getZ())
+        self.tron.setFluidPos(self.tron.getX()+dx,self.tron.getY()+dy,10)
     
     def MoveForwards(self, mult):
         self.move(mult*sin(radians(self.tron.getH())),-mult*cos(radians(self.tron.getH())))
