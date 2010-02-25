@@ -1,6 +1,5 @@
 MODEL_PATH = "../../models"
 
-import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *

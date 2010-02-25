@@ -1,8 +1,6 @@
 from direct.showbase.DirectObject import DirectObject
-#from player import Player
+from pandac.PandaModules import CollisionHandlerEvent, CollisionTraverser
 
-#Handle all key events that involve pressing a key once...
-#For now that's just "f" to switch perspective
 class PlayerEventHandler(DirectObject):
     
     def __init__(self, playr):
@@ -27,9 +25,19 @@ class GameEventHandler(DirectObject):
     
     def __init__(self, game):
         self.game = game
-        drones = ["dronecnode_%d"%i for i in range(len(self.game.drones))]
-        trons  = ["troncnode_%d"%i  for i in range(len(self.game.players))]
-        progs  = ["progcnode_%d"%i  for i in range(len(self.game.programs))]
+        base.cTrav = CollisionTraverser()
+        base.cTrav.showCollisions(render)
+        self.collisionHandler = CollisionHandlerEvent()
+        self.collisionHandler.addInPattern('%fn-into-%in')
+        self.collisionHandler.addAgainPattern('%fn-repeat-%in')
+        for p in game.players:
+            base.cTrav.addCollider(p.collider,self.collisionHandler)
+        for d in game.drones:
+            base.cTrav.addCollider(d.collider,self.collisionHandler)
+        
+        drones = ["dronecnode_%d"%i for i in range(len(game.drones))]
+        trons  = ["troncnode_%d"%i  for i in range(len(game.players))]
+        progs  = ["progcnode_%d"%i  for i in range(len(game.programs))]
         for d in drones:
             for t in trons:
                 self.accept("%s-into-%s"%(d,t),  self.droneHitsTron)

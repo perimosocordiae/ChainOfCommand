@@ -4,9 +4,8 @@ MOTION_MULTIPLIER = 3.0
 STRAFE_MULTIPLIER = 2.0
 TURN_MULTIPLIER = 3.0
 
-from math import pi,sin,tan,cos, sqrt
+from math import sin,tan,cos,radians,sqrt
 from itertools import ifilter
-import direct.directbase.DirectStart
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
@@ -61,8 +60,6 @@ class Player(Agent):
         self.tron.setScale(0.4, 0.4, 0.4)
         self.tron.setHpr(0, 12, 0)
         self.tron.setPos(-4, 34, 10)
-        #maybe this does interpolation?
-        #self.tron.setBlend(frameBlend = True)
         self.tron.pose("running",46)
         self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame = 46)
 
@@ -140,7 +137,7 @@ class Player(Agent):
         if any(inputState.isSet(s) for s in states):
             if (inputState.isSet('forward') or inputState.isSet('backward')) and \
                (inputState.isSet('moveleft') or inputState.isSet('moveright')):
-                const = sqrt(2.0) / 2.0
+                const = sqrt(0.5)
                 motionMult = const * MOTION_MULTIPLIER
                 strafeMult = const * STRAFE_MULTIPLIER
             else:
@@ -189,21 +186,20 @@ class Player(Agent):
             run.start(startT=t)
         self.running = False
     
+    def move(self,dx,dy):
+        self.tron.setFluidPos(self.tron.getX()+dx,self.tron.getY()+dy,self.tron.getZ())
+    
     def MoveForwards(self, mult):
-        self.tron.setX(self.tron.getX() + mult * sin(self.tron.getH()*(pi/180.0)))
-        self.tron.setY(self.tron.getY() - mult * cos(self.tron.getH()*(pi/180.0)))
+        self.move(mult*sin(radians(self.tron.getH())),-mult*cos(radians(self.tron.getH())))
 
     def MoveBackwards(self, mult):
-        self.tron.setX(self.tron.getX() - mult * sin(self.tron.getH()*(pi/180.0)))
-        self.tron.setY(self.tron.getY() + mult * cos(self.tron.getH()*(pi/180.0)))
+        self.move(-mult*sin(radians(self.tron.getH())),mult*cos(radians(self.tron.getH())))
         
     def MoveLeft(self, mult):
-        self.tron.setX(self.tron.getX() + mult * sin((self.tron.getH() + 90)*(pi/180.0)))
-        self.tron.setY(self.tron.getY() - mult * cos((self.tron.getH() + 90)*(pi/180.0)))
+        self.move(mult*sin(radians(self.tron.getH()+90)),-mult*cos(radians(self.tron.getH()+90)))
         
     def MoveRight(self, mult):
-        self.tron.setX(self.tron.getX() - mult * sin((self.tron.getH() + 90)*(pi/180.0)))
-        self.tron.setY(self.tron.getY() + mult * cos((self.tron.getH() + 90)*(pi/180.0)))
+        self.move(-mult*sin(radians(self.tron.getH()+90)),mult*cos(radians(self.tron.getH()+90)))
         
     def LookLeft(self):
         self.tron.setHpr(self.tron.getH()+TURN_MULTIPLIER, self.tron.getP(), 0)

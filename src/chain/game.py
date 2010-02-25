@@ -2,13 +2,6 @@ MODEL_PATH = "../../models"
 
 from random import randint
 #from itertools import product as iproduct
-import direct.directbase.DirectStart
-from direct.task import Task
-from direct.actor import Actor
-from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import CollisionHandlerEvent, CollisionTraverser
-from direct.gui.OnscreenImage import OnscreenImage
-from direct.gui.OnscreenText import OnscreenText
 from eventHandler import GameEventHandler
 from player import Player
 from drone import Drone
@@ -20,23 +13,13 @@ class Game(object):
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
         self.load_env()
-        self.setup_collisions()
-        self.eventHandle = GameEventHandler(self)
-
-    def setup_collisions(self):
-        base.cTrav = CollisionTraverser('ctrav')
-        base.cTrav.showCollisions(render)
-        self.collisionHandler = CollisionHandlerEvent()
-        for p in self.players:
-            base.cTrav.addCollider(p.collider,self.collisionHandler)
-        for d in self.drones:
-            base.cTrav.addCollider(d.collider,self.collisionHandler)
-        self.collisionHandler.addInPattern('%fn-into-%in')
-        self.collisionHandler.addAgainPattern('%fn-repeat-%in')
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-1),randint(-self.map_size+1,self.map_size-1))
 
+    def add_event_handler(self):
+        self.eventHandle = GameEventHandler(self)
+    
     def add_player(self,pname):
         self.players.append(Player(self,pname))
         
