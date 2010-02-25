@@ -26,7 +26,7 @@ class Program(object):
         self.collider.stash()
 
     def load_model(self):
-        self.model = loader.loadModel("%s/terminal_window.egg"%MODEL_PATH)
+        self.model = loader.loadModel("%s/terminal_window_%s.egg"%(MODEL_PATH,self.name))
         self.model.setScale(2, 2, 2)
         self.model.setPos(self.pos[0], self.pos[1], 10)
         self.model.reparentTo(render)
