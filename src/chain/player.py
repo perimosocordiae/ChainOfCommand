@@ -118,6 +118,7 @@ class Player(Agent):
     
     def hit(self,amt=0):
         super(Player,self).hit(amt)
+        # sound from http://www.freesound.org/samplesViewSingle.php?id=41526
         self.snarlSound.play()
         self.flashRed.start() # flash the screen red
         print "hit! health = %d"%self.health
