@@ -3,10 +3,10 @@ from program import Rm,Chmod,Ls
 from direct.interval.IntervalGlobal import *
 
 def testDroneAddition(g):
-    Sequence(Wait(3.0), Func(g.add_drone)).loop()
+    Sequence(Wait(2.0), Func(g.add_drone)).loop()
     
 if __name__ == '__main__':
-    g = Game(360,12,60)
+    g = Game(360,12,120)
     g.add_player('player_1')
     for _ in range(4):
         g.add_program(Rm)

@@ -32,10 +32,11 @@ class PlayerEventHandler(DirectObject):
         else:
             #start handling key/mouse events, etc.
             self.wp.setCursorHidden(True)
+            self.wp.setMouseMode(WindowProperties.MRelative)
             self.player.handle_events(True)
             base.win.requestProperties(self.wp)
+            base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
             print "Okay, okay... time in!"
-        #TODO: actually make this happen
 
     def invert_control(self):
         if self.player.handleEvents:

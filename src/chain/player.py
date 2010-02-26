@@ -331,7 +331,7 @@ class Player(Agent):
                 self.StartMoving()
             else:
                 self.StopMoving()
-            return Task.cont
+        return Task.cont
     
     def StartMoving(self):
         if self.running: return
