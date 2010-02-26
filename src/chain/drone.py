@@ -29,6 +29,7 @@ class Drone(Agent):
         self.panda.stash()
         self.collider.stash()
         self.pusher.stash()
+        del self.game.drones[str(hash(self))]
 
     def load_model(self,pos):
         self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})

@@ -8,7 +8,12 @@ class Agent(object):
 
     def hit(self,amt):
         self.health -= amt/self.shield()
-
+        if self.health <= 0:
+            self.die()
+    
+    def die(self):
+        print "Agent is dead"
+    
     def is_dead(self):
         return self.health <= 0
 

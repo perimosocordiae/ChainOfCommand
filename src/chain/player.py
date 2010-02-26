@@ -56,18 +56,24 @@ class Player(Agent):
         base.cTrav.addCollider(self.cameraNP, self.collisionQueue)
     
     def shoot(self):
-        #first get a ray coming from the camera and see what it first collides with
-        objHit = self.findCrosshairHit()
-        if objHit in self.game.drones:
-            d = self.game.drones[objHit]
-            d.hit(self.damage())
-            print "hit drone %s for %d damage"%(objHit,self.damage())
-            if d.is_dead():
-                print "killed it!"
-                self.killcount += 1
-                d.die()
-                del self.game.drones[objHit]
-        self.fire_laser(None)
+        if self.handleEvents:
+            #first get a ray coming from the camera and see what it first collides with
+            objHit = self.findCrosshairHit()
+            if objHit in self.game.drones:
+                d = self.game.drones[objHit]
+                d.hit(self.damage())
+                print "hit drone %s for %d damage"%(objHit,self.damage())
+                if d.is_dead():
+                    print "killed it!"
+                    self.killcount += 1
+            elif objHit in self.game.programs:
+                p = self.game.programs[objHit]
+                p.hit(self.damage())
+                print "hit program %s for %d damage"%(objHit,self.damage())
+                if p.is_dead():
+                    print "Oh no, you blew up a program!"
+            #end if 
+            self.fire_laser(None)
     
     def fire_laser(self, spot):
         #fire a laser at that spot in the world
@@ -116,7 +122,10 @@ class Player(Agent):
         for p in ifilter(lambda p: p != None,self.programs):
             a = a.accuracy_mod(a)
         return a
-        
+    
+    def die(self):
+        #TODO something better here!
+        sys.exit()    
     
     def hit(self,amt=0):
         super(Player,self).hit(amt)
@@ -126,7 +135,7 @@ class Player(Agent):
         print "hit! health = %d"%self.health
         self.healthHUD.setText("HP: %d"%self.health)
         if self.health <= 0:
-            sys.exit()
+            self.die()
     
     def collect(self,prog):
         for i,p in enumerate(self.programs):

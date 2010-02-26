@@ -4,12 +4,14 @@ from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Point3,Filename,Buffer,Shader, CollisionNode, CollisionSphere, BitMask32
+from agent import Agent
 
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 
-class Program(object):
+class Program(Agent):
 
     def __init__(self,game,name,pos):
+        super(Program, self).__init__(game)
         self.game = game
         if not pos:
             pos = game.rand_point()
@@ -20,6 +22,10 @@ class Program(object):
     
     def unique_str(self):
         return self.name+str(hash(self))
+    
+    def die(self):
+        #maybe explode instead if killed?
+        self.disappear()
     
     def disappear(self):
         self.model.stash()
