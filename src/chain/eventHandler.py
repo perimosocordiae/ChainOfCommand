@@ -9,7 +9,7 @@ class PlayerEventHandler(DirectObject):
         self.accept('f',playr.switchPerspective)
         self.accept('wheel_up',playr.zoomIn)
         self.accept('wheel_down',playr.zoomOut)
-        self.accept('space',playr.shoot)
+        self.accept('mouse1',playr.shoot)
         self.accept('escape',self.pause_menu)
         self.accept('p',self.pause_menu)
         self.accept('i',self.invert_control)
