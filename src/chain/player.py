@@ -9,7 +9,7 @@ from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import PlayerEventHandler
-from projectile import Projectile
+from projectile import Laser
 from agent import Agent
 from pandac.PandaModules import Vec3, Point3
 import sys
@@ -44,7 +44,7 @@ class Player(Agent):
         self.collectSoundFail.setVolume(0.3)
         self.snarlSound = loader.loadSfx(SOUND_PATH + "/Snarl.mp3")
         self.handle_events(True)
-        dummy = Projectile("%s/laser.egg"%MODEL_PATH) # no jerkiness on first shot
+        dummy = Laser() # no jerkiness on first shot
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
     
@@ -54,6 +54,19 @@ class Player(Agent):
         self.cameraRay = CollisionRay(0,base.camera.getY(),0,0,1,0)
         self.cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(self.cameraNP, self.collisionQueue)
+    
+    def target(self):
+        objHit = self.findCrosshairHit()
+        if objHit in self.game.drones:
+            #turn the crosshairs red
+            self.crosshairs.setImage("%s/crosshairs_locked.tif"%MODEL_PATH)
+            self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
+        elif objHit in self.game.programs:
+            self.crosshairs.setImage("%s/crosshairs_program.tif"%MODEL_PATH)
+            self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
+        else:
+            self.crosshairs.setImage("%s/crosshairs.tif"%MODEL_PATH)
+            self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def shoot(self):
         if self.handleEvents:
@@ -82,7 +95,7 @@ class Player(Agent):
 
         startPos = self.tron.getPos()
         startPos.setZ(startPos.getZ() + 2)
-        laser = Projectile("%s/laser.egg"%MODEL_PATH)
+        laser = Laser()
         laser.set_pos(startPos)
         laser.model.setScale(16.0)
         laser.model.setHpr(self.tron.getHpr())
@@ -182,14 +195,16 @@ class Player(Agent):
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
         base.setFrameRateMeter(True)
-        img_horiz = "%s/horiz_crosshair.jpg"%MODEL_PATH
-        img_vert  = "%s/vert_crosshair.jpg"%MODEL_PATH
-        self.crosshairs = [
-            OnscreenImage(image = img_horiz, pos = (-0.025, 0, 0), scale = (0.02, 1, .005)),
-            OnscreenImage(image = img_horiz, pos = ( 0.025, 0, 0), scale = (0.02, 1, .005)),
-            OnscreenImage(image = img_vert,  pos = (0, 0, -0.025), scale = (0.005, 1, .02)),
-            OnscreenImage(image = img_vert,  pos = (0, 0,  0.025), scale = (0.005, 1, .02))
-        ]
+        #img_horiz = "%s/horiz_crosshair.jpg"%MODEL_PATH
+        #img_vert  = "%s/vert_crosshair.jpg"%MODEL_PATH
+        #self.crosshairs = [
+        #    OnscreenImage(image = img_horiz, pos = (-0.025, 0, 0), scale = (0.02, 1, .005)),
+        #    OnscreenImage(image = img_horiz, pos = ( 0.025, 0, 0), scale = (0.02, 1, .005)),
+        #    OnscreenImage(image = img_vert,  pos = (0, 0, -0.025), scale = (0.005, 1, .02)),
+        #    OnscreenImage(image = img_vert,  pos = (0, 0,  0.025), scale = (0.005, 1, .02))
+        #]
+        self.crosshairs = OnscreenImage(image = "%s/crosshairs.tif"%MODEL_PATH, pos = (-0.025, 0, 0), scale = 0.05)
+        self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
         self.programHUD = [
             OnscreenText(text="|  None  |", pos=(-0.3,-0.9), scale=(0.08), fg=(0,0,0,0.8), bg=(1,1,1,0.8), mayChange=True),
             OnscreenText(text="|  None  |", pos=(   0,-0.9), scale=(0.08), fg=(0,0,0,0.8), bg=(1,1,1,0.8), mayChange=True),
@@ -274,6 +289,7 @@ class Player(Agent):
         #    self.LookDown((-0.1 - y) * TURN_MULTIPLIER)
         #elif y > 0.1:
         #    self.LookUp((y - 0.1) * TURN_MULTIPLIER)
+        self.target()
         if self.handleEvents:
             self.LookAtMouse(TURN_MULTIPLIER)
             
