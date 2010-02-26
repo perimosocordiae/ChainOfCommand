@@ -3,7 +3,8 @@ from itertools import ifilter
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Shader, CollisionNode, CollisionRay, CollisionSphere,CollisionHandlerQueue, TransparencyAttrib, BitMask32
+from pandac.PandaModules import Shader, CollisionNode, CollisionRay, CollisionSphere
+from pandac.PandaModules import CollisionHandlerQueue, TransparencyAttrib, BitMask32
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
@@ -18,7 +19,7 @@ SOUND_PATH = "../../sounds"
 #Constants for motion and rotation
 MOTION_MULTIPLIER = 3.0
 STRAFE_MULTIPLIER = 2.0
-TURN_MULTIPLIER = 2.0
+TURN_MULTIPLIER = 0.5
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 WALL_COLLIDER_MASK = BitMask32.bit(0)
 
@@ -42,6 +43,7 @@ class Player(Agent):
         self.collectSoundFail = loader.loadSfx(SOUND_PATH + "/Collect_fail.mp3") # load prog collect sound
         self.collectSoundFail.setVolume(0.3)
         self.snarlSound = loader.loadSfx(SOUND_PATH + "/Snarl.mp3")
+        self.handle_events(True)
         dummy = Projectile("%s/laser.egg"%MODEL_PATH) # no jerkiness on first shot
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
@@ -215,68 +217,96 @@ class Player(Agent):
         base.camera.reparentTo(self.tron)
         base.camera.setPos(0, 40, 10)
         base.camera.setHpr(180, 0, 0)
-
+    
+    def handle_events(self, handle):
+        self.handleEvents = handle
+    
     def switchPerspective(self):
         #Switch between 3 perspectives
-        if base.camera.getY() > 60:
-            base.camera.setPos(0, 0, 10)
-        elif base.camera.getY() > 20:
-            base.camera.setPos(0, 100, 10)
-        else:
-            base.camera.setPos(0, 40, 10)
-        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
+        if self.handleEvents:
+            if base.camera.getY() > 60:
+                base.camera.setPos(0, 0, 10)
+            elif base.camera.getY() > 20:
+                base.camera.setPos(0, 100, 10)
+            else:
+                base.camera.setPos(0, 40, 10)
+            self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
     
     def zoomIn(self):
-        if base.camera.getY() > 0:
-            base.camera.setY(base.camera.getY() - 2)
-        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
+        if self.handleEvents:
+            if base.camera.getY() > 0:
+                base.camera.setY(base.camera.getY() - 2)
+            self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
             
     def zoomOut(self):
-        if base.camera.getY() < 100:
-            base.camera.setY(base.camera.getY() + 2)
-        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
+        if self.handleEvents:
+            if base.camera.getY() < 100:
+                base.camera.setY(base.camera.getY() + 2)
+            self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
         
     #Task to move the camera
     def updateCameraTask(self, task):
-        moving = 0
-        states = ['forward','backward','moveleft','moveright','left','right','up','down']
-        if any(inputState.isSet(s) for s in states):
-            if (inputState.isSet('forward') or inputState.isSet('backward')) and \
-               (inputState.isSet('moveleft') or inputState.isSet('moveright')):
-                const = sqrt(0.5)
-                motionMult = const * MOTION_MULTIPLIER
-                strafeMult = const * STRAFE_MULTIPLIER
-            else:
-                motionMult = MOTION_MULTIPLIER
-                strafeMult = STRAFE_MULTIPLIER
-                
-            if inputState.isSet('forward') :
-                self.MoveForwards(motionMult)
-                moving = 1
-            elif inputState.isSet('backward') :
-                self.MoveBackwards(motionMult)
-                moving = 1
-            if inputState.isSet('moveleft') :
-                self.MoveLeft(strafeMult)
-                moving = 1
-            elif inputState.isSet('moveright') :
-                self.MoveRight(strafeMult)
-                moving = 1
-            if inputState.isSet('left') :
-                self.LookLeft()
-            elif inputState.isSet('right') :
-                self.LookRight()
-            if inputState.isSet('up') :
-                self.LookDown() if self.inverted else self.LookUp()
-            elif inputState.isSet('down') :
-                self.LookUp() if self.inverted else self.LookDown()
+        #if base.mouseWatcherNode.hasMouse():
+        #    #use current mouse location
+        #    x=base.mouseWatcherNode.getMouseX()
+        #    y=base.mouseWatcherNode.getMouseY()
+        #    self.lastX = x
+        #    self.lastY = y
+        #else:
+        #    #use last known mouse location
+        #    x = self.lastX
+        #    y = self.lastY
+        #    
+        #if x < -0.1:
+        #    self.LookLeft((0.1 - x) * TURN_MULTIPLIER)
+        #elif x > 0.1:
+        #    self.LookRight((x - 0.1) * TURN_MULTIPLIER)
+        #if y < -0.1:
+        #    self.LookDown((-0.1 - y) * TURN_MULTIPLIER)
+        #elif y > 0.1:
+        #    self.LookUp((y - 0.1) * TURN_MULTIPLIER)
+        if self.handleEvents:
+            self.LookAtMouse(TURN_MULTIPLIER)
+            
+            moving = 0
+            states = ['forward','backward','moveleft','moveright','left','right','up','down']
+            if any(inputState.isSet(s) for s in states):
+                if (inputState.isSet('forward') or inputState.isSet('backward')) and \
+                   (inputState.isSet('moveleft') or inputState.isSet('moveright')):
+                    const = sqrt(0.5)
+                    motionMult = const * MOTION_MULTIPLIER
+                    strafeMult = const * STRAFE_MULTIPLIER
+                else:
+                    motionMult = MOTION_MULTIPLIER
+                    strafeMult = STRAFE_MULTIPLIER
+                    
+                if inputState.isSet('forward') :
+                    self.MoveForwards(motionMult)
+                    moving = 1
+                elif inputState.isSet('backward') :
+                    self.MoveBackwards(motionMult)
+                    moving = 1
+                if inputState.isSet('moveleft') :
+                    self.MoveLeft(strafeMult)
+                    moving = 1
+                elif inputState.isSet('moveright') :
+                    self.MoveRight(strafeMult)
+                    moving = 1
+                #if inputState.isSet('left') :
+                #    self.LookLeft()
+                #elif inputState.isSet('right') :
+                #    self.LookRight()
+                #if inputState.isSet('up') :
+                #    self.LookDown() if self.inverted else self.LookUp()
+                #elif inputState.isSet('down') :
+                #    self.LookUp() if self.inverted else self.LookDown()
+                #end if
             #end if
-        #end if
-        if moving == 1:
-            self.StartMoving()
-        else:
-            self.StopMoving()
-        return Task.cont
+            if moving == 1:
+                self.StartMoving()
+            else:
+                self.StopMoving()
+            return Task.cont
     
     def StartMoving(self):
         if self.running: return
@@ -306,18 +336,26 @@ class Player(Agent):
         
     def MoveRight(self, mult):
         self.move(-mult*sin(radians(self.tron.getH()+90)),mult*cos(radians(self.tron.getH()+90)))
+    
+    def LookLeft(self, mult):
+        self.tron.setHpr(self.tron.getH()+mult, self.tron.getP(), 0)
+    
+    def LookRight(self, mult):
+        self.tron.setHpr(self.tron.getH()-mult, self.tron.getP(), 0)
+    
+    def LookDown(self, mult):
+        p = min(90,self.tron.getP()+mult)
+        self.tron.setHpr(self.tron.getH(), p, 0)
+    
+    def LookUp(self, mult):
+        p = max(-50,self.tron.getP()-mult)
+        self.tron.setHpr(self.tron.getH(), p, 0)
         
-    def LookLeft(self):
-        self.tron.setHpr(self.tron.getH()+TURN_MULTIPLIER, self.tron.getP(), 0)
+    def LookAtMouse(self, mult):
+        md = base.win.getPointer(0)
+        x = md.getX()
+        y = md.getY()
+        if base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2):
+            self.tron.setH(self.tron.getH() - (mult * (x - base.win.getXSize()/2)))
+            self.tron.setP(self.tron.getP() + (mult * (y - base.win.getYSize()/2)))
     
-    def LookRight(self):
-        self.tron.setHpr(self.tron.getH()-TURN_MULTIPLIER, self.tron.getP(), 0)
-    
-    def LookDown(self):
-        p = min(90,self.tron.getP()+TURN_MULTIPLIER)
-        self.tron.setHpr(self.tron.getH(), p, 0)
-    
-    def LookUp(self):
-        p = max(-50,self.tron.getP()-TURN_MULTIPLIER)
-        self.tron.setHpr(self.tron.getH(), p, 0)
-

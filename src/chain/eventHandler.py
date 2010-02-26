@@ -1,5 +1,6 @@
 from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import CollisionHandlerEvent, CollisionTraverser, CollisionHandlerPusher
+from pandac.PandaModules import WindowProperties
 
 class PlayerEventHandler(DirectObject):
     
@@ -12,14 +13,34 @@ class PlayerEventHandler(DirectObject):
         self.accept('escape',self.pause_menu)
         self.accept('p',self.pause_menu)
         self.accept('i',self.invert_control)
-
+        self.timeout = False
+        
+        #set up the mouse handling properly
+        self.wp = WindowProperties()
+        self.wp.setCursorHidden(True)
+        self.wp.setMouseMode(WindowProperties.MRelative)
+        base.win.requestProperties(self.wp)
+    
     def pause_menu(self):
-        print "Time out! Come on guys, please?!"
+        self.timeout = not self.timeout
+        if self.timeout:
+            #stop handling key/mouse events, etc.
+            self.wp.setCursorHidden(False)
+            self.player.handle_events(False)
+            base.win.requestProperties(self.wp)
+            print "Time out! Come on guys, please?!"
+        else:
+            #start handling key/mouse events, etc.
+            self.wp.setCursorHidden(True)
+            self.player.handle_events(True)
+            base.win.requestProperties(self.wp)
+            print "Okay, okay... time in!"
         #TODO: actually make this happen
 
     def invert_control(self):
-        print "Inverting up/down look controls..."
-        self.player.inverted = not self.player.inverted
+        if self.player.handleEvents:
+            print "Inverting up/down look controls..."
+            self.player.inverted = not self.player.inverted
 
 class GameEventHandler(DirectObject):
     
