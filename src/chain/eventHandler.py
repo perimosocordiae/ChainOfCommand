@@ -47,6 +47,33 @@ class GameEventHandler(DirectObject):
                 self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)
                 self.accept("%s-repeat-%s"%(t,d),self.tronRepeatsDrone)
     
+    def addProgramHandler(self, p):
+        for t in self.game.players.iterkeys():
+            self.accept("%s-into-%s"%(t,p.unique_str()),  self.tronHitsProg)
+    
+    def addDroneHandler(self, d):
+        base.cTrav.addCollider(d.pusher,self.pusherHandler)
+        #base.cTrav.addCollider(d.collider,self.collisionHandler)
+        self.pusherHandler.addCollider(d.pusher, d.panda)
+        dName = str(hash(d))
+        for t in self.game.players.iterkeys():
+            self.accept("%s-into-%s"%(t,dName),  self.tronHitsDrone)
+            self.accept("%s-repeat-%s"%(t,dName),self.tronRepeatsDrone)
+    
+    def addPlayerHandler(self, t):
+        base.cTrav.addCollider(t.collider,self.collisionHandler)
+        base.cTrav.addCollider(t.pusher,self.pusherHandler)
+        self.pusherHandler.addCollider(t.pusher, t.tron)
+        drones = self.game.drones.keys()
+        progs  = self.game.programs.keys()
+        tName = t.name
+        for p in progs:
+            self.accept("%s-into-%s"%(tName,p),  self.tronHitsProg)
+        for d in drones:
+            self.accept("%s-into-%s"%(tName,d),  self.tronHitsDrone)
+            self.accept("%s-repeat-%s"%(tName,d),self.tronRepeatsDrone)
+        t.initialize_camera()
+    
     def tronHitsDrone(self,entry):
         tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
         try:

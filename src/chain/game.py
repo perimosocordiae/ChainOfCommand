@@ -29,7 +29,8 @@ class Game(object):
         self.startTime = time()
         self.endTime = self.startTime + gameLength
         self.gameTime = self.endTime - time()
-        
+        self.add_event_handler()
+        self.add_background_music()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
 
     def rand_point(self): # get a random point that's also a valid play location
@@ -42,14 +43,17 @@ class Game(object):
     
     def add_player(self,pname):
         self.players[pname] = Player(self,pname)
+        self.eventHandle.addPlayerHandler(self.players[pname])
         
     def add_program(self,ptype):
         prog = ptype(self)
         self.programs[prog.unique_str()] = prog
+        self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])
         
     def add_drone(self):
         d = Drone(self)
         self.drones[str(hash(d))] = d 
+        self.eventHandle.addDroneHandler(d)
     
     def add_background_music(self):
         # from http://www.newgrounds.com/audio/listen/287442
