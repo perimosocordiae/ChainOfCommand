@@ -4,7 +4,8 @@ from random import randint, choice
 #from itertools import product as iproduct
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
-from pandac.PandaModules import CollisionTraverser, CollisionSphere, BitMask32, CollisionNode, CollisionPlane, Plane
+from pandac.PandaModules import CollisionTraverser, CollisionSphere, BitMask32
+from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
 from player import Player
 from drone import Drone
 from direct.gui.OnscreenText import OnscreenText
@@ -13,7 +14,7 @@ from time import time
 from pandac.PandaModules import Vec3, Point3
 import sys
 
-
+FLOOR_COLLIDER_MASK = BitMask32.bit(4)
 WALL_COLLIDER_MASK = BitMask32.bit(0)
 
 class Game(object):
@@ -79,7 +80,7 @@ class Game(object):
             egg = eggs[egg_index(i,j,center)]
             make_tile(environ,egg,(-2*(1+i-center),-2*(1+j-center), 2*wall_height), (0, 0, 180)) #ceiling
             if i == center and j == center: continue #bottom center is already done
-            make_tile(environ,egg,(2*(i-center), 2*(j-center), 0),(0, 0, 0)) #floor
+            make_tile(environ,egg,(2*(i-center), 2*(j-center), 0),(0, 0, 0),True) #floor
         
         #for i,j in iproduct(range(num_tiles),range(wall_height)):
         for i in range(num_tiles):
@@ -139,12 +140,17 @@ def make_column(parent,egg,x,y,h):
     towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
     
 # static functions, not in the game class
-def make_tile(parent,fname,pos,hpr):
+def make_tile(parent,fname,pos,hpr, addCollider=False):
     tile = loader.loadModel(fname)
     tile.reparentTo(parent)
     tile.setScale(1.0, 1.0, 1.0)
     tile.setPos(*pos)
     tile.setHpr(*hpr)
+    if addCollider:
+        tileCollider = tile.attachNewNode(CollisionNode("tile"))
+        tileCollider.node().addSolid(CollisionPolygon(Point3(-1.2,-1.2,0),
+                    Point3(1.2,-1.2,0), Point3(1.2,1.2,0), Point3(-1.2,1.2,0))) 
+        tileCollider.node().setIntoCollideMask(FLOOR_COLLIDER_MASK)
 
 def egg_index(i,j,center):
     if i < center and j < center: return 1

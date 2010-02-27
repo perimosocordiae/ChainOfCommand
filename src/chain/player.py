@@ -22,6 +22,13 @@ STRAFE_MULTIPLIER = 2.0
 TURN_MULTIPLIER = 0.5
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 WALL_COLLIDER_MASK = BitMask32.bit(0)
+FLOOR_COLLIDER_MASK = BitMask32.bit(4)
+GRAVITATIONAL_CONSTANT = .15 # = 9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
+SAFE_FALL = 5.0 #fall velocity after which damage is induced
+FALL_DAMAGE_MULTIPLIER = 12.0 #How much to damage Tron per 1 over safe fall
+TERMINAL_VELOCITY = 50.0
+JUMP_SPEED = 4.0 #make sure this stays less than SAFE_FALL - he should
+                 #be able to jump up & down w/o getting hurt!
 
 class Player(Agent):
 
@@ -38,8 +45,13 @@ class Player(Agent):
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
         self.handle_events(True)
+        self.fallVelocity = 0
+        dummy = Laser() # no jerkiness on first shot
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
+        self.floorQueue = CollisionHandlerQueue()
+        self.initialize_lifter()
+        base.cTrav.addCollider(self.lifter, self.floorQueue)
     
     def initialize_camera(self):
         self.cameraNode = CollisionNode('cameracnode')
@@ -47,10 +59,14 @@ class Player(Agent):
         self.cameraRay = CollisionRay(0,base.camera.getY(),0,0,1,0)
         self.cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(self.cameraNP, self.collisionQueue)
+    
+    def initialize_lifter(self):
+        base.cTrav.addCollider(self.lifter, self.floorQueue)
+    
  
     def setup_sounds(self):
         keys = ['laser','yes','no','snarl']
-        fnames = ["%s/hilas.mp3","%s/Collect_success.mp3","%s/Collect_fail.mpg","%s/snarl.mp3"]
+        fnames = ["%s/hilas.mp3","%s/Collect_success.mp3","%s/Collect_fail.mp3","%s/Snarl.mp3"]
         self.sounds = dict(zip(keys,[loader.loadSfx(f%SOUND_PATH) for f in fnames]))
         for s in self.sounds.itervalues():
             s.setVolume(0.3)
@@ -107,7 +123,7 @@ class Player(Agent):
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
-        if self.collisionQueue.getNumEntries() == 0: return "", None
+        if self.collisionQueue.getNumEntries() == 0: return ""
         # This is so we get the closest object
         self.collisionQueue.sortEntries()
         for i in range(self.collisionQueue.getNumEntries()):
@@ -168,7 +184,7 @@ class Player(Agent):
         self.tron.reparentTo(render)
         self.tron.setScale(0.4, 0.4, 0.4)
         self.tron.setHpr(0, 0, 0)
-        self.tron.setPos(-4, 34, 10)
+        self.tron.setPos(-4, 34, 150)
         self.tron.pose("running",46)
         self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame = 46)
 
@@ -189,7 +205,13 @@ class Player(Agent):
         self.pusher.node().setFromCollideMask(WALL_COLLIDER_MASK)
         self.pusher.node().setIntoCollideMask(WALL_COLLIDER_MASK)
         #self.pusher.show()
-
+        
+        self.lifter = self.tron.attachNewNode(CollisionNode(self.name + "_floor"))
+        self.lifterRay = CollisionRay(0,0,0,0,0,-1)
+        self.lifter.node().addSolid(self.lifterRay) #ray pointing down
+        self.lifter.node().setFromCollideMask(FLOOR_COLLIDER_MASK)
+        self.lifter.node().setIntoCollideMask(FLOOR_COLLIDER_MASK)
+        
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
         base.setFrameRateMeter(True)
@@ -289,6 +311,7 @@ class Player(Agent):
         #    self.LookUp((y - 0.1) * TURN_MULTIPLIER)
         self.target()
         if self.handleEvents:
+            self.handleGravity()
             self.LookAtMouse(TURN_MULTIPLIER)
             
             moving = 0
@@ -331,6 +354,55 @@ class Player(Agent):
                 self.StopMoving()
         return Task.cont
     
+    def handleGravity(self):
+        #if there's no floor below tron, have him fall
+        if self.floorQueue.getNumEntries() <= 0:
+            self.fall()
+            return
+        # This is so we get the closest object
+        self.floorQueue.sortEntries()
+        #get the point on the nearest floor in render's coordinate system
+        floorSpot = self.floorQueue.getEntry(0).getSurfacePoint(render)
+        if (self.tron.getZ() - floorSpot.getZ() > 10 and self.fallVelocity >= 0) \
+        or (self.fallVelocity < 0):
+            #in the future, have 2 rays - one above, one below, so he can't jump
+            #through things?  Or let him jump through things.  If he can't, adapt
+            #2nd half of if statement to include 2nd ray.
+            self.fall()
+        else:
+            #We hit (or stayed on) the ground...
+            #how fast are we falling now? Use that to determine potential damage
+            if self.fallVelocity > SAFE_FALL:
+                damage = (self.fallVelocity - SAFE_FALL) * FALL_DAMAGE_MULTIPLIER
+                self.hit(damage)
+            else:
+                self.tron.setZ(floorSpot.getZ() + 10)
+            self.fallVelocity = 0
+    
+    def fall(self):
+        #causes Tron to fall due to gravity, and increases fall velocity
+        self.tron.setZ(self.tron.getZ() - self.fallVelocity)
+        self.fallVelocity = min(self.fallVelocity + GRAVITATIONAL_CONSTANT,
+                                TERMINAL_VELOCITY)
+    
+    def try_to_jump(self):
+        #Jump only if Tron is on the ground
+        if self.handleEvents:
+            base.cTrav.traverse(render)
+            if self.floorQueue.getNumEntries() == 0: return #no floor, no jump
+            # This is so we get the closest object
+            self.floorQueue.sortEntries()
+            #get the point on the nearest floor in render's coordinate system
+            floorSpot = self.floorQueue.getEntry(0).getSurfacePoint(render)
+            if self.tron.getZ() - floorSpot.getZ() <= 10:
+                #he's on the ground - let him jump
+                self.jump()
+            #end if
+        #end if
+    
+    def jump(self):
+        self.fallVelocity = -JUMP_SPEED
+    
     def StartMoving(self):
         if self.running: return
         self.running = True
@@ -346,7 +418,7 @@ class Player(Agent):
         self.running = False
     
     def move(self,dx,dy):
-        self.tron.setFluidPos(self.tron.getX()+dx,self.tron.getY()+dy,10)
+        self.tron.setFluidPos(self.tron.getX()+dx,self.tron.getY()+dy,self.tron.getZ())
     
     def MoveForwards(self, mult):
         self.move(mult*sin(radians(self.tron.getH())),-mult*cos(radians(self.tron.getH())))
@@ -381,4 +453,7 @@ class Player(Agent):
         if base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2):
             self.tron.setH(self.tron.getH() - (mult * (x - base.win.getXSize()/2)))
             self.tron.setP(self.tron.getP() + (mult * (y - base.win.getYSize()/2)))
-    
+            #make sure lifter continues to point straight down
+            angle = radians(self.tron.getP())
+            self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
+        

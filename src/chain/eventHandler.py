@@ -11,6 +11,7 @@ class PlayerEventHandler(DirectObject):
         self.accept('wheel_down',playr.zoomOut)
         self.accept('mouse1',playr.shoot)
         self.accept('escape',self.pause_menu)
+        self.accept('e',playr.try_to_jump)
         self.accept('p',self.pause_menu)
         self.accept('i',self.invert_control)
         self.timeout = False
