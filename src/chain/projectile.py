@@ -17,7 +17,7 @@ class Projectile(object):
     def set_pos(self, pos):
         self.model.setPos(pos)
     
-    def set_trajectory(self, trajectory):
+    def fire(self, trajectory):
         fullTrajec = trajectory
         lookAt = self.model.getPos() + fullTrajec
         trajectory.normalize()

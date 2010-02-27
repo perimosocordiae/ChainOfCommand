@@ -36,15 +36,8 @@ class Player(Agent):
         self.setup_camera()
         self.setup_HUD()
         self.eventHandle = PlayerEventHandler(self)
-        self.laserSound = loader.loadSfx(SOUND_PATH + "/hilas.mp3") # load laser sound
-        self.laserSound.setVolume(0.3)
-        self.collectSound = loader.loadSfx(SOUND_PATH + "/Collect_success.mp3") # load prog collect sound
-        self.collectSound.setVolume(0.3)
-        self.collectSoundFail = loader.loadSfx(SOUND_PATH + "/Collect_fail.mp3") # load prog collect sound
-        self.collectSoundFail.setVolume(0.3)
-        self.snarlSound = loader.loadSfx(SOUND_PATH + "/Snarl.mp3")
+        self.setup_sounds()
         self.handle_events(True)
-        dummy = Laser() # no jerkiness on first shot
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
     
@@ -54,7 +47,14 @@ class Player(Agent):
         self.cameraRay = CollisionRay(0,base.camera.getY(),0,0,1,0)
         self.cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(self.cameraNP, self.collisionQueue)
-    
+ 
+    def setup_sounds(self):
+        keys = ['laser','yes','no','snarl']
+        fnames = ["%s/hilas.mp3","%s/Collect_success.mp3","%s/Collect_fail.mpg","%s/snarl.mp3"]
+        self.sounds = dict(zip(keys,[loader.loadSfx(f%SOUND_PATH) for f in fnames]))
+        for s in self.sounds.itervalues():
+            s.setVolume(0.3)
+
     def target(self):
         objHit = self.findCrosshairHit()
         if objHit in self.game.drones:
@@ -69,29 +69,27 @@ class Player(Agent):
             self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def shoot(self):
-        if self.handleEvents:
-            #first get a ray coming from the camera and see what it first collides with
-            objHit = self.findCrosshairHit()
-            if objHit in self.game.drones:
-                d = self.game.drones[objHit]
-                d.hit(self.damage())
-                print "hit drone %s for %d damage"%(objHit,self.damage())
-                if d.is_dead():
-                    print "killed it!"
-                    self.killcount += 1
-            elif objHit in self.game.programs:
-                p = self.game.programs[objHit]
-                p.hit(self.damage())
-                print "hit program %s for %d damage"%(objHit,self.damage())
-                if p.is_dead():
-                    print "Oh no, you blew up a program!"
-            #end if 
-            self.fire_laser(None)
-    
-    def fire_laser(self, spot):
-        #fire a laser at that spot in the world
-        #sound from http://www.freesound.org/samplesViewSingle.php?id=18379
-        self.laserSound.play()
+        if not self.handleEvents: return
+        #first get a ray coming from the camera and see what it first collides with
+        objHit = self.findCrosshairHit()
+        if objHit in self.game.drones:
+            d = self.game.drones[objHit]
+            d.hit(self.damage())
+            print "hit drone %s for %d damage"%(objHit,self.damage())
+            if d.is_dead():
+                print "killed it!"
+                self.killcount += 1
+        elif objHit in self.game.programs:
+            p = self.game.programs[objHit]
+            p.hit(self.damage())
+            print "hit program %s for %d damage"%(objHit,self.damage())
+            if p.is_dead():
+                print "Oh no, you blew up a program!"
+        #end if 
+        self.fire_laser()
+   
+    def fire_laser(self):
+        self.sounds['laser'].play()
 
         startPos = self.tron.getPos()
         startPos.setZ(startPos.getZ() + 2)
@@ -101,10 +99,11 @@ class Player(Agent):
         laser.model.setHpr(self.tron.getHpr())
         
         mult = 500
-        dx = mult*sin(radians(self.tron.getH()))
-        dy = -mult*cos(radians(self.tron.getH()))
-        dz = -mult*sin(radians(self.tron.getP()))
-        laser.set_trajectory(Vec3(dx,dy,dz))
+        h,p = radians(self.tron.getH()),radians(self.tron.getP())
+        dx = mult*sin(h)
+        dy = -mult*cos(h)
+        dz = -mult*sin(p)
+        laser.fire(Vec3(dx,dy,dz))
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
@@ -142,8 +141,7 @@ class Player(Agent):
     
     def hit(self,amt=0):
         super(Player,self).hit(amt)
-        # sound from http://www.freesound.org/samplesViewSingle.php?id=41526
-        self.snarlSound.play()
+        self.sounds['snarl'].play()
         self.flashRed.start() # flash the screen red
         print "hit! health = %d"%self.health
         self.healthHUD.setText("HP: %d"%self.health)
@@ -154,12 +152,10 @@ class Player(Agent):
         for i,p in enumerate(self.programs):
             if not p: break
         else:
-            # sound from http://www.freesound.org/samplesViewSingle.php?id=33109
-            self.collectSoundFail.play() 
+            self.sounds['no'].play() 
             print "No empty slots!"
             return
-        # sound from http://www.freesound.org/samplesViewSingle.php?id=33108
-        self.collectSound.play()
+        self.sounds['yes'].play()
         print "Program get: %s"%prog.name
         self.programs[i] = prog
         self.programHUD[i].setText("|  %s  |"%prog.name)
@@ -179,6 +175,8 @@ class Player(Agent):
         self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame = 46)
         self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
+        # pre-cache laser model
+        Laser()
 
     def setup_collider(self):
         self.collider = self.tron.attachNewNode(CollisionNode(self.name))
