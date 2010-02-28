@@ -35,7 +35,6 @@ class Player(Agent):
         self.programs = [None,None,None]
         self.name = name
         self.killcount = 0
-        self.inverted = False # look controls
         self.load_model()
         self.setup_collider()
         self.setup_camera()
@@ -84,6 +83,7 @@ class Player(Agent):
             if d.is_dead():
                 print "killed it!"
                 self.killcount += 1
+                self.killHUD.setText("Frags: %d"%self.killcount)
         elif objHit in self.game.programs:
             p = self.game.programs[objHit]
             p.hit(self.damage())
@@ -206,6 +206,8 @@ class Player(Agent):
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         # health status
         self.healthHUD = OnscreenText(text="HP: %d"%self.health,pos=(-0.9,0.9),fg=fg, bg=bg,mayChange=True)
+        # kill counter
+        self.killHUD = OnscreenText(text="Frags: %d"%self.killcount,pos=(-0.9,0.8),fg=fg, bg=bg,mayChange=True)
     
     def flash_red(self):
         if not self.redScreen:

@@ -1,3 +1,4 @@
+import sys
 from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import CollisionHandlerEvent, CollisionTraverser, CollisionHandlerPusher
 from pandac.PandaModules import WindowProperties
@@ -10,10 +11,9 @@ class PlayerEventHandler(DirectObject):
         self.accept('wheel_up',playr.zoomIn)
         self.accept('wheel_down',playr.zoomOut)
         self.accept('mouse1',playr.shoot)
-        self.accept('escape',self.pause_menu)
+        self.accept('escape',sys.exit) # hack, for now
         self.accept('e',playr.jump)
         self.accept('p',self.pause_menu)
-        self.accept('i',self.invert_control)
         self.timeout = False
         
         #set up the mouse handling properly
@@ -38,11 +38,6 @@ class PlayerEventHandler(DirectObject):
             base.win.requestProperties(self.wp)
             base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
             print "Okay, okay... time in!"
-
-    def invert_control(self):
-        if self.player.handleEvents:
-            print "Inverting up/down look controls..."
-            self.player.inverted = not self.player.inverted
 
 class GameEventHandler(DirectObject):
     
