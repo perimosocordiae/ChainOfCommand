@@ -13,11 +13,10 @@ from eventHandler import PlayerEventHandler
 from projectile import Laser
 from agent import Agent
 
+#Constants
 MODEL_PATH = "../../models"
 SOUND_PATH = "../../sounds"
-#Constants for motion and rotation
 MOTION_MULTIPLIER = 3.0
-STRAFE_MULTIPLIER = 2.0
 TURN_MULTIPLIER = 0.5
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 WALL_COLLIDER_MASK = BitMask32.bit(0)
@@ -48,7 +47,7 @@ class Player(Agent):
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
         self.floorQueue = CollisionHandlerQueue()
-        self.initialize_lifter()
+        base.cTrav.addCollider(self.lifter, self.floorQueue)
     
     def initialize_camera(self):
         cameraNode = CollisionNode('cameracnode')
@@ -57,9 +56,6 @@ class Player(Agent):
         cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
     
-    def initialize_lifter(self):
-        base.cTrav.addCollider(self.lifter, self.floorQueue)
- 
     def setup_sounds(self):
         keys = ['laser','yes','no','snarl']
         fnames = ["%s/hilas.mp3","%s/Collect_success.mp3","%s/Collect_fail.mp3","%s/Snarl.mp3"]
@@ -71,13 +67,11 @@ class Player(Agent):
         objHit = self.findCrosshairHit()
         if objHit in self.game.drones: #turn the crosshairs red
             self.crosshairs.setImage("%s/crosshairs_locked.tif"%MODEL_PATH)
-            self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
         elif objHit in self.game.programs:
             self.crosshairs.setImage("%s/crosshairs_program.tif"%MODEL_PATH)
-            self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
         else:
             self.crosshairs.setImage("%s/crosshairs.tif"%MODEL_PATH)
-            self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
+        self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def shoot(self):
         if not self.handleEvents: return
@@ -183,29 +177,25 @@ class Player(Agent):
         Laser() # pre-cache laser model
 
     def setup_collider(self):
-        self.collider = self.tron.attachNewNode(CollisionNode(self.name))
-        self.collider.node().addSolid(CollisionSphere(0,0,0,10)) # sphere, for now
-        self.collider.node().setFromCollideMask(DRONE_COLLIDER_MASK)
-        self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
-        
-        self.pusher = self.tron.attachNewNode(CollisionNode(self.name + "_wall"))
-        self.pusher.node().addSolid(CollisionSphere(0,0,0,12)) # sphere, for now
-        self.pusher.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        self.pusher.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        self.collider = self.attach_collision_node(self.name,CollisionSphere(0,0,0,10),DRONE_COLLIDER_MASK)
+        self.pusher = self.attach_collision_node("%s_wall"%self.name,CollisionSphere(0,0,0,12),WALL_COLLIDER_MASK)
         #self.pusher.show()
-        
-        self.lifter = self.tron.attachNewNode(CollisionNode(self.name + "_floor"))
-        self.lifterRay = CollisionRay(0,0,0,0,0,-1)
-        self.lifter.node().addSolid(self.lifterRay) #ray pointing down
-        self.lifter.node().setFromCollideMask(FLOOR_COLLIDER_MASK)
-        self.lifter.node().setIntoCollideMask(FLOOR_COLLIDER_MASK)
+        self.lifterRay = CollisionRay(0,0,0,0,0,-1) #ray pointing down
+        self.lifter = self.attach_collision_node("%s_floor"%self.name,self.lifterRay,FLOOR_COLLIDER_MASK)
+    
+    def attach_collision_node(self,name,solid,mask):
+        c = self.tron.attachNewNode(CollisionNode(name))
+        c.node().addSolid(solid)
+        c.node().setFromCollideMask(mask)
+        c.node().setIntoCollideMask(mask)
+        return c
         
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
         base.setFrameRateMeter(True)
         self.crosshairs = OnscreenImage(image = "%s/crosshairs.tif"%MODEL_PATH, pos = (-0.025, 0, 0), scale = 0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
-        none_str,scale,fg,bg = "|  None  |", 0.08, (0,0,0,0.8), (1,1,1,0.8)
+        none_str,scale,fg,bg = "|        |", 0.08, (0,0,0,0.8), (1,1,1,0.8)
         self.programHUD = [
             OnscreenText(text=none_str, pos=(-0.3,-0.9), scale=scale, fg=fg, bg=bg, mayChange=True),
             OnscreenText(text=none_str, pos=(   0,-0.9), scale=scale, fg=fg, bg=bg, mayChange=True),
@@ -213,17 +203,15 @@ class Player(Agent):
 		]
         # red flash for indicating hits
         self.redScreen = None
-        self.flashRed = Sequence(Func(self.start_red), Wait(0.25), Func(self.stop_red))
+        self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         # health status
         self.healthHUD = OnscreenText(text="HP: %d"%self.health,pos=(-0.9,0.9),fg=fg, bg=bg,mayChange=True)
     
-    def start_red(self):
+    def flash_red(self):
         if not self.redScreen:
             self.redScreen = OnscreenImage(image="%s/red_screen.png"%MODEL_PATH, pos = (0,0,0), scale = (2,1,1))
             self.redScreen.setTransparency(TransparencyAttrib.MAlpha)
-
-    def stop_red(self):
-        if self.redScreen:
+        else:
             self.redScreen.destroy()
             self.redScreen = None
 
@@ -233,7 +221,7 @@ class Player(Agent):
         inputState.watch('moveleft', 'a', 'a-up')
         inputState.watch('moveright', 'd', 'd-up')
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
-        # the camerea follows tron
+        # the camera follows tron
         base.camera.reparentTo(self.tron)
         base.camera.setPos(0, 40, 10)
         base.camera.setHpr(180, 0, 0)
@@ -266,7 +254,7 @@ class Player(Agent):
         self.target()
         if not self.handleEvents: return Task.cont
         self.handleGravity()
-        self.LookAtMouse(TURN_MULTIPLIER)
+        self.LookAtMouse()
 
         if not self.in_air(): # no mid-air corrections!
             cmds = [ c for c in ['forward','backward','moveleft','moveright'] if inputState.isSet(c)]
@@ -339,13 +327,13 @@ class Player(Agent):
             run.start(startT=t)
         self.running = False
     
-    def LookAtMouse(self, mult):
+    def LookAtMouse(self):
         md = base.win.getPointer(0)
         x,y = md.getX(), md.getY()
         center = base.win.getXSize()/2
         if base.win.movePointer(0, center, center):
-            self.tron.setH(self.tron.getH() - (mult * (x - center)))
-            self.tron.setP(self.tron.getP() + (mult * (y - center)))
+            self.tron.setH(self.tron.getH() - (TURN_MULTIPLIER * (x - center)))
+            self.tron.setP(self.tron.getP() + (TURN_MULTIPLIER * (y - center)))
             #make sure lifter continues to point straight down
             angle = radians(self.tron.getP())
             self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
