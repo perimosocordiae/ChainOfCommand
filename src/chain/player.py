@@ -27,6 +27,8 @@ FALL_DAMAGE_MULTIPLIER = 12.0 #How much to damage Tron per 1 over safe fall
 TERMINAL_VELOCITY = -50.0
 JUMP_SPEED = 4.0 #make sure this stays less than SAFE_FALL - he should
                  #be able to jump up & down w/o getting hurt!
+TRON_ORIGIN_HEIGHT = 10
+LASER_SPEED = 500
 
 class Player(Agent):
 
@@ -101,9 +103,8 @@ class Player(Agent):
         laser.set_pos(startPos)
         laser.model.setScale(16.0)
         laser.model.setHpr(self.tron.getHpr())
-        mult = 500 # make this a constant?
         h,p = radians(self.tron.getH()),radians(self.tron.getP())
-        laser.fire(Vec3(sin(h),-cos(h),-sin(p))*mult)
+        laser.fire(Vec3(sin(h),-cos(h),-sin(p))*LASER_SPEED)
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
@@ -300,7 +301,7 @@ class Player(Agent):
                 self.hit(damage)
             else:
                 floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
-                self.tron.setZ(floorZ + 10) # hack?
+                self.tron.setZ(floorZ + TRON_ORIGIN_HEIGHT) # hack?
             self.velocity.setZ(0)
     
     def in_air(self):
@@ -308,7 +309,7 @@ class Player(Agent):
         if self.floorQueue.getNumEntries() == 0: return True # technically
         self.floorQueue.sortEntries()
         floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
-        return self.tron.getZ() > floorZ + 10
+        return self.tron.getZ() > floorZ + TRON_ORIGIN_HEIGHT
     
     def jump(self):
         if not self.handleEvents: return

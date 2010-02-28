@@ -97,21 +97,22 @@ class Game(object):
         self.wallCollider3 = environ.attachNewNode(CollisionNode("wall3"))
         self.wallCollider4 = environ.attachNewNode(CollisionNode("wall4"))
         self.wallCollider5 = environ.attachNewNode(CollisionNode("wall5"))
-        self.wallCollider1.node().addSolid(CollisionPlane(Plane(Vec3(1, 0, 0), Point3(-1-2*center, 0, 0))))
-        self.wallCollider2.node().addSolid(CollisionPlane(Plane(Vec3(-1, 0, 0), Point3(2*center - 1, 0, 0))))
-        self.wallCollider3.node().addSolid(CollisionPlane(Plane(Vec3(0, -1, 0), Point3(0, 2*center - 1, 0))))
-        self.wallCollider4.node().addSolid(CollisionPlane(Plane(Vec3(0, 1, 0), Point3(0, -1-2*center, 0))))
-        self.wallCollider5.node().addSolid(CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0))))
+        self.wallCollider1.node().addSolid(CollisionPlane(Plane(Vec3(1, 0, 0), Point3(-2*center, 0, 0))))
+        self.wallCollider2.node().addSolid(CollisionPlane(Plane(Vec3(-1, 0, 0), Point3(2*center, 0, 0))))
+        self.wallCollider3.node().addSolid(CollisionPlane(Plane(Vec3(0, -1, 0), Point3(0, 2*center, 0))))
+        self.wallCollider4.node().addSolid(CollisionPlane(Plane(Vec3(0, 1, 0), Point3(0, -2*center, 0))))
+        self.wallCollider5.node().addSolid(CollisionPolygon(Point3(-2*center-1, -2*center-1, 0),
+                Point3(2*center+1, -2*center-1, 0), Point3(2*center+1, 2*center+1, 0), Point3(-2*center-1, 2*center+1, 0)))
         self.wallCollider1.node().setFromCollideMask(WALL_COLLIDER_MASK)
         self.wallCollider2.node().setFromCollideMask(WALL_COLLIDER_MASK)
         self.wallCollider3.node().setFromCollideMask(WALL_COLLIDER_MASK)
         self.wallCollider4.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider5.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider5.node().setFromCollideMask(FLOOR_COLLIDER_MASK)
         self.wallCollider1.node().setIntoCollideMask(WALL_COLLIDER_MASK)
         self.wallCollider2.node().setIntoCollideMask(WALL_COLLIDER_MASK)
         self.wallCollider3.node().setIntoCollideMask(WALL_COLLIDER_MASK)
         self.wallCollider4.node().setIntoCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider5.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        self.wallCollider5.node().setIntoCollideMask(FLOOR_COLLIDER_MASK)
         
         # make some random bunkers
         for _ in range(4):
@@ -146,11 +147,11 @@ def make_tile(parent,fname,pos,hpr, addCollider=False):
     tile.setScale(1.0, 1.0, 1.0)
     tile.setPos(*pos)
     tile.setHpr(*hpr)
-    if addCollider:
-        tileCollider = tile.attachNewNode(CollisionNode("tile"))
-        tileCollider.node().addSolid(CollisionPolygon(Point3(-1.2,-1.2,0),
-                    Point3(1.2,-1.2,0), Point3(1.2,1.2,0), Point3(-1.2,1.2,0))) 
-        tileCollider.node().setIntoCollideMask(FLOOR_COLLIDER_MASK)
+    #if addCollider:
+    #    tileCollider = tile.attachNewNode(CollisionNode("tile"))
+    #    tileCollider.node().addSolid(CollisionPolygon(Point3(-1.2,-1.2,0),
+    #                Point3(1.2,-1.2,0), Point3(1.2,1.2,0), Point3(-1.2,1.2,0))) 
+    #    tileCollider.node().setIntoCollideMask(FLOOR_COLLIDER_MASK)
 
 def egg_index(i,j,center):
     if i < center and j < center: return 1
