@@ -107,5 +107,6 @@ class GameEventHandler(DirectObject):
         
     def tronHitsProg(self,entry):
         tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
-        tron,prog = self.game.players[tn], self.game.programs[pn]
-        tron.collect(prog)
+        if pn in self.game.programs.keys():
+            tron,prog = self.game.players[tn], self.game.programs[pn]
+            tron.collect(prog)

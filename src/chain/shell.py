@@ -77,11 +77,11 @@ def main():
         g.add_program(Rm)
         g.add_program(Chmod)
         g.add_program(Ls)
-    #for _ in range(5):
-    #    g.add_drone()
-    #g.add_event_handler()
-    #g.add_background_music()
-    #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+    for _ in range(5):
+        g.add_drone()
+    g.add_event_handler()
+    g.add_background_music()
+    Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
 
 if __name__ == '__main__':
     Shell()
