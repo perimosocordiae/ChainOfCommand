@@ -1,18 +1,17 @@
-from math import sin,cos,radians,sqrt
+import sys
+from math import sin,cos,radians,sqrt,pi
 from itertools import ifilter
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Shader, CollisionNode, CollisionRay, CollisionSphere
-from pandac.PandaModules import CollisionHandlerQueue, TransparencyAttrib, BitMask32
+from pandac.PandaModules import (Shader, CollisionNode, CollisionRay, CollisionSphere,
+    CollisionHandlerQueue, TransparencyAttrib, BitMask32, Vec2, Vec3, Point3)
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
 from eventHandler import PlayerEventHandler
 from projectile import Laser
 from agent import Agent
-from pandac.PandaModules import Vec3, Point3
-import sys
 
 MODEL_PATH = "../../models"
 SOUND_PATH = "../../sounds"
@@ -23,10 +22,10 @@ TURN_MULTIPLIER = 0.5
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 WALL_COLLIDER_MASK = BitMask32.bit(0)
 FLOOR_COLLIDER_MASK = BitMask32.bit(4)
-GRAVITATIONAL_CONSTANT = .15 # = 9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
-SAFE_FALL = 5.0 #fall velocity after which damage is induced
+GRAVITATIONAL_CONSTANT = -0.15 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
+SAFE_FALL = -5.0 #fall velocity after which damage is induced
 FALL_DAMAGE_MULTIPLIER = 12.0 #How much to damage Tron per 1 over safe fall
-TERMINAL_VELOCITY = 50.0
+TERMINAL_VELOCITY = -50.0
 JUMP_SPEED = 4.0 #make sure this stays less than SAFE_FALL - he should
                  #be able to jump up & down w/o getting hurt!
 
@@ -44,25 +43,22 @@ class Player(Agent):
         self.setup_HUD()
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
-        self.handle_events(True)
-        self.fallVelocity = 0
-        dummy = Laser() # no jerkiness on first shot
+        self.handleEvents = True
+        self.velocity = Vec3(0,0,0)
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
         self.floorQueue = CollisionHandlerQueue()
         self.initialize_lifter()
-        base.cTrav.addCollider(self.lifter, self.floorQueue)
     
     def initialize_camera(self):
-        self.cameraNode = CollisionNode('cameracnode')
-        self.cameraNP = base.camera.attachNewNode(self.cameraNode)
+        cameraNode = CollisionNode('cameracnode')
+        cameraNP = base.camera.attachNewNode(cameraNode)
         self.cameraRay = CollisionRay(0,base.camera.getY(),0,0,1,0)
-        self.cameraNode.addSolid(self.cameraRay)
-        base.cTrav.addCollider(self.cameraNP, self.collisionQueue)
+        cameraNode.addSolid(self.cameraRay)
+        base.cTrav.addCollider(cameraNP, self.collisionQueue)
     
     def initialize_lifter(self):
         base.cTrav.addCollider(self.lifter, self.floorQueue)
-    
  
     def setup_sounds(self):
         keys = ['laser','yes','no','snarl']
@@ -73,8 +69,7 @@ class Player(Agent):
 
     def target(self):
         objHit = self.findCrosshairHit()
-        if objHit in self.game.drones:
-            #turn the crosshairs red
+        if objHit in self.game.drones: #turn the crosshairs red
             self.crosshairs.setImage("%s/crosshairs_locked.tif"%MODEL_PATH)
             self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
         elif objHit in self.game.programs:
@@ -106,20 +101,15 @@ class Player(Agent):
    
     def fire_laser(self):
         self.sounds['laser'].play()
-
         startPos = self.tron.getPos()
         startPos.setZ(startPos.getZ() + 2)
         laser = Laser()
         laser.set_pos(startPos)
         laser.model.setScale(16.0)
         laser.model.setHpr(self.tron.getHpr())
-        
-        mult = 500
+        mult = 500 # make this a constant?
         h,p = radians(self.tron.getH()),radians(self.tron.getP())
-        dx = mult*sin(h)
-        dy = -mult*cos(h)
-        dz = -mult*sin(p)
-        laser.fire(Vec3(dx,dy,dz))
+        laser.fire(Vec3(sin(h),-cos(h),-sin(p))*mult)
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
@@ -130,7 +120,6 @@ class Player(Agent):
             pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
             if 'donthitthis' in pickedObj: continue 
             if not (self.name in pickedObj): break
-        
         return pickedObj
 
     def damage(self):
@@ -153,7 +142,7 @@ class Player(Agent):
     
     def die(self):
         #TODO something better here!
-        sys.exit()    
+        sys.exit("GAME OVER, YOU DEAD")    
     
     def hit(self,amt=0):
         super(Player,self).hit(amt)
@@ -191,8 +180,7 @@ class Player(Agent):
         self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame = 46)
         self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
-        # pre-cache laser model
-        Laser()
+        Laser() # pre-cache laser model
 
     def setup_collider(self):
         self.collider = self.tron.attachNewNode(CollisionNode(self.name))
@@ -215,31 +203,23 @@ class Player(Agent):
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
         base.setFrameRateMeter(True)
-        #img_horiz = "%s/horiz_crosshair.jpg"%MODEL_PATH
-        #img_vert  = "%s/vert_crosshair.jpg"%MODEL_PATH
-        #self.crosshairs = [
-        #    OnscreenImage(image = img_horiz, pos = (-0.025, 0, 0), scale = (0.02, 1, .005)),
-        #    OnscreenImage(image = img_horiz, pos = ( 0.025, 0, 0), scale = (0.02, 1, .005)),
-        #    OnscreenImage(image = img_vert,  pos = (0, 0, -0.025), scale = (0.005, 1, .02)),
-        #    OnscreenImage(image = img_vert,  pos = (0, 0,  0.025), scale = (0.005, 1, .02))
-        #]
         self.crosshairs = OnscreenImage(image = "%s/crosshairs.tif"%MODEL_PATH, pos = (-0.025, 0, 0), scale = 0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
+        none_str,scale,fg,bg = "|  None  |", 0.08, (0,0,0,0.8), (1,1,1,0.8)
         self.programHUD = [
-            OnscreenText(text="|  None  |", pos=(-0.3,-0.9), scale=(0.08), fg=(0,0,0,0.8), bg=(1,1,1,0.8), mayChange=True),
-            OnscreenText(text="|  None  |", pos=(   0,-0.9), scale=(0.08), fg=(0,0,0,0.8), bg=(1,1,1,0.8), mayChange=True),
-            OnscreenText(text="|  None  |", pos=( 0.3,-0.9), scale=(0.08), fg=(0,0,0,0.8), bg=(1,1,1,0.8), mayChange=True)
+            OnscreenText(text=none_str, pos=(-0.3,-0.9), scale=scale, fg=fg, bg=bg, mayChange=True),
+            OnscreenText(text=none_str, pos=(   0,-0.9), scale=scale, fg=fg, bg=bg, mayChange=True),
+            OnscreenText(text=none_str, pos=( 0.3,-0.9), scale=scale, fg=fg, bg=bg, mayChange=True)
 		]
-        
         # red flash for indicating hits
         self.redScreen = None
         self.flashRed = Sequence(Func(self.start_red), Wait(0.25), Func(self.stop_red))
         # health status
-        self.healthHUD = OnscreenText(text="HP: %d"%self.health,pos=(-0.9,0.9),fg=(0,0,0,0.8), bg=(1,1,1,0.8),mayChange=True)
+        self.healthHUD = OnscreenText(text="HP: %d"%self.health,pos=(-0.9,0.9),fg=fg, bg=bg,mayChange=True)
     
     def start_red(self):
         if not self.redScreen:
-            self.redScreen = OnscreenImage(image = MODEL_PATH+'/red_screen.png', pos = (0, 0, 0), scale = (2,1,1))
+            self.redScreen = OnscreenImage(image="%s/red_screen.png"%MODEL_PATH, pos = (0,0,0), scale = (2,1,1))
             self.redScreen.setTransparency(TransparencyAttrib.MAlpha)
 
     def stop_red(self):
@@ -252,163 +232,105 @@ class Player(Agent):
         inputState.watch('backward', 's', 's-up')
         inputState.watch('moveleft', 'a', 'a-up')
         inputState.watch('moveright', 'd', 'd-up')
-        inputState.watch('left', 'arrow_left', 'arrow_left-up')
-        inputState.watch('right', 'arrow_right', 'arrow_right-up')
-        inputState.watch('up', 'arrow_up', 'arrow_up-up')
-        inputState.watch('down', 'arrow_down', 'arrow_down-up')
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
         # the camerea follows tron
         base.camera.reparentTo(self.tron)
         base.camera.setPos(0, 40, 10)
         base.camera.setHpr(180, 0, 0)
     
-    def handle_events(self, handle):
-        self.handleEvents = handle
-    
     def switchPerspective(self):
         #Switch between 3 perspectives
-        if self.handleEvents:
-            if base.camera.getY() > 60:
-                base.camera.setPos(0, 0, 10)
-            elif base.camera.getY() > 20:
-                base.camera.setPos(0, 100, 10)
-            else:
-                base.camera.setPos(0, 40, 10)
-            self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
+        if not self.handleEvents: return
+        if base.camera.getY() > 60:
+            base.camera.setPos(0, 0, 10)
+        elif base.camera.getY() > 20:
+            base.camera.setPos(0, 100, 10)
+        else:
+            base.camera.setPos(0, 40, 10)
+        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
     
     def zoomIn(self):
-        if self.handleEvents:
-            if base.camera.getY() > 0:
-                base.camera.setY(base.camera.getY() - 2)
-            self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
+        if not self.handleEvents: return
+        if base.camera.getY() > 0:
+            base.camera.setY(base.camera.getY() - 2)
+        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
             
     def zoomOut(self):
-        if self.handleEvents:
-            if base.camera.getY() < 100:
-                base.camera.setY(base.camera.getY() + 2)
-            self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
+        if not self.handleEvents: return
+        if base.camera.getY() < 100:
+            base.camera.setY(base.camera.getY() + 2)
+        self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
         
     #Task to move the camera
     def updateCameraTask(self, task):
-        #if base.mouseWatcherNode.hasMouse():
-        #    #use current mouse location
-        #    x=base.mouseWatcherNode.getMouseX()
-        #    y=base.mouseWatcherNode.getMouseY()
-        #    self.lastX = x
-        #    self.lastY = y
-        #else:
-        #    #use last known mouse location
-        #    x = self.lastX
-        #    y = self.lastY
-        #    
-        #if x < -0.1:
-        #    self.LookLeft((0.1 - x) * TURN_MULTIPLIER)
-        #elif x > 0.1:
-        #    self.LookRight((x - 0.1) * TURN_MULTIPLIER)
-        #if y < -0.1:
-        #    self.LookDown((-0.1 - y) * TURN_MULTIPLIER)
-        #elif y > 0.1:
-        #    self.LookUp((y - 0.1) * TURN_MULTIPLIER)
         self.target()
-        if self.handleEvents:
-            self.handleGravity()
-            self.LookAtMouse(TURN_MULTIPLIER)
-            
-            moving = 0
-            states = ['forward','backward','moveleft','moveright','left','right','up','down']
-            if any(inputState.isSet(s) for s in states):
-                if (inputState.isSet('forward') or inputState.isSet('backward')) and \
-                   (inputState.isSet('moveleft') or inputState.isSet('moveright')):
-                    const = sqrt(0.5)
-                    motionMult = const * MOTION_MULTIPLIER
-                    strafeMult = const * STRAFE_MULTIPLIER
-                else:
-                    motionMult = MOTION_MULTIPLIER
-                    strafeMult = STRAFE_MULTIPLIER
-                    
-                if inputState.isSet('forward') :
-                    self.MoveForwards(motionMult)
-                    moving = 1
-                elif inputState.isSet('backward') :
-                    self.MoveBackwards(motionMult)
-                    moving = 1
-                if inputState.isSet('moveleft') :
-                    self.MoveLeft(strafeMult)
-                    moving = 1
-                elif inputState.isSet('moveright') :
-                    self.MoveRight(strafeMult)
-                    moving = 1
-                #if inputState.isSet('left') :
-                #    self.LookLeft()
-                #elif inputState.isSet('right') :
-                #    self.LookRight()
-                #if inputState.isSet('up') :
-                #    self.LookDown() if self.inverted else self.LookUp()
-                #elif inputState.isSet('down') :
-                #    self.LookUp() if self.inverted else self.LookDown()
-                #end if
-            #end if
-            if moving == 1:
-                self.StartMoving()
-            else:
-                self.StopMoving()
+        if not self.handleEvents: return Task.cont
+        self.handleGravity()
+        self.LookAtMouse(TURN_MULTIPLIER)
+
+        if not self.in_air(): # no mid-air corrections!
+            cmds = [ c for c in ['forward','backward','moveleft','moveright'] if inputState.isSet(c)]
+        
+            new_vel = Vec2(0,0)
+            for cmd in cmds:
+                new_vel += self.get_velocity(cmd)
+        
+            new_vel.normalize()
+            new_vel *= MOTION_MULTIPLIER
+            self.velocity.setX(new_vel.getX())
+            self.velocity.setY(new_vel.getY())
+
+            if not len(cmds) == 0: self.StartMovingAnim()
+            else:                  self.StopMovingAnim()
+
+        # actually move tron, based on the values in self.velocity
+        self.tron.setFluidPos(self.tron.getPos()+self.velocity)
         return Task.cont
     
+    def get_velocity(self, dir):
+        h = radians(self.tron.getH())
+        if dir in ['moveleft','moveright']: h += pi/2.0
+        if dir in ['forward','moveleft']:
+            return Vec2(sin(h),-cos(h))
+        else:
+            return Vec2(-sin(h),cos(h))
+
     def handleGravity(self):
-        #if there's no floor below tron, have him fall
-        if self.floorQueue.getNumEntries() <= 0:
-            self.fall()
-            return
-        # This is so we get the closest object
-        self.floorQueue.sortEntries()
-        #get the point on the nearest floor in render's coordinate system
-        floorSpot = self.floorQueue.getEntry(0).getSurfacePoint(render)
-        if (self.tron.getZ() - floorSpot.getZ() > 10 and self.fallVelocity >= 0) \
-        or (self.fallVelocity < 0):
-            #in the future, have 2 rays - one above, one below, so he can't jump
-            #through things?  Or let him jump through things.  If he can't, adapt
-            #2nd half of if statement to include 2nd ray.
-            self.fall()
+        #in the future, have 2 rays - one above, one below, so he can't jump
+        #through things?  Or let him jump through things.  If he can't, adapt
+        #2nd half of if statement to include 2nd ray.
+        z_vel = self.velocity.getZ()
+        if self.in_air() or z_vel > 0:
+            self.velocity.setZ(max(z_vel + GRAVITATIONAL_CONSTANT, TERMINAL_VELOCITY)) # jump / fall
         else:
             #We hit (or stayed on) the ground...
             #how fast are we falling now? Use that to determine potential damage
-            if self.fallVelocity > SAFE_FALL:
-                damage = (self.fallVelocity - SAFE_FALL) * FALL_DAMAGE_MULTIPLIER
+            if z_vel < SAFE_FALL:
+                damage = (-z_vel + SAFE_FALL) * FALL_DAMAGE_MULTIPLIER
                 self.hit(damage)
             else:
-                self.tron.setZ(floorSpot.getZ() + 10)
-            self.fallVelocity = 0
+                floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
+                self.tron.setZ(floorZ + 10) # hack?
+            self.velocity.setZ(0)
     
-    def fall(self):
-        #causes Tron to fall due to gravity, and increases fall velocity
-        self.tron.setZ(self.tron.getZ() - self.fallVelocity)
-        self.fallVelocity = min(self.fallVelocity + GRAVITATIONAL_CONSTANT,
-                                TERMINAL_VELOCITY)
-    
-    def try_to_jump(self):
-        #Jump only if Tron is on the ground
-        if self.handleEvents:
-            base.cTrav.traverse(render)
-            if self.floorQueue.getNumEntries() == 0: return #no floor, no jump
-            # This is so we get the closest object
-            self.floorQueue.sortEntries()
-            #get the point on the nearest floor in render's coordinate system
-            floorSpot = self.floorQueue.getEntry(0).getSurfacePoint(render)
-            if self.tron.getZ() - floorSpot.getZ() <= 10:
-                #he's on the ground - let him jump
-                self.jump()
-            #end if
-        #end if
+    def in_air(self):
+        base.cTrav.traverse(render)
+        if self.floorQueue.getNumEntries() == 0: return True # technically
+        self.floorQueue.sortEntries()
+        floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
+        return self.tron.getZ() > floorZ + 10
     
     def jump(self):
-        self.fallVelocity = -JUMP_SPEED
+        if not self.handleEvents: return
+        if not self.in_air():
+            self.velocity.setZ(JUMP_SPEED)  # he's on the ground - let him jump
     
-    def StartMoving(self):
+    def StartMovingAnim(self):
         if self.running: return
         self.running = True
         self.shortRun.loop()
         
-    def StopMoving(self):
+    def StopMovingAnim(self):
         if not self.running: return
         self.tron.stop()
         if self.shortRun.isPlaying():
@@ -417,42 +339,13 @@ class Player(Agent):
             run.start(startT=t)
         self.running = False
     
-    def move(self,dx,dy):
-        self.tron.setFluidPos(self.tron.getX()+dx,self.tron.getY()+dy,self.tron.getZ())
-    
-    def MoveForwards(self, mult):
-        self.move(mult*sin(radians(self.tron.getH())),-mult*cos(radians(self.tron.getH())))
-
-    def MoveBackwards(self, mult):
-        self.move(-mult*sin(radians(self.tron.getH())),mult*cos(radians(self.tron.getH())))
-        
-    def MoveLeft(self, mult):
-        self.move(mult*sin(radians(self.tron.getH()+90)),-mult*cos(radians(self.tron.getH()+90)))
-        
-    def MoveRight(self, mult):
-        self.move(-mult*sin(radians(self.tron.getH()+90)),mult*cos(radians(self.tron.getH()+90)))
-    
-    def LookLeft(self, mult):
-        self.tron.setHpr(self.tron.getH()+mult, self.tron.getP(), 0)
-    
-    def LookRight(self, mult):
-        self.tron.setHpr(self.tron.getH()-mult, self.tron.getP(), 0)
-    
-    def LookDown(self, mult):
-        p = min(90,self.tron.getP()+mult)
-        self.tron.setHpr(self.tron.getH(), p, 0)
-    
-    def LookUp(self, mult):
-        p = max(-50,self.tron.getP()-mult)
-        self.tron.setHpr(self.tron.getH(), p, 0)
-        
     def LookAtMouse(self, mult):
         md = base.win.getPointer(0)
-        x = md.getX()
-        y = md.getY()
-        if base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2):
-            self.tron.setH(self.tron.getH() - (mult * (x - base.win.getXSize()/2)))
-            self.tron.setP(self.tron.getP() + (mult * (y - base.win.getYSize()/2)))
+        x,y = md.getX(), md.getY()
+        center = base.win.getXSize()/2
+        if base.win.movePointer(0, center, center):
+            self.tron.setH(self.tron.getH() - (mult * (x - center)))
+            self.tron.setP(self.tron.getP() + (mult * (y - center)))
             #make sure lifter continues to point straight down
             angle = radians(self.tron.getP())
             self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))

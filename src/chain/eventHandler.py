@@ -11,7 +11,7 @@ class PlayerEventHandler(DirectObject):
         self.accept('wheel_down',playr.zoomOut)
         self.accept('mouse1',playr.shoot)
         self.accept('escape',self.pause_menu)
-        self.accept('e',playr.try_to_jump)
+        self.accept('e',playr.jump)
         self.accept('p',self.pause_menu)
         self.accept('i',self.invert_control)
         self.timeout = False
@@ -27,14 +27,14 @@ class PlayerEventHandler(DirectObject):
         if self.timeout:
             #stop handling key/mouse events, etc.
             self.wp.setCursorHidden(False)
-            self.player.handle_events(False)
+            self.player.handleEvents = False
             base.win.requestProperties(self.wp)
             print "Time out! Come on guys, please?!"
         else:
             #start handling key/mouse events, etc.
             self.wp.setCursorHidden(True)
             self.wp.setMouseMode(WindowProperties.MRelative)
-            self.player.handle_events(True)
+            self.player.handleEvents = True
             base.win.requestProperties(self.wp)
             base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
             print "Okay, okay... time in!"
@@ -76,7 +76,6 @@ class GameEventHandler(DirectObject):
     
     def addDroneHandler(self, d):
         base.cTrav.addCollider(d.pusher,self.pusherHandler)
-        #base.cTrav.addCollider(d.collider,self.collisionHandler)
         self.pusherHandler.addCollider(d.pusher, d.panda)
         dName = str(hash(d))
         for t in self.game.players.iterkeys():
