@@ -27,7 +27,8 @@ class Projectile(object):
             Sequence(moveIt, Func(self.kill)).start()
     
     def kill(self):
-        self.model.stash()
+        #self.model.stash()
+        self.model.removeNode()
         
 class Laser(Projectile):
     def __init__(self):

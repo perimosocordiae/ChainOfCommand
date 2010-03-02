@@ -56,6 +56,7 @@ class Player(Agent):
         self.cameraRay = CollisionRay(0,base.camera.getY(),0,0,1,0)
         cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
+        base.camLens.setNearFar(10, 3000)
     
     def setup_sounds(self):
         keys = ['laser','yes','no','snarl']
@@ -167,7 +168,7 @@ class Player(Agent):
         self.tron = Actor.Actor("%s/tron"%MODEL_PATH, {"running":"%s/tron_anim_updated"%MODEL_PATH})
         self.tron.reparentTo(render)
         self.tron.setScale(0.4, 0.4, 0.4)
-        self.tron.setHpr(0, 0, 0)
+        self.tron.setHpr(0, 45, 0)
         self.tron.setPos(-4, 34, 150)
         self.tron.pose("running",46)
         self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame = 46)
@@ -258,7 +259,7 @@ class Player(Agent):
         if not self.handleEvents: return Task.cont
         self.handleGravity()
         self.LookAtMouse()
-
+        
         if not self.in_air(): # no mid-air corrections!
             cmds = [ c for c in ['forward','backward','moveleft','moveright'] if inputState.isSet(c)]
         

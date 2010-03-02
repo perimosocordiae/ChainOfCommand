@@ -21,6 +21,7 @@ class PlayerEventHandler(DirectObject):
         self.wp.setCursorHidden(True)
         self.wp.setMouseMode(WindowProperties.MRelative)
         base.win.requestProperties(self.wp)
+        base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
     
     def pause_menu(self):
         self.timeout = not self.timeout
@@ -49,8 +50,9 @@ class GameEventHandler(DirectObject):
         self.collisionHandler.addAgainPattern('%fn-repeat-%in')
         for t in game.players.itervalues():
             base.cTrav.addCollider(t.collider,self.collisionHandler)
-            base.cTrav.addCollider(t.pusher,self.pusherHandler)
-            self.pusherHandler.addCollider(t.pusher, t.tron)
+            base.cTrav.addCollider(t.pusher,self.collisionHandler)
+            #base.cTrav.addCollider(t.pusher,self.pusherHandler)
+            #self.pusherHandler.addCollider(t.pusher, t.tron)
         for d in game.drones.itervalues():
             base.cTrav.addCollider(d.pusher,self.pusherHandler)
             #base.cTrav.addCollider(d.collider,self.collisionHandler)
@@ -58,12 +60,18 @@ class GameEventHandler(DirectObject):
         
         drones = game.drones.keys()
         progs  = game.programs.keys()
+        walls = game.walls.keys()
         for t in game.players.iterkeys():
             for p in progs:
                 self.accept("%s-into-%s"%(t,p),  self.tronHitsProg)
             for d in drones:
                 self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)
                 self.accept("%s-repeat-%s"%(t,d),self.tronRepeatsDrone)
+            for w in walls:
+                self.accept("%s_wall-into-%s"%(t,w),  self.tronHitsWall)
+                self.accept("%s_wall-repeat-%s"%(t,w),  self.tronHitsWall)
+            self.accept("%s_wall-into-%s"%(t,"tower_base"),  self.tronHitsWall)
+            self.accept("%s_wall-repeat-%s"%(t,"tower_base"),  self.tronHitsWall)
     
     def addProgramHandler(self, p):
         for t in self.game.players.iterkeys():
@@ -79,16 +87,23 @@ class GameEventHandler(DirectObject):
     
     def addPlayerHandler(self, t):
         base.cTrav.addCollider(t.collider,self.collisionHandler)
-        base.cTrav.addCollider(t.pusher,self.pusherHandler)
-        self.pusherHandler.addCollider(t.pusher, t.tron)
+        base.cTrav.addCollider(t.pusher,self.collisionHandler)
+        #base.cTrav.addCollider(t.pusher,self.pusherHandler)
+        #self.pusherHandler.addCollider(t.pusher, t.tron)
         drones = self.game.drones.keys()
         progs  = self.game.programs.keys()
+        walls = self.game.walls.keys()
         tName = t.name
         for p in progs:
             self.accept("%s-into-%s"%(tName,p),  self.tronHitsProg)
         for d in drones:
             self.accept("%s-into-%s"%(tName,d),  self.tronHitsDrone)
             self.accept("%s-repeat-%s"%(tName,d),self.tronRepeatsDrone)
+        for w in walls:
+            self.accept("%s_wall-into-%s"%(tName,w),  self.tronHitsWall)
+            self.accept("%s_wall-repeat-%s"%(tName,w),  self.tronHitsWall)
+        self.accept("%s_wall-into-%s"%(tName,"tower_base"),  self.tronHitsWall)
+        self.accept("%s_wall-repeat-%s"%(tName,"tower_base"),  self.tronHitsWall)
         t.initialize_camera()
     
     def tronHitsDrone(self,entry):
@@ -110,3 +125,12 @@ class GameEventHandler(DirectObject):
         if pn in self.game.programs.keys():
             tron,prog = self.game.players[tn], self.game.programs[pn]
             tron.collect(prog)
+    
+    def tronHitsWall(self, entry):
+        tn = entry.getFromNodePath().getName()
+        tn = tn.replace("_wall", "")
+        tron = self.game.players[tn]
+        penetration = entry.getSurfacePoint(render) - entry.getInteriorPoint(render)
+        newPos = tron.tron.getPos() + penetration
+        #newPos.setZ(tron.tron.getZ())
+        tron.tron.setFluidPos(newPos)

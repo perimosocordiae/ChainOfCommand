@@ -26,10 +26,14 @@ class Drone(Agent):
         return 2
 
     def die(self):
-        self.panda.stash()
-        self.collider.stash()
-        self.pusher.stash()
+        #self.panda.stash()
+        #self.collider.stash()
+        #self.pusher.stash()
+        taskMgr.remove(self.walkTask)
         del self.game.drones[str(hash(self))]
+        self.collider.removeNode()
+        self.pusher.removeNode()
+        self.panda.removeNode()
 
     def load_model(self,pos):
         self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})
@@ -40,7 +44,7 @@ class Drone(Agent):
         self.walk = self.panda.actorInterval("walk")
         self.walk.loop()
         self.walking = False
-        taskMgr.add(self.WalkTask, "WalkTask")
+        self.walkTask = taskMgr.add(self.WalkTask, "WalkTask")
 
     def setup_collider(self):
         key = str(hash(self))

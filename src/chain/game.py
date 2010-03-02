@@ -8,6 +8,7 @@ from pandac.PandaModules import CollisionTraverser, CollisionSphere, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
 from player import Player
 from drone import Drone
+from wall import Wall
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
 from time import time
@@ -22,7 +23,7 @@ class Game(object):
     def __init__(self,map_size=320,tile_size=16, gameLength=180):
         base.cTrav = CollisionTraverser()
         #wsbase.cTrav.showCollisions(render)
-        self.players, self.programs,self.drones = {},{},{}
+        self.players, self.programs,self.drones,self.walls = {},{},{},{}
         self.map_size,self.tile_size = map_size,tile_size
         base.disableMouse()
         self.load_env()
@@ -56,6 +57,9 @@ class Game(object):
         self.drones[str(hash(d))] = d 
         self.eventHandle.addDroneHandler(d)
     
+    def add_wall(self, name, parent, p1, p2, p3, p4):
+        self.walls[name] = Wall(self, name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
+    
     def add_background_music(self):
         # from http://www.newgrounds.com/audio/listen/287442
         backgroundMusic = loader.loadSfx("../../sounds/City_in_Flight.mp3")
@@ -71,7 +75,9 @@ class Game(object):
         environ.reparentTo(render)
         environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         environ.setPos(0, 0, 0)
-                
+        
+        #TODO - ADD THE WALLS AS OBJECTS INSTEAD
+         
         center = num_tiles/2
         wall_height = 10
         #for i,j in iproduct(range(num_tiles),repeat=2):
@@ -91,33 +97,38 @@ class Game(object):
             make_tile(environ,egg,( 2*center-1,     2*(i-center), 2*j+1),            (0, 0, -90)) #wall 3
             make_tile(environ,egg,(-2*(1+i-center), 2*center-1,   2*j+1),            (0, 90,0))   #wall 4
         
-        #Walls are at planes (x=-1-2*CENTER), (x=2*center-1), (y=-1-2*center), and (y=2*center-1) 
-        self.wallCollider1 = environ.attachNewNode(CollisionNode("wall1"))
-        self.wallCollider2 = environ.attachNewNode(CollisionNode("wall2"))
-        self.wallCollider3 = environ.attachNewNode(CollisionNode("wall3"))
-        self.wallCollider4 = environ.attachNewNode(CollisionNode("wall4"))
-        self.wallCollider5 = environ.attachNewNode(CollisionNode("wall5"))
-        self.wallCollider1.node().addSolid(CollisionPlane(Plane(Vec3(1, 0, 0), Point3(-1 - 2*center, 0, 0))))
-        self.wallCollider2.node().addSolid(CollisionPlane(Plane(Vec3(-1, 0, 0), Point3(2*center - 1, 0, 0))))
-        self.wallCollider3.node().addSolid(CollisionPlane(Plane(Vec3(0, -1, 0), Point3(0, 2*center - 1, 0))))
-        self.wallCollider4.node().addSolid(CollisionPlane(Plane(Vec3(0, 1, 0), Point3(0, -1 - 2*center, 0))))
-        self.wallCollider5.node().addSolid(CollisionPolygon(Point3(-2*center-1, -2*center-1, 0),
-                Point3(2*center+1, -2*center-1, 0), Point3(2*center+1, 2*center+1, 0), Point3(-2*center-1, 2*center+1, 0)))
-        self.wallCollider1.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider2.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider3.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider4.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider5.node().setFromCollideMask(FLOOR_COLLIDER_MASK)
-        self.wallCollider1.node().setIntoCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider2.node().setIntoCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider3.node().setIntoCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider4.node().setIntoCollideMask(WALL_COLLIDER_MASK)
-        self.wallCollider5.node().setIntoCollideMask(FLOOR_COLLIDER_MASK)
+        #add collision handlers for walls
+        self.add_wall("wall1", environ,
+                      Point3(-1 - 2*center, -1 - 2*center, 2*wall_height + 1),
+                      Point3(-1 - 2*center, -1 - 2*center, 0),
+                      Point3(-1 - 2*center, 2*center - 1, 0),
+                      Point3(-1 - 2*center, 2*center - 1, 2*wall_height + 1))
+        self.add_wall("wall2", environ,
+                      Point3(2*center - 1, 2*center - 1, 2*wall_height + 1),
+                      Point3(2*center - 1, 2*center - 1, 0),
+                      Point3(2*center - 1, -1 - 2*center, 0),
+                      Point3(2*center - 1, -1 - 2*center, 2*wall_height + 1))
+        self.add_wall("wall3", environ,
+                      Point3(-1 - 2*center, 2*center - 1, 2*wall_height + 1),
+                      Point3(-1 - 2*center, 2*center - 1, 0),
+                      Point3(2*center - 1, 2*center - 1, 0),
+                      Point3(2*center - 1, 2*center - 1, 2*wall_height + 1))
+        self.add_wall("wall4", environ,
+                      Point3(2*center - 1, -1 - 2*center, 2*wall_height + 1),
+                      Point3(2*center - 1, -1 - 2*center, 0),
+                      Point3(-1 - 2*center, -1 - 2*center, 0),
+                      Point3(-1 - 2*center, -1 - 2*center, 2*wall_height + 1))
+        
+        #The reason this is different is because walls have their own event collision
+        #handler method... floors don't need one (so no need for a dictionary of them)
+        self.floor = Wall(self, "floor", environ, Point3(-2*center-1, -2*center-1, 0),
+                Point3(2*center+1, -2*center-1, 0), Point3(2*center+1, 2*center+1, 0),
+                Point3(-2*center-1, 2*center+1, 0), FLOOR_COLLIDER_MASK)
         
         # make some random bunkers
         for _ in range(4):
             make_column(environ, choice(eggs), randint(-num_tiles,num_tiles), randint(-num_tiles,num_tiles), randint(2,wall_height))
-        
+    
     def timerTask(self, task):
         self.gameTime = self.endTime - time()
         self.timer.setText("Time: %.2f seconds"%(self.gameTime))
@@ -147,11 +158,6 @@ def make_tile(parent,fname,pos,hpr, addCollider=False):
     tile.setScale(1.0, 1.0, 1.0)
     tile.setPos(*pos)
     tile.setHpr(*hpr)
-    #if addCollider:
-    #    tileCollider = tile.attachNewNode(CollisionNode("tile"))
-    #    tileCollider.node().addSolid(CollisionPolygon(Point3(-1.2,-1.2,0),
-    #                Point3(1.2,-1.2,0), Point3(1.2,1.2,0), Point3(-1.2,1.2,0))) 
-    #    tileCollider.node().setIntoCollideMask(FLOOR_COLLIDER_MASK)
 
 def egg_index(i,j,center):
     if i < center and j < center: return 1
