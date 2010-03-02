@@ -18,6 +18,7 @@ MODEL_PATH = "../../models"
 SOUND_PATH = "../../sounds"
 MOTION_MULTIPLIER = 3.0
 TURN_MULTIPLIER = 0.5
+LOOK_MULTIPLIER = 0.3
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 WALL_COLLIDER_MASK = BitMask32.bit(0)
 FLOOR_COLLIDER_MASK = BitMask32.bit(4)
@@ -28,7 +29,7 @@ TERMINAL_VELOCITY = -50.0
 JUMP_SPEED = 4.0 #make sure this stays less than SAFE_FALL - he should
                  #be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
-LASER_SPEED = 500
+LASER_SPEED = 5000
 
 class Player(Agent):
 
@@ -104,8 +105,12 @@ class Player(Agent):
         laser.set_pos(startPos)
         laser.model.setScale(16.0)
         laser.model.setHpr(self.tron.getHpr())
-        h,p = radians(self.tron.getH()),radians(self.tron.getP())
-        laser.fire(Vec3(sin(h),-cos(h),-sin(p))*LASER_SPEED)
+        laser.model.setH(laser.model.getH())
+        laser.model.setP(-base.camera.getP())
+        h,p = radians(self.tron.getH()),radians(base.camera.getP())
+        pcos = cos(p)
+        #the .005 is a fudge factor - it just makes things work
+        laser.fire(Vec3(sin(h)*pcos,-cos(h)*pcos,sin(p) + 0.005)*LASER_SPEED)
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
@@ -125,7 +130,7 @@ class Player(Agent):
         return d
 
     def shield(self):
-        s = 1 # no shield
+        s = 1.0 # no shield
         for p in ifilter(lambda p: p != None,self.programs):
             s = p.shield_mod(s)
         return s
@@ -168,7 +173,7 @@ class Player(Agent):
         self.tron = Actor.Actor("%s/tron"%MODEL_PATH, {"running":"%s/tron_anim_updated"%MODEL_PATH})
         self.tron.reparentTo(render)
         self.tron.setScale(0.4, 0.4, 0.4)
-        self.tron.setHpr(0, 45, 0)
+        self.tron.setHpr(0, 0, 0)
         self.tron.setPos(-4, 34, 150)
         self.tron.pose("running",46)
         self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame = 46)
@@ -228,7 +233,7 @@ class Player(Agent):
         # the camera follows tron
         base.camera.reparentTo(self.tron)
         base.camera.setPos(0, 40, 10)
-        base.camera.setHpr(180, 0, 0)
+        base.camera.setHpr(180, -30, 0)
     
     def switchPerspective(self):
         #Switch between 3 perspectives
@@ -337,8 +342,12 @@ class Player(Agent):
         center = base.win.getXSize()/2
         if base.win.movePointer(0, center, center):
             self.tron.setH(self.tron.getH() - (TURN_MULTIPLIER * (x - center)))
-            self.tron.setP(self.tron.getP() + (TURN_MULTIPLIER * (y - center)))
+            #self.tron.setP(self.tron.getP() + (TURN_MULTIPLIER * (y - center)))
+            newP = base.camera.getP() - (LOOK_MULTIPLIER * (y - center))
+            #keep within +- 90 degrees
+            newP = max(min(newP, 80), -80)
+            base.camera.setP(newP)
             #make sure lifter continues to point straight down
             angle = radians(self.tron.getP())
-            self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
+            #self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
         

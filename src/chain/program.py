@@ -75,7 +75,7 @@ class Chmod(Program):
         super(Chmod,self).__init__(game,'chmod',pos)
     
     def shield_mod(self,s):
-        return s*2 # double the player's shield strength
+        return s*2.0 # double the player's shield strength
 
 class Ls(Program):
 
