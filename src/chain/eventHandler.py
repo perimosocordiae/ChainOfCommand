@@ -14,6 +14,10 @@ class PlayerEventHandler(DirectObject):
         self.accept('escape',sys.exit) # hack, for now
         self.accept('e',playr.jump)
         self.accept('p',self.pause_menu)
+        self.accept('m',playr.toggle_background_music)
+            # above line toggles background music when you press m
+        self.accept('n',playr.toggle_sound_effects)
+            # above line toggles sound effects when you press n
         self.timeout = False
         
         #set up the mouse handling properly

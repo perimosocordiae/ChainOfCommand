@@ -62,9 +62,16 @@ class Player(Agent):
     def setup_sounds(self):
         keys = ['laser','yes','no','snarl']
         fnames = ["%s/hilas.mp3","%s/Collect_success.mp3","%s/Collect_fail.mp3","%s/Snarl.mp3"]
-        self.sounds = dict(zip(keys,[loader.loadSfx(f%SOUND_PATH) for f in fnames]))
+        self.sounds = dict(zip(keys,[base.sfxManagerList[0].getSound(f%SOUND_PATH) for f in fnames]))
         for s in self.sounds.itervalues():
             s.setVolume(0.3)
+    
+    def toggle_background_music(self):
+        base.enableMusic(not base.musicManager.getActive()) 
+        # bug, can't turn on once it's off
+        
+    def toggle_sound_effects(self):
+        base.enableSoundEffects(not base.sfxManagerList[0].getActive())
 
     def target(self):
         objHit = self.findCrosshairHit()
