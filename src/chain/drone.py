@@ -23,7 +23,7 @@ class Drone(Agent):
         return 10
      
     def repeat_damage(self):
-        return 2
+        return 1
 
     def die(self):
         #self.panda.stash()

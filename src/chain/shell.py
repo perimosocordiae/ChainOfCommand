@@ -8,6 +8,7 @@ from game import Game
 from program import Rm,Chmod,DashR
 import time
 
+CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
 PROMPT = "Enter a command"
 # generated with: figlet -f slant "Chain of Command"
@@ -51,13 +52,13 @@ class Shell(object):
                 textType.append(Wait(0.5))
             else:
                 textType.append(Func(self.append_char, char))
-                textType.append(Wait(0.15))
+                textType.append(Wait(CHARACTER_DELAY))
         for line in LOGO.split('\n') :
             textType.append(Func(self.append_line, line));
-            textType.append(Wait(0.15))
+            textType.append(Wait(CHARACTER_DELAY))
         for char in PROMPT:
             textType.append(Func(self.append_char, char))
-            textType.append(Wait(0.15))
+            textType.append(Wait(CHARACTER_DELAY))
         textType.append(Func(self.user_input))
         textType.start()
     
@@ -129,11 +130,11 @@ def main():
         g.add_program(Rm)
         g.add_program(Chmod)
         g.add_program(DashR)
-    #for _ in range(5):
-    #    g.add_drone()
+    for _ in range(5):
+        g.add_drone()
     g.add_event_handler()
     g.add_background_music()
-    #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+    Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
 
 if __name__ == '__main__':
     Shell(True)
