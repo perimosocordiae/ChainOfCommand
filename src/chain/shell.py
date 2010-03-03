@@ -1,6 +1,6 @@
 import sys
 import direct.directbase.DirectStart
-from direct.gui.DirectGui import DirectEntry, DirectLabel
+from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode
@@ -10,9 +10,9 @@ import time
 
 # top line is a hack, to preserve the width
 # generated with: figlet -f slant "Chain of Command"
-WELCOME = """----------------------------------------------------------------
+WELCOME = """
  Welcome to
-\n\n\n\n
+\n\n\n
     ________          _                ____
    / ____/ /_  ____ _(_)___     ____  / __/
   / /   / __ \/ __ `/ / __ \   / __ \/ /_  
@@ -31,7 +31,15 @@ WELCOME = """----------------------------------------------------------------
 class Shell(object):
     def __init__(self):
         font = loader.loadFont('../../models/FreeMono.ttf')
-        self.output = OnscreenText(text=WELCOME, pos=(-1.33,1.03), scale=0.07, align=TextNode.ALeft, mayChange=True, bg=(0,0,0,1), fg=(1,1,1,0.8), font=font)
+        self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
+        self.output = OnscreenText(text="\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", #blank screen
+                                   pos=(-1.33,0.937), scale=0.07, align=TextNode.ALeft, mayChange=True, 
+                                   bg=(0,0,0,1), fg=(1,1,1,0.8), font=font)
+        textScroll = Sequence()
+        for line in WELCOME.split('\n') :
+            textScroll.append(Func(self.append_line, line));
+            textScroll.append(Wait(0.3))
+        textScroll.start()
         self.prompt = DirectLabel(text=">", frameSize=(-0.05,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=font, )
         self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=38, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
         self.input.enterText("")
@@ -73,7 +81,7 @@ class Shell(object):
         
     def append_line(self,txt):
         lines = self.output.getText().split('\n')
-        del lines[1] # preserve topline hack, scroll
+        del lines[0] # scroll
         lines.append(txt)
         self.output.setText('\n'.join(lines))
     
