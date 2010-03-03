@@ -65,7 +65,6 @@ class Game(object):
         backgroundMusic = base.musicManager.getSound("../../sounds/City_in_Flight.mp3")
         backgroundMusic.setVolume(0.3)
         backgroundMusic.setTime(35)  # music automatically starts playing when this command is issued
-        #backgroundMusic.setLoop(0) # loop forever (required for music to start by pressing m)
         print "Track: City in Flight in Neon Light" # attribution
         print "Author: Trevor Dericks"
 

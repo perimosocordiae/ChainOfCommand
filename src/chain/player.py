@@ -42,6 +42,7 @@ class Player(Agent):
         self.setup_collider()
         self.setup_camera()
         self.setup_HUD()
+        self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
         self.handleEvents = True
@@ -82,6 +83,13 @@ class Player(Agent):
         else:
             self.crosshairs.setImage("%s/crosshairs.tif"%MODEL_PATH)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
+    
+    def click(self):
+        self.shooting = True
+        self.shoot()
+        
+    def clickRelease(self):
+        self.shooting = False
     
     def shoot(self):
         if not self.handleEvents: return
@@ -142,10 +150,10 @@ class Player(Agent):
             s = p.shield_mod(s)
         return s
     
-    def accuracy(self):
-        a = 8; # arbitrary
+    def rapid_fire(self):
+        a = False; # no rapid-fire
         for p in ifilter(lambda p: p != None,self.programs):
-            a = a.accuracy_mod(a)
+            a = p.rapid_fire_mod(a)
         return a
     
     def die(self):
@@ -264,6 +272,15 @@ class Player(Agent):
         if base.camera.getY() < 100:
             base.camera.setY(base.camera.getY() + 2)
         self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
+        
+    def setup_shooting(self):
+        self.shooting = False
+        inputState.watch('shoot', 'mouse1', 'mouse1-up')
+        taskMgr.add(self.updateShotTask, "updateShotTask")
+        
+    def updateShotTask(self, task):
+        if self.shooting and self.rapid_fire() : self.shoot()
+        return Task.cont
         
     #Task to move the camera
     def updateCameraTask(self, task):

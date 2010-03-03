@@ -10,7 +10,8 @@ class PlayerEventHandler(DirectObject):
         self.accept('f',playr.switchPerspective)
         self.accept('wheel_up',playr.zoomIn)
         self.accept('wheel_down',playr.zoomOut)
-        self.accept('mouse1',playr.shoot)
+        self.accept('mouse1',playr.click)
+        self.accept('mouse1-up',playr.clickRelease)
         self.accept('escape',sys.exit) # hack, for now
         self.accept('e',playr.jump)
         self.accept('p',self.pause_menu)

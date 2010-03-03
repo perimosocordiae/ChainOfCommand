@@ -5,9 +5,8 @@ from direct.gui.OnscreenText import OnscreenText
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode
 from game import Game
-from program import Rm,Chmod,Ls
+from program import Rm,Chmod,DashR
 import time
-
 
 # top line is a hack, to preserve the width
 # generated with: figlet -f slant "Chain of Command"
@@ -76,9 +75,9 @@ class Shell(object):
         self.append_line(" High Scores: ")
         self.append_line("    1. Dude - 42")
 
-	def resume_shell(self):
-		self.output.unstash()
-		self.prompt.unstash()
+    def resume_shell(self):
+        self.output.unstash()
+        self.prompt.unstash()
         self.input.unstash()
         self.screen.unstash()
         
@@ -101,8 +100,8 @@ class Shell(object):
 # end Shell class
 
 def add_drone(g):
-	if len(g.drones) < 20:
-		g.add_drone()
+    if len(g.drones) < 20:
+        g.add_drone()
 
 def main():
     g = Game(360,12,120)
@@ -110,7 +109,7 @@ def main():
     for _ in range(5):
         g.add_program(Rm)
         g.add_program(Chmod)
-        g.add_program(Ls)
+        g.add_program(DashR)
     for _ in range(5):
         g.add_drone()
     g.add_event_handler()
@@ -120,4 +119,3 @@ def main():
 if __name__ == '__main__':
     Shell()
     run()
-

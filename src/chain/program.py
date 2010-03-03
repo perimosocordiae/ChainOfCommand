@@ -11,14 +11,11 @@ DRONE_COLLIDER_MASK = BitMask32.bit(1)
 
 class Program(Agent):
 
-    def __init__(self,game,name,desc,pos):
-        font = loader.loadFont('../../models/FreeMono.ttf')
+    def __init__(self,game,name,pos):
         super(Program, self).__init__(game)
         self.game = game
         if not pos:
             pos = game.rand_point()
-        if not desc:
-            desc = ""
         self.name = name
         self.pos = pos
         self.load_model()
@@ -69,29 +66,29 @@ class Program(Agent):
         return d
     def shield_mod(self,s):
         return s
-    def accuracy_mod(self, a):
+    def rapid_fire_mod(self, a):
         return a
 
 class Rm(Program):
-    DESC = "Damage x2"
+
     def __init__(self,game,pos=None):
-        super(Rm,self).__init__(game,'rm',self.DESC,pos)
+        super(Rm,self).__init__(game,'rm', pos)
     
     def damage_mod(self,d):
         return d*2 # double the player's damage
 
 class Chmod(Program):
-    DESC = "Shield x2"
+
     def __init__(self,game,pos=None):
-        super(Chmod,self).__init__(game,'chmod',self.DESC,pos)
+        super(Chmod,self).__init__(game,'chmod', pos)
     
     def shield_mod(self,s):
         return s*2.0 # double the player's shield strength
 
-class Ls(Program):
-    DESC = "Accuracy x2"
+class DashR(Program):
+
     def __init__(self,game,pos=None):
-        super(Ls,self).__init__(game,'ls',self.DESC,pos)
+        super(DashR,self).__init__(game,'-r', pos)
     
-    def accuracy_mod(self,a):
-        return a/2 # double the player's accuracy
+    def rapid_fire_mod(self,a):
+        return True # allow rapid-fire
