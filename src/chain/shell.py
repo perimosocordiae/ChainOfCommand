@@ -33,9 +33,8 @@ class Shell(object):
         font = loader.loadFont('../../models/FreeMono.ttf')
         self.output = OnscreenText(text=WELCOME, pos=(-1.33,1.03), scale=0.07, align=TextNode.ALeft, mayChange=True, bg=(0,0,0,1), fg=(1,1,1,0.8), font=font)
         self.prompt = DirectLabel(text=">", frameSize=(-0.05,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=font, )
-        self.userInput = ""
         self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=38, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
-        self.input.enterText(self.userInput)
+        self.input.enterText("")
         self.cmd_dict = { 'quit' : self.quit,
                           'exit' : self.quit,
                           'help' : self.help,
@@ -43,27 +42,27 @@ class Shell(object):
                           'scores' : self.scores,
                           'start': self.start_game }
 
-    def start_game(self):
+    def start_game(self,arglist=[]):
         self.output.stash()
         self.prompt.stash()
         self.input.stash()
         main()
 
-    def quit(self):
+    def quit(self,arglist=[]):
         self.append_line(" Bye!")
         sys.exit()
         
-    def help(self):
+    def help(self,arglist=[]):
         self.append_line(" Available Commands:")
         for cmd in self.cmd_dict:
             self.append_line("    " + cmd)
             
-    def manual(self):
+    def manual(self,arglist=[]):
         self.append_line(" Instructions:")
         for i in range(0,10):
             self.append_line("    Blah")
             
-    def scores(self):
+    def scores(self,arglist=[]):
         self.append_line(" High Scores: ")
         self.append_line("    1. Dude - 42")
 
@@ -79,13 +78,14 @@ class Shell(object):
         self.output.setText('\n'.join(lines))
     
     def parse_cmd(self,str):
-        cmd = str.lstrip(self.userInput).split()
-        cmd = '_'.join(cmd)
+        self.append_line("> %s"%str)
+        input = str.split()
+        cmd,args = input[0],input[1:]
         if cmd in self.cmd_dict:
-            self.cmd_dict[cmd]()
+            self.cmd_dict[cmd](args)
         else:
             self.append_line("unknown command: %s" % cmd)
-        self.input.enterText(self.userInput)
+        self.input.enterText("")
         self.input.setFocus()
 # end Shell class
 

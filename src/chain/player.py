@@ -239,18 +239,18 @@ class Player(Agent):
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
         # the camera follows tron
         base.camera.reparentTo(self.tron)
-        base.camera.setPos(0, 40, 10)
+        base.camera.setPos(0, 40, TRON_ORIGIN_HEIGHT)
         base.camera.setHpr(180, -30, 0)
     
     def switchPerspective(self):
         #Switch between 3 perspectives
         if not self.handleEvents: return
         if base.camera.getY() > 60:
-            base.camera.setPos(0, 0, 10)
+            base.camera.setPos(0, 0, TRON_ORIGIN_HEIGHT)
         elif base.camera.getY() > 20:
-            base.camera.setPos(0, 100, 10)
+            base.camera.setPos(0, 100, TRON_ORIGIN_HEIGHT)
         else:
-            base.camera.setPos(0, 40, 10)
+            base.camera.setPos(0, 40, TRON_ORIGIN_HEIGHT)
         self.cameraRay.setOrigin(Point3(0,base.camera.getY(),0))
     
     def zoomIn(self):

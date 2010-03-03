@@ -33,6 +33,7 @@ class Drone(Agent):
         del self.game.drones[str(hash(self))]
         self.collider.removeNode()
         self.pusher.removeNode()
+        self.panda.cleanup()
         self.panda.removeNode()
 
     def load_model(self,pos):
