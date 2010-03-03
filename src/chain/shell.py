@@ -8,6 +8,7 @@ from game import Game
 from program import Rm,Chmod,Ls
 import time
 
+
 # top line is a hack, to preserve the width
 # generated with: figlet -f slant "Chain of Command"
 WELCOME = """
@@ -54,6 +55,7 @@ class Shell(object):
         self.output.stash()
         self.prompt.stash()
         self.input.stash()
+        self.screen.stash()
         main()
 
     def quit(self,arglist=[]):
@@ -78,6 +80,7 @@ class Shell(object):
 		self.output.unstash()
 		self.prompt.unstash()
         self.input.unstash()
+        self.screen.unstash()
         
     def append_line(self,txt):
         lines = self.output.getText().split('\n')
@@ -104,7 +107,7 @@ def add_drone(g):
 def main():
     g = Game(360,12,120)
     g.add_player('player_1')
-    for _ in range(4):
+    for _ in range(5):
         g.add_program(Rm)
         g.add_program(Chmod)
         g.add_program(Ls)
