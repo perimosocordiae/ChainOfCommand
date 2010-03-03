@@ -1,5 +1,5 @@
 from shell import Shell
 
 if __name__ == '__main__':
-    Shell().start_game()
+    Shell(False)
     run()

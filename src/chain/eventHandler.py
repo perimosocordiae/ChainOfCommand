@@ -19,6 +19,9 @@ class PlayerEventHandler(DirectObject):
             # above line toggles background music when you press m
         self.accept('n',playr.toggle_sound_effects)
             # above line toggles sound effects when you press n
+        self.accept('1',playr.collect,[0])
+        self.accept('2',playr.collect,[1])
+        self.accept('3',playr.collect,[2])
         self.timeout = False
         
         #set up the mouse handling properly
@@ -53,6 +56,7 @@ class GameEventHandler(DirectObject):
         self.collisionHandler = CollisionHandlerEvent()
         self.collisionHandler.addInPattern('%fn-into-%in')
         self.collisionHandler.addAgainPattern('%fn-repeat-%in')
+        self.collisionHandler.addOutPattern('%fn-out-%in')
         for t in game.players.itervalues():
             base.cTrav.addCollider(t.collider,self.collisionHandler)
             base.cTrav.addCollider(t.pusher,self.collisionHandler)
@@ -69,6 +73,7 @@ class GameEventHandler(DirectObject):
         for t in game.players.iterkeys():
             for p in progs:
                 self.accept("%s-into-%s"%(t,p),  self.tronHitsProg)
+                self.accept("%s-out-%s"%(t,p), self.tronOutProg)
             for d in drones:
                 self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)
                 self.accept("%s-repeat-%s"%(t,d),self.tronRepeatsDrone)
@@ -81,6 +86,7 @@ class GameEventHandler(DirectObject):
     def addProgramHandler(self, p):
         for t in self.game.players.iterkeys():
             self.accept("%s-into-%s"%(t,p.unique_str()),  self.tronHitsProg)
+            self.accept("%s-out-%s"%(t,p.unique_str()), self.tronOutProg)
     
     def addDroneHandler(self, d):
         base.cTrav.addCollider(d.pusher,self.pusherHandler)
@@ -101,6 +107,7 @@ class GameEventHandler(DirectObject):
         tName = t.name
         for p in progs:
             self.accept("%s-into-%s"%(tName,p),  self.tronHitsProg)
+            self.accept("%s-out-%s"%(tName,p), self.tronOutProg)
         for d in drones:
             self.accept("%s-into-%s"%(tName,d),  self.tronHitsDrone)
             self.accept("%s-repeat-%s"%(tName,d),self.tronRepeatsDrone)
@@ -129,7 +136,16 @@ class GameEventHandler(DirectObject):
         tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
         if pn in self.game.programs.keys():
             tron,prog = self.game.players[tn], self.game.programs[pn]
-            tron.collect(prog)
+            #tron.collect(prog)
+            tron.canCollect = prog
+            prog.show_desc()
+            
+    def tronOutProg(self,entry):
+        tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+        if pn in self.game.programs.keys():
+            tron,prog = self.game.players[tn], self.game.programs[pn]
+            tron.canCollect = None
+            prog.hide_desc()
     
     def tronHitsWall(self, entry):
         tn = entry.getFromNodePath().getName()

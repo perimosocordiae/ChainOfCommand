@@ -34,6 +34,8 @@ class Game(object):
         self.add_event_handler()
         self.add_background_music()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
+        
+        self.font = loader.loadFont('../../models/FreeMono.ttf')
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-2),randint(-self.map_size+1,self.map_size-2))

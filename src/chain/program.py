@@ -5,13 +5,13 @@ from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Point3,Filename,Buffer,Shader, CollisionNode, CollisionSphere, BitMask32
 from agent import Agent
-from pandac.PandaModules import TextNode
+from pandac.PandaModules import TextNode, NodePath
 
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 
 class Program(Agent):
-
-    def __init__(self,game,name,pos):
+    
+    def __init__(self,game,name,desc,pos):
         super(Program, self).__init__(game)
         self.game = game
         if not pos:
@@ -19,6 +19,7 @@ class Program(Agent):
         self.name = name
         self.pos = pos
         self.load_model()
+        self.load_desc(desc)
         self.setup_collider()
     
     def unique_str(self):
@@ -53,11 +54,22 @@ class Program(Agent):
         self.collider.node().addSolid(CollisionSphere(0, 0, 0, 2))
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         #self.collider.show()
+    
+    def load_desc(self, desc):
+        text = TextNode(self.name + 'Desc')
+        text.setText(desc)
+        text.setTextColor(1,1,1,1)
+        text.setFont(self.game.font)
+        text.setAlign(TextNode.ACenter)
+        self.desc = NodePath(text)
+        self.desc.stashTo(self.model)
+        self.desc.setScale(0.2)
+        self.desc.setPos(0,0,1.5)
+        self.desc.setBillboardPointEye()
         
-    def display_desc(self):
+    def show_desc(self):
         self.desc.unstash()
 
-        
     def hide_desc(self):
         self.desc.stash()
 
@@ -68,27 +80,27 @@ class Program(Agent):
         return s
     def rapid_fire_mod(self, a):
         return a
-
+    
 class Rm(Program):
-
+    DESC = "Damage x 2"
     def __init__(self,game,pos=None):
-        super(Rm,self).__init__(game,'rm', pos)
+        super(Rm,self).__init__(game,'rm',self.DESC,pos)
     
     def damage_mod(self,d):
         return d*2 # double the player's damage
 
 class Chmod(Program):
-
+    DESC = "Shield x 2"
     def __init__(self,game,pos=None):
-        super(Chmod,self).__init__(game,'chmod', pos)
+        super(Chmod,self).__init__(game,'chmod',self.DESC,pos)
     
     def shield_mod(self,s):
         return s*2.0 # double the player's shield strength
 
 class DashR(Program):
-
+    DESC = "Rapid Fire"
     def __init__(self,game,pos=None):
-        super(DashR,self).__init__(game,'-r', pos)
+        super(DashR,self).__init__(game,'-r',self.DESC,pos)
     
     def rapid_fire_mod(self,a):
         return True # allow rapid-fire
