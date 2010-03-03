@@ -5,6 +5,7 @@ from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Point3,Filename,Buffer,Shader, CollisionNode, CollisionSphere, BitMask32
 from agent import Agent
+from pandac.PandaModules import TextNode
 
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 
@@ -52,6 +53,13 @@ class Program(Agent):
         self.collider.node().addSolid(CollisionSphere(0, 0, 0, 2))
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         #self.collider.show()
+        
+    def display_desc(self):
+        self.desc.unstash()
+
+        
+    def hide_desc(self):
+        self.desc.stash()
 
     # modifiers: generic program has no effect
     def damage_mod(self,d):
@@ -62,9 +70,9 @@ class Program(Agent):
         return a
 
 class Rm(Program):
-    
+
     def __init__(self,game,pos=None):
-        super(Rm,self).__init__(game,'rm',pos)
+        super(Rm,self).__init__(game,'rm', pos)
     
     def damage_mod(self,d):
         return d*2 # double the player's damage
@@ -72,7 +80,7 @@ class Rm(Program):
 class Chmod(Program):
 
     def __init__(self,game,pos=None):
-        super(Chmod,self).__init__(game,'chmod',pos)
+        super(Chmod,self).__init__(game,'chmod', pos)
     
     def shield_mod(self,s):
         return s*2.0 # double the player's shield strength
@@ -80,7 +88,7 @@ class Chmod(Program):
 class Ls(Program):
 
     def __init__(self,game,pos=None):
-        super(Ls,self).__init__(game,'ls',pos)
+        super(Ls,self).__init__(game,'ls', pos)
     
     def accuracy_mod(self,a):
         return a/2 # double the player's accuracy
