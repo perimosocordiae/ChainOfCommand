@@ -33,7 +33,7 @@ class Shell(object):
         font = loader.loadFont('../../models/FreeMono.ttf')
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
         self.output = OnscreenText(text="\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", #blank screen
-                                   pos=(-1.33,0.937), scale=0.07, align=TextNode.ALeft, mayChange=True, 
+                                   pos=(-1.33,0.949), scale=0.07, align=TextNode.ALeft, mayChange=True, 
                                    bg=(0,0,0,1), fg=(1,1,1,0.8), font=font)
         textScroll = Sequence()
         for line in WELCOME.split('\n') :
