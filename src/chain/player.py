@@ -12,6 +12,7 @@ from direct.showbase.InputStateGlobal import inputState
 from eventHandler import PlayerEventHandler
 from projectile import Laser
 from agent import Agent
+from constants import *
 
 #Constants
 MODEL_PATH = "../../models"
@@ -19,9 +20,7 @@ SOUND_PATH = "../../sounds"
 MOTION_MULTIPLIER = 3.0
 TURN_MULTIPLIER = 0.5
 LOOK_MULTIPLIER = 0.3
-DRONE_COLLIDER_MASK = BitMask32.bit(1)
-WALL_COLLIDER_MASK = BitMask32.bit(0)
-FLOOR_COLLIDER_MASK = BitMask32.bit(4)
+
 GRAVITATIONAL_CONSTANT = -0.15 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
 SAFE_FALL = -5.0 #fall velocity after which damage is induced
 FALL_DAMAGE_MULTIPLIER = 12.0 #How much to damage Tron per 1 over safe fall
@@ -30,6 +29,7 @@ JUMP_SPEED = 4.0 #make sure this stays less than SAFE_FALL - he should
                  #be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
+BASE_DAMAGE = 10 #arbitrary
 
 class Player(Agent):
 
@@ -140,7 +140,7 @@ class Player(Agent):
         return pickedObj
 
     def damage(self):
-        d = 10 # arbitrary
+        d = BASE_DAMAGE
         for p in ifilter(lambda p: p != None, self.programs):
             d = p.damage_mod(d)
         return d
@@ -188,8 +188,10 @@ class Player(Agent):
             self.canCollect = None
         else:
             print "Program dropped: %s" %self.programs[i]
-            self.programs[i] = None
-            self.programHUD[i].setText("|        |")    
+            if self.programs[i] != None:
+                self.programs[i].reappear(self.tron.getPos())
+                self.programs[i] = None
+                self.programHUD[i].setText("|        |")    
         
     def load_model(self):
         #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)

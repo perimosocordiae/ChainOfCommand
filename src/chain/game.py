@@ -14,9 +14,7 @@ from direct.task import Task
 from time import time
 from pandac.PandaModules import Vec3, Point3
 import sys
-
-FLOOR_COLLIDER_MASK = BitMask32.bit(4)
-WALL_COLLIDER_MASK = BitMask32.bit(0)
+from constants import *
 
 class Game(object):
 
@@ -51,9 +49,12 @@ class Game(object):
         
     def add_program(self,ptype):
         prog = ptype(self)
+        self.readd_program(prog)
+    
+    def readd_program(self,prog):
         self.programs[prog.unique_str()] = prog
         self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])
-        
+    
     def add_drone(self):
         d = Drone(self)
         self.drones[str(hash(d))] = d 

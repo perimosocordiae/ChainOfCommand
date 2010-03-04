@@ -6,8 +6,7 @@ from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import Point3,Filename,Buffer,Shader, CollisionNode, CollisionSphere, BitMask32
 from agent import Agent
 from pandac.PandaModules import TextNode, NodePath
-
-DRONE_COLLIDER_MASK = BitMask32.bit(1)
+from constants import *
 
 class Program(Agent):
     
@@ -30,8 +29,26 @@ class Program(Agent):
         self.disappear()
     
     def disappear(self):
-        self.model.stash()
-        self.collider.stash()
+        self.collider.removeNode()
+        self.pusher.removeNode()
+        self.desc.removeNode()
+        #self.model.stash()
+        self.model.removeNode()
+        #self.collider.stash()
+        #self.pusher.stash()
+        
+    def reappear(self, pos):
+        self.load_model()
+        self.load_desc(self.get_description())
+        #self.model.unstash()
+        #self.collider.unstash()
+        #self.pusher.unstash()
+        self.model.setPos(pos)
+        #self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
+        #self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
+        #self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
+        self.setup_collider()
+        self.game.readd_program(self)
 
     def load_model(self):
         self.model = loader.loadModel("%s/terminal_window_%s.egg"%(MODEL_PATH,self.name))
@@ -54,6 +71,12 @@ class Program(Agent):
         self.collider.node().addSolid(CollisionSphere(0, 0, 0, 2))
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         #self.collider.show()
+        
+        self.pusher = self.model.attachNewNode(CollisionNode(self.unique_str() + "_pusher"))
+        self.pusher.node().addSolid(CollisionSphere(0, 0, 0, 2))
+        self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
+        self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
+        
     
     def load_desc(self, desc):
         text = TextNode(self.name + 'Desc')
@@ -88,6 +111,8 @@ class Rm(Program):
     
     def damage_mod(self,d):
         return d*2 # double the player's damage
+    def get_description(self):
+        return self.DESC
 
 class Chmod(Program):
     DESC = "Shield x 2"
@@ -96,6 +121,8 @@ class Chmod(Program):
     
     def shield_mod(self,s):
         return s*2.0 # double the player's shield strength
+    def get_description(self):
+        return self.DESC
 
 class DashR(Program):
     DESC = "Rapid Fire"
@@ -104,3 +131,5 @@ class DashR(Program):
     
     def rapid_fire_mod(self,a):
         return True # allow rapid-fire
+    def get_description(self):
+        return self.DESC

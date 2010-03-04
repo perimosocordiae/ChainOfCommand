@@ -3,12 +3,10 @@ from direct.actor import Actor
 from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32
 from agent import Agent
 from random import random
+from constants import *
 
 #Scale factor for panda speed - bigger makes them faster
 CHASE_SCALE = 1.0
-DRONE_COLLIDER_MASK = BitMask32.bit(1)
-DRONE_PUSHER_MASK = BitMask32.bit(2)
-
 
 class Drone(Agent):
 
