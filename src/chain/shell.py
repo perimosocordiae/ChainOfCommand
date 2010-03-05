@@ -5,7 +5,7 @@ from direct.gui.OnscreenText import OnscreenText
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode
 from game import Game
-from program import Rm,Chmod,DashR
+from program import DashR, Rm, Chmod, RAM
 import time
 
 CHARACTER_DELAY = 0.08
@@ -130,11 +130,12 @@ def main():
         g.add_program(Rm)
         g.add_program(Chmod)
         g.add_program(DashR)
-    #for _ in range(5):
-    #    g.add_drone()
-    #g.add_event_handler()
+        g.add_program(RAM)
+    for _ in range(5):
+        g.add_drone()
+    g.add_event_handler()
     g.add_background_music()
-    #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+    Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
 
 if __name__ == '__main__':
     Shell(True)

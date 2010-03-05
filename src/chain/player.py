@@ -30,6 +30,9 @@ JUMP_SPEED = 4.0 #make sure this stays less than SAFE_FALL - he should
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
+EMPTY_PROG_STR = "|        |"
+HUD_PROG_SCALE = 0.08
+HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 
 class Player(Agent):
 
@@ -174,6 +177,11 @@ class Player(Agent):
     def collect(self):
         if self.canCollect:
             prog = self.canCollect
+            
+            #if basic, have it do its effect and return
+            if not prog.pick_up(self):
+                return
+            
             for i,p in enumerate(self.programs):
                 if not p: break
             if p:
@@ -206,6 +214,18 @@ class Player(Agent):
                 
             self.programs[i] = None
             self.programHUD[i].setText("|        |")
+    
+    def add_slot(self):
+        currentCount = len(self.programs)
+        if currentCount < 9:
+            self.programs.append(None)
+            x = self.programHUD[-1].getPos()[0]
+            self.programHUD.append(OnscreenText(text=EMPTY_PROG_STR,
+                            pos=(x + 0.3, -0.9), scale=HUD_PROG_SCALE,
+                            fg=HUD_FG, bg=HUD_BG, mayChange=True))
+            for txt in self.programHUD:
+                #they couldn't just make it simple and override getX() could they?
+                txt.setX(txt.getPos()[0] - 0.15)
     
     def load_model(self):
         #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
@@ -242,19 +262,22 @@ class Player(Agent):
         base.setFrameRateMeter(True)
         self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % MODEL_PATH, pos=(-0.025, 0, 0), scale=0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
-        none_str, scale, fg, bg = "|        |", 0.08, (0, 0, 0, 0.8), (1, 1, 1, 0.8)
+        
         self.programHUD = [
-            OnscreenText(text=none_str, pos=(-0.3, -0.9), scale=scale, fg=fg, bg=bg, mayChange=True),
-            OnscreenText(text=none_str, pos=(0, -0.9), scale=scale, fg=fg, bg=bg, mayChange=True),
-            OnscreenText(text=none_str, pos=(0.3, -0.9), scale=scale, fg=fg, bg=bg, mayChange=True)
+            OnscreenText(text=EMPTY_PROG_STR, pos=(-0.3, -0.9), scale=HUD_PROG_SCALE,
+                         fg=HUD_FG, bg=HUD_BG, mayChange=True),
+            OnscreenText(text=EMPTY_PROG_STR, pos=(0, -0.9), scale=HUD_PROG_SCALE,
+                         fg=HUD_FG, bg=HUD_BG, mayChange=True),
+            OnscreenText(text=EMPTY_PROG_STR, pos=(0.3, -0.9), scale=HUD_PROG_SCALE,
+                         fg=HUD_FG, bg=HUD_BG, mayChange=True)
 		]
         # red flash for indicating hits
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         # health status
-        self.healthHUD = OnscreenText(text="HP: %d" % self.health, pos=(-0.9, 0.9), fg=fg, bg=bg, mayChange=True)
+        self.healthHUD = OnscreenText(text="HP: %d" % self.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
         # kill counter
-        self.killHUD = OnscreenText(text="Frags: %d" % self.killcount, pos=(-0.9, 0.8), fg=fg, bg=bg, mayChange=True)
+        self.killHUD = OnscreenText(text="Frags: %d" % self.killcount, pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
     
     def flash_red(self):
         if not self.redScreen:
