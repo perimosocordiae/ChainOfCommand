@@ -19,9 +19,14 @@ class PlayerEventHandler(DirectObject):
             # above line toggles background music when you press m
         self.accept('n',playr.toggle_sound_effects)
             # above line toggles sound effects when you press n
-        self.accept('1',playr.collect,[0])
-        self.accept('2',playr.collect,[1])
-        self.accept('3',playr.collect,[2])
+        
+        #space to pick up a program and put in next empty slot
+        self.accept('space',playr.collect)
+        
+        #drop program i; if we go past 9 programs, we'll need another key system anyway
+        for i in range(1,9):
+            self.accept('%d'%i,playr.drop,[i-1])
+        
         self.timeout = False
         
         #set up the mouse handling properly
@@ -77,6 +82,7 @@ class GameEventHandler(DirectObject):
         for t in game.players.iterkeys():
             for p in progs:
                 self.accept("%s-into-%s"%(t,p),  self.tronHitsProg)
+                self.accept("%s-repeat-%s"%(t,p),  self.tronHitsProg)
                 self.accept("%s-out-%s"%(t,p), self.tronOutProg)
             for d in drones:
                 self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)

@@ -19,6 +19,7 @@ class Program(Agent):
         self.pos = pos
         self.load_model()
         self.load_desc(desc)
+        self.setup_interval()
         self.setup_collider()
     
     def unique_str(self):
@@ -55,8 +56,8 @@ class Program(Agent):
         self.model.setScale(2, 2, 2)
         self.model.setPos(self.pos[0], self.pos[1], 10)
         self.model.reparentTo(render)
-        #TODO: draw program name on the terminal
-        
+    
+    def setup_interval(self):
         #Create the intervals needed to spin and expand/contract
         hpr1 = self.model.hprInterval(1.5, Point3(180, 0, 0), startHpr=Point3(0, 0, 0))
         hpr2 = self.model.hprInterval(1.5, Point3(360, 0, 0), startHpr=Point3(180, 0, 0))

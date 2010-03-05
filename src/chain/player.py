@@ -170,15 +170,16 @@ class Player(Agent):
         if self.health <= 0:
             self.die()
     
-    def collect(self, i):
+    def collect(self):
         if self.canCollect:
             prog = self.canCollect
-            #for i,p in enumerate(self.programs):
-            #    if not p: break
-            #else:
-            #    self.sounds['no'].play() 
-            #    print "No empty slots!"
-            #    return
+            for i,p in enumerate(self.programs):
+                if not p: break
+            if p:
+                self.sounds['no'].play() 
+                print "No empty slots!"
+                return
+            
             self.sounds['yes'].play()
             print "Program get: %s" % prog.name
             self.programs[i] = prog
@@ -186,12 +187,13 @@ class Player(Agent):
             prog.disappear()
             del self.game.programs[prog.unique_str()]  
             self.canCollect = None
-        else:
-            print "Program dropped: %s" %self.programs[i]
-            if self.programs[i] != None:
-                self.programs[i].reappear(self.tron.getPos())
-                self.programs[i] = None
-                self.programHUD[i].setText("|        |")    
+    
+    def drop(self, i):
+        print "Program dropped: %s" %self.programs[i]
+        if self.programs[i] != None:
+            self.programs[i].reappear(self.tron.getPos())
+            self.programs[i] = None
+            self.programHUD[i].setText("|        |")    
         
     def load_model(self):
         #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
