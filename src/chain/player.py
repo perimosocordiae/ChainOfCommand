@@ -56,6 +56,7 @@ class Player(Agent):
     def initialize_camera(self):
         cameraNode = CollisionNode('cameracnode')
         cameraNP = base.camera.attachNewNode(cameraNode)
+        cameraNP.node().setIntoCollideMask(0)
         self.cameraRay = CollisionRay(0, base.camera.getY(), 0, 0, 1, 0)
         cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
@@ -187,14 +188,25 @@ class Player(Agent):
             prog.disappear()
             del self.game.programs[prog.unique_str()]  
             self.canCollect = None
+            prog.add_effect(self)
     
     def drop(self, i):
         print "Program dropped: %s" %self.programs[i]
-        if self.programs[i] != None:
-            self.programs[i].reappear(self.tron.getPos())
+        prog = self.programs[i]
+        if prog != None:
+            prog.reappear(self.tron.getPos())
+            noneLeft = True
+            for j,p in enumerate(self.programs):
+                if i != j and p != None and p.name == prog.name:
+                    noneLeft = False
+                    break
+            if noneLeft:
+                #have the program remove any of its visual effects
+                prog.remove_effect(self)
+                
             self.programs[i] = None
-            self.programHUD[i].setText("|        |")    
-        
+            self.programHUD[i].setText("|        |")
+    
     def load_model(self):
         #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
         self.tron = Actor.Actor("%s/tron" % MODEL_PATH, {"running":"%s/tron_anim_updated" % MODEL_PATH})
@@ -216,6 +228,7 @@ class Player(Agent):
         #self.pusher.show()
         self.lifterRay = CollisionRay(0, 0, 0, 0, 0, -1) #ray pointing down
         self.lifter = self.attach_collision_node("%s_floor" % self.name, self.lifterRay, FLOOR_COLLIDER_MASK)
+        self.lifter.node().setIntoCollideMask(0)
     
     def attach_collision_node(self, name, solid, mask):
         c = self.tron.attachNewNode(CollisionNode(name))

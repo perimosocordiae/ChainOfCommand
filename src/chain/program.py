@@ -30,11 +30,15 @@ class Program(Agent):
         self.disappear()
     
     def disappear(self):
+        self.desc.removeNode()
         self.collider.removeNode()
         self.pusher.removeNode()
-        self.desc.removeNode()
         #self.model.stash()
         self.model.removeNode()
+        self.desc = None
+        self.collider = None
+        self.pusher = None
+        self.model = None
         #self.collider.stash()
         #self.pusher.stash()
         
@@ -48,6 +52,7 @@ class Program(Agent):
         #self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         #self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
         #self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
+        self.setup_interval()
         self.setup_collider()
         self.game.readd_program(self)
 
@@ -92,10 +97,12 @@ class Program(Agent):
         self.desc.setBillboardPointEye()
         
     def show_desc(self):
-        self.desc.unstash()
+        if self.desc:
+            self.desc.unstash()
 
     def hide_desc(self):
-        self.desc.stash()
+        if self.desc:
+            self.desc.stash()
 
     # modifiers: generic program has no effect
     def damage_mod(self,d):
@@ -104,6 +111,11 @@ class Program(Agent):
         return s
     def rapid_fire_mod(self, a):
         return a
+    #override these methods to create/remove visual effects when you have programs
+    def add_effect(self, player):
+        return
+    def remove_effect(self, player):
+        return
     
 class Rm(Program):
     DESC = "Damage x 2"
@@ -112,6 +124,7 @@ class Rm(Program):
     
     def damage_mod(self,d):
         return d*2 # double the player's damage
+    
     def get_description(self):
         return self.DESC
 
@@ -122,8 +135,14 @@ class Chmod(Program):
     
     def shield_mod(self,s):
         return s*2.0 # double the player's shield strength
+    
     def get_description(self):
         return self.DESC
+    
+    def add_effect(self, player):
+        player.collider.show()
+    def remove_effect(self, player):
+        player.collider.hide()
 
 class DashR(Program):
     DESC = "Rapid Fire"
