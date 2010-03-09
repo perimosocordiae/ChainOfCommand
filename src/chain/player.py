@@ -5,7 +5,7 @@ from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import (Shader, CollisionNode, CollisionRay, CollisionSphere,
-    CollisionHandlerQueue, TransparencyAttrib, BitMask32, Vec2, Vec3, Point3)
+    CollisionHandlerQueue, TransparencyAttrib, BitMask32, Vec2, Vec3, Point3, TextureStage)
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
@@ -15,8 +15,6 @@ from agent import Agent
 from constants import *
 
 #Constants
-MODEL_PATH = "../../models"
-SOUND_PATH = "../../sounds"
 MOTION_MULTIPLIER = 3.0
 TURN_MULTIPLIER = 0.5
 LOOK_MULTIPLIER = 0.3
@@ -51,6 +49,7 @@ class Player(Agent):
         self.handleEvents = True
         self.canCollect = None
         self.velocity = Vec3(0, 0, 0)
+        self.laserGlow = False
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
         self.floorQueue = CollisionHandlerQueue()
@@ -129,7 +128,9 @@ class Player(Agent):
         laser.model.setP(-base.camera.getP())
         h, p = radians(self.tron.getH()), radians(base.camera.getP())
         pcos = cos(p)
-        #the .005 is a fudge factor - it just makes things work
+        if self.laserGlow:
+            laser.set_glow(True)
+        #the .005 is a fudge factor - it just makes things work better
         laser.fire(Vec3(sin(h) * pcos, -cos(h) * pcos, sin(p) + 0.005) * LASER_SPEED)
     
     def findCrosshairHit(self):
@@ -142,7 +143,10 @@ class Player(Agent):
             if 'donthitthis' in pickedObj: continue 
             if not (self.name in pickedObj): break
         return pickedObj
-
+    
+    def set_laser_glow(self, glow):
+        self.laserGlow = glow
+    
     def damage(self):
         d = BASE_DAMAGE
         for p in ifilter(lambda p: p != None, self.programs):
@@ -241,6 +245,20 @@ class Player(Agent):
         self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
         Laser() # pre-cache laser model
+        
+        self.ts = TextureStage('ts')
+        self.ts.setMode(TextureStage.MGlow)
+        self.glow = loader.loadTexture("%s/tron-glow_on.png"%MODEL_PATH)
+        self.ts.setSort(9)
+        #self.no_glow = loader.loadTexture(NO_GLOW)
+        #self.tron.setTexture(self.ts, self.no_glow)
+        self.set_glow(False)
+    
+    def set_glow(self, glow):
+        if glow:
+            self.tron.setTexture(self.ts, self.glow)
+        else:
+            self.tron.clearTexture(self.ts)
 
     def setup_collider(self):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)

@@ -175,6 +175,14 @@ class Rm(Achievement):
     
     def get_description(self):
         return self.DESC
+    
+    def add_effect(self, player):
+        player.set_laser_glow(True)
+        player.set_glow(True)
+    
+    def remove_effect(self, player):
+        player.set_laser_glow(False)
+        player.set_glow(False)
 
 class Chmod(Achievement):
     DESC = "Shield x 2"

@@ -1,9 +1,9 @@
 #how much faster than a unit vector should it travel? 
 SPEED_SCALE = 6.0
-MODEL_PATH = "../../models"
 
-from pandac.PandaModules import Vec3, Point3
+from pandac.PandaModules import Vec3, Point3, TextureStage
 from direct.interval.IntervalGlobal import *
+from constants import *
 
 class Projectile(object):
     
@@ -33,5 +33,16 @@ class Projectile(object):
 class Laser(Projectile):
     def __init__(self):
         self.load_model("%s/laser.egg"%MODEL_PATH)
-        tex = loader.loadTexture("%s/laser_Cube.tga"%MODEL_PATH, "%s/laser_Cube_texture.jpg"%MODEL_PATH)
-        self.model.setTexture(tex)
+        self.tex = loader.loadTexture("%s/laser_Cube.tga"%MODEL_PATH)
+        self.model.setTexture(self.tex)
+        self.ts = TextureStage('ts')
+        self.ts.setMode(TextureStage.MGlow)
+        self.glow = loader.loadTexture("%s/laser_Cube_texture_glow.jpg"%MODEL_PATH)
+        self.model.setTexture(self.tex)
+        self.set_glow(False)
+        
+    def set_glow(self, glow):
+        if glow:
+            self.model.setTexture(self.ts, self.glow)
+        else:
+            self.model.clearTexture(self.ts)

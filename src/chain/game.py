@@ -1,11 +1,11 @@
-MODEL_PATH = "../../models"
-
 from random import randint, choice
 #from itertools import product as iproduct
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionSphere, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
+from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4
+from direct.filter.CommonFilters import CommonFilters
 from player import Player
 from drone import Drone
 from wall import Wall
@@ -15,6 +15,9 @@ from time import time
 from pandac.PandaModules import Vec3, Point3
 import sys
 from constants import *
+
+#Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
+USE_GLOW = True
 
 class Game(object):
 
@@ -33,7 +36,7 @@ class Game(object):
         self.add_background_music()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
         
-        self.font = loader.loadFont('../../models/FreeMono.ttf')
+        self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-2),randint(-self.map_size+1,self.map_size-2))
@@ -65,13 +68,29 @@ class Game(object):
     
     def add_background_music(self):
         # from http://www.newgrounds.com/audio/listen/287442
-        backgroundMusic = base.musicManager.getSound("../../sounds/City_in_Flight.mp3")
+        backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
         backgroundMusic.setVolume(0.3)
         backgroundMusic.setTime(35)  # music automatically starts playing when this command is issued
         print "Track: City in Flight in Neon Light" # attribution
         print "Author: Trevor Dericks"
 
     def load_env(self):
+        #add the lighting
+        #dlight = DirectionalLight('dlight')
+        #alight = AmbientLight('alight')
+        #dlnp = render.attachNewNode(dlight) 
+        #alnp = render.attachNewNode(alight)
+        #dlight.setColor(Vec4(0.6, 0.6, 0.6, 1))
+        #alight.setColor(Vec4(1.0, 1.0, 1.0, 1))
+        #dlnp.setHpr(0, -60, 0) 
+        #render.setLight(dlnp)
+        #render.setLight(alnp)
+        #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
+        if USE_GLOW:
+            self.filters = CommonFilters(base.win, base.cam)
+            self.filters.setBloom(blend=(0,0,0,1), desat=-0.5, intensity=3.0, size=2)
+            render.setShaderAuto()
+        
         eggs = map(lambda s:"%s/%s_floor.egg"%(MODEL_PATH,s),['yellow','blue','green','red'])
         num_tiles = self.map_size/self.tile_size
         environ = loader.loadModel(eggs[0])
@@ -79,8 +98,6 @@ class Game(object):
         environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         environ.setPos(0, 0, 0)
         
-        #TODO - ADD THE WALLS AS OBJECTS INSTEAD
-         
         center = num_tiles/2
         wall_height = 10
         #for i,j in iproduct(range(num_tiles),repeat=2):

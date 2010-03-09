@@ -6,3 +6,7 @@ WALL_COLLIDER_MASK = BitMask32.bit(0)
 FLOOR_COLLIDER_MASK = BitMask32.bit(4)
 DRONE_PUSHER_MASK = BitMask32.bit(2)
 PROGRAM_PUSHER_MASK = BitMask32.bit(8)
+
+MODEL_PATH = "../../models"
+SOUND_PATH = "../../sounds"
+NO_GLOW = "%s/no_glow.jpg"%MODEL_PATH
