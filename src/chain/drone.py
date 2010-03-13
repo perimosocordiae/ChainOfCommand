@@ -11,12 +11,12 @@ CHASE_SCALE = 1.0
 class Drone(Agent):
 
     def __init__(self,game,pos=None):
-        super(Drone,self).__init__(game)
+        super(Drone,self).__init__(game,str(hash(self)))
         if not pos: pos = game.rand_point()
-        self.load_model(pos)
+        self.panda.setPos(pos[0],pos[1],0)
         self.setup_collider()
         self.speed = random()+0.5
-  
+    
     def damage(self):
         return 10
      
@@ -34,17 +34,22 @@ class Drone(Agent):
         self.panda.cleanup()
         self.panda.removeNode()
 
-    def load_model(self,pos):
+    def load_model(self):
         self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})
         self.panda.reparentTo(render)
         self.panda.setScale(max(0.01,random()*0.05))
         self.panda.setHpr(0,0,0)
-        self.panda.setPos(pos[0],pos[1],0)
         self.walk = self.panda.actorInterval("walk")
         self.walk.loop()
         self.walking = False
         self.walkTask = taskMgr.add(self.WalkTask, "WalkTask")
-
+    
+    def get_model(self):
+        return self.panda    
+    
+    def get_origin_height(self):
+        return 0
+    
     def setup_collider(self):
         key = str(hash(self))
         # Get the size of the object for the collision sphere.
@@ -73,13 +78,16 @@ class Drone(Agent):
         
         #self.collider.show()
         #self.pusher.show()
-
+        
+    def get_shield_sphere(self):
+        return self.pusher
+    
     def WalkTask(self, task):
         if not self.walking:
             self.walking = True
             self.follow_tron()
         return Task.cont
-   
+    
     def follow_tron(self):
         tron = self.game.players['player_1'].tron
         self.panda.lookAt(tron)
@@ -87,8 +95,10 @@ class Drone(Agent):
         #move one "unit" towards tron
         tronVec = tron.getPos() - self.panda.getPos()
         tronVec.normalize()
-        newPos = self.panda.getPos() + tronVec*self.speed
-        self.panda.setFluidPos(newPos.getX(), newPos.getY(), 0)
+        tronVec *= self.speed
+        self.handleGravity()
+        self.velocity.setX(tronVec.getX())
+        self.velocity.setY(tronVec.getY())
+        self.panda.setFluidPos(self.panda.getPos() + tronVec*self.speed)
         self.walking = False
-
-   
+        

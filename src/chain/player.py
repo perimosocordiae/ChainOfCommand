@@ -1,6 +1,5 @@
 import sys
 from math import sin, cos, radians, sqrt, pi
-from itertools import ifilter
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
@@ -19,10 +18,6 @@ MOTION_MULTIPLIER = 3.0
 TURN_MULTIPLIER = 0.5
 LOOK_MULTIPLIER = 0.3
 
-GRAVITATIONAL_CONSTANT = -0.15 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
-SAFE_FALL = -5.0 #fall velocity after which damage is induced
-FALL_DAMAGE_MULTIPLIER = 12.0 #How much to damage Tron per 1 over safe fall
-TERMINAL_VELOCITY = -50.0
 JUMP_SPEED = 4.0 #make sure this stays less than SAFE_FALL - he should
                  #be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
@@ -35,11 +30,9 @@ HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 class Player(Agent):
 
     def __init__(self, game, name):
-        super(Player, self).__init__(game)
+        super(Player, self).__init__(game, name)
         self.programs = [None, None, None]
-        self.name = name
         self.killcount = 0
-        self.load_model()
         self.setup_collider()
         self.setup_camera()
         self.setup_HUD()
@@ -47,13 +40,9 @@ class Player(Agent):
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
         self.handleEvents = True
-        self.canCollect = None
-        self.velocity = Vec3(0, 0, 0)
         self.laserGlow = False
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
-        self.floorQueue = CollisionHandlerQueue()
-        base.cTrav.addCollider(self.lifter, self.floorQueue)
     
     def initialize_camera(self):
         cameraNode = CollisionNode('cameracnode')
@@ -147,27 +136,12 @@ class Player(Agent):
     def set_laser_glow(self, glow):
         self.laserGlow = glow
     
-    def damage(self):
-        d = BASE_DAMAGE
-        for p in ifilter(lambda p: p != None, self.programs):
-            d = p.damage_mod(d)
-        return d
-
-    def shield(self):
-        s = 1.0 # no shield
-        for p in ifilter(lambda p: p != None, self.programs):
-            s = p.shield_mod(s)
-        return s
-    
-    def rapid_fire(self):
-        a = False; # no rapid-fire
-        for p in ifilter(lambda p: p != None, self.programs):
-            a = p.rapid_fire_mod(a)
-        return a
-    
     def die(self):
         #TODO something better here!
         sys.exit("GAME OVER, YOU DEAD")    
+    
+    def get_base_damage(self):
+        return BASE_DAMAGE
     
     def hit(self, amt=0):
         super(Player, self).hit(amt)
@@ -175,48 +149,25 @@ class Player(Agent):
         self.flashRed.start() # flash the screen red
         print "hit! health = %d" % self.health
         self.healthHUD.setText("HP: %d" % self.health)
-        if self.health <= 0:
-            self.die()
     
     def collect(self):
-        if self.canCollect:
-            prog = self.canCollect
-            
-            #if basic, have it do its effect and return
-            if not prog.pick_up(self):
-                return
-            
-            for i,p in enumerate(self.programs):
-                if not p: break
-            if p:
-                self.sounds['no'].play() 
+        #sound/message depends on status
+        i, prog = super(Player, self).collect()
+        if not prog:
+            self.sounds['no'].play()
+            if i >= 0: 
                 print "No empty slots!"
-                return
-            
+            else:
+                print "No program to pick up!"
+        else:
             self.sounds['yes'].play()
             print "Program get: %s" % prog.name
-            self.programs[i] = prog
-            self.programHUD[i].setText("|  %s  |" % prog.name)
-            prog.disappear()
-            del self.game.programs[prog.unique_str()]  
-            self.canCollect = None
-            prog.add_effect(self)
+            if i >= 0:
+                self.programHUD[i].setText("|  %s  |" % prog.name)
     
     def drop(self, i):
-        print "Program dropped: %s" %self.programs[i]
-        prog = self.programs[i]
-        if prog != None:
-            prog.reappear(self.tron.getPos())
-            noneLeft = True
-            for j,p in enumerate(self.programs):
-                if i != j and p != None and p.name == prog.name:
-                    noneLeft = False
-                    break
-            if noneLeft:
-                #have the program remove any of its visual effects
-                prog.remove_effect(self)
-                
-            self.programs[i] = None
+        if (super(Player, self).drop(i)):
+            print "Program dropped: %s" %self.programs[i]
             self.programHUD[i].setText("|        |")
     
     def add_slot(self):
@@ -264,16 +215,12 @@ class Player(Agent):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
         self.pusher = self.attach_collision_node("%s_wall" % self.name, CollisionSphere(0, 0, 0, 12), WALL_COLLIDER_MASK)
         #self.pusher.show()
-        self.lifterRay = CollisionRay(0, 0, 0, 0, 0, -1) #ray pointing down
-        self.lifter = self.attach_collision_node("%s_floor" % self.name, self.lifterRay, FLOOR_COLLIDER_MASK)
-        self.lifter.node().setIntoCollideMask(0)
     
-    def attach_collision_node(self, name, solid, mask):
-        c = self.tron.attachNewNode(CollisionNode(name))
-        c.node().addSolid(solid)
-        c.node().setFromCollideMask(mask)
-        c.node().setIntoCollideMask(mask)
-        return c
+    def get_shield_sphere(self):
+        return self.collider
+    
+    def get_model(self):
+        return self.tron
         
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
@@ -343,7 +290,7 @@ class Player(Agent):
         self.shooting = False
         inputState.watch('shoot', 'mouse1', 'mouse1-up')
         taskMgr.add(self.updateShotTask, "updateShotTask")
-        
+    
     def updateShotTask(self, task):
         if self.shooting and self.rapid_fire() : self.shoot()
         return Task.cont
@@ -357,16 +304,11 @@ class Player(Agent):
         
         if not self.in_air(): # no mid-air corrections!
             cmds = [ c for c in ['forward', 'backward', 'moveleft', 'moveright'] if inputState.isSet(c)]
-        
-            new_vel = Vec2(0, 0)
-            for cmd in cmds:
-                new_vel += self.get_velocity(cmd)
-        
-            new_vel.normalize()
-            new_vel *= MOTION_MULTIPLIER
+            
+            new_vel = self.get_xy_velocity(cmds)
             self.velocity.setX(new_vel.getX())
             self.velocity.setY(new_vel.getY())
-
+            
             if not len(cmds) == 0: self.StartMovingAnim()
             else:                  self.StopMovingAnim()
 
@@ -374,7 +316,16 @@ class Player(Agent):
         self.tron.setFluidPos(self.tron.getPos() + self.velocity)
         return Task.cont
     
-    def get_velocity(self, dir):
+    def get_xy_velocity(self, cmds):
+        new_vel = Vec2(0, 0)
+        for cmd in cmds:
+            new_vel += self.get_partial_velocity(cmd)
+    
+        new_vel.normalize()
+        new_vel *= MOTION_MULTIPLIER
+        return new_vel
+    
+    def get_partial_velocity(self, dir):
         h = radians(self.tron.getH())
         if dir in ['moveleft', 'moveright']: h += pi / 2.0
         if dir in ['forward', 'moveleft']:
@@ -382,36 +333,15 @@ class Player(Agent):
         else:
             return Vec2(-sin(h), cos(h))
 
-    def handleGravity(self):
-        #in the future, have 2 rays - one above, one below, so he can't jump
-        #through things?  Or let him jump through things.  If he can't, adapt
-        #2nd half of if statement to include 2nd ray.
-        z_vel = self.velocity.getZ()
-        if self.in_air() or z_vel > 0:
-            self.velocity.setZ(max(z_vel + GRAVITATIONAL_CONSTANT, TERMINAL_VELOCITY)) # jump / fall
-        else:
-            #We hit (or stayed on) the ground...
-            #how fast are we falling now? Use that to determine potential damage
-            if z_vel < SAFE_FALL:
-                damage = (-z_vel + SAFE_FALL) * FALL_DAMAGE_MULTIPLIER
-                self.hit(damage)
-            else:
-                floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
-                self.tron.setZ(floorZ + TRON_ORIGIN_HEIGHT) # hack?
-            self.velocity.setZ(0)
-    
-    def in_air(self):
-        base.cTrav.traverse(render)
-        if self.floorQueue.getNumEntries() == 0: return True # technically
-        self.floorQueue.sortEntries()
-        floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
-        return self.tron.getZ() > floorZ + TRON_ORIGIN_HEIGHT
-    
     def jump(self):
-        if not self.handleEvents: return
-        if not self.in_air():
-            self.velocity.setZ(JUMP_SPEED)  # he's on the ground - let him jump
+        if self.handleEvents: super(Player, self).jump() 
     
+    def get_origin_height(self):
+        return TRON_ORIGIN_HEIGHT
+    
+    def get_jump_speed(self):
+        return JUMP_SPEED
+        
     def StartMovingAnim(self):
         if self.running: return
         self.running = True

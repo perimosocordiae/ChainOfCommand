@@ -126,6 +126,7 @@ def add_drone(g):
 def main():
     g = Game(360,12,120)
     g.add_player('player_1')
+    print "added player"
     for _ in range(4):
         g.add_program(Rm)
         g.add_program(Chmod)

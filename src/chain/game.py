@@ -17,7 +17,7 @@ import sys
 from constants import *
 
 #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
-USE_GLOW = True
+USE_GLOW = False
 
 class Game(object):
 

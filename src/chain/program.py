@@ -16,11 +16,10 @@ DESCRIPTION_SCALE = 0.2
 class Program(Agent):
     
     def __init__(self,game,name,prefix,desc,scale,pos):
-        super(Program, self).__init__(game)
+        super(Program, self).__init__(game, name, False)
         self.game = game
         if not pos:
             pos = game.rand_point()
-        self.name = name
         self.prefix = prefix
         self.scale = scale
         self.pos = pos
@@ -127,8 +126,8 @@ class RAM(Basic):
     def get_description(self):
         return self.DESC
     
-    def do_effect(self, player):
-        player.add_slot()
+    def do_effect(self, agent):
+        agent.add_slot()
 
 #***************************** ACHIEVEMENT PROGRAMS *****************************
 
@@ -160,9 +159,9 @@ class Achievement(Program):
     def rapid_fire_mod(self, a):
         return a
     #override these methods to create/remove visual effects when you have programs
-    def add_effect(self, player):
+    def add_effect(self, agent):
         return
-    def remove_effect(self, player):
+    def remove_effect(self, agent):
         return
     
 class Rm(Achievement):
@@ -176,13 +175,13 @@ class Rm(Achievement):
     def get_description(self):
         return self.DESC
     
-    def add_effect(self, player):
-        player.set_laser_glow(True)
-        player.set_glow(True)
+    def add_effect(self, agent):
+        agent.set_laser_glow(True)
+        agent.set_glow(True)
     
-    def remove_effect(self, player):
-        player.set_laser_glow(False)
-        player.set_glow(False)
+    def remove_effect(self, agent):
+        agent.set_laser_glow(False)
+        agent.set_glow(False)
 
 class Chmod(Achievement):
     DESC = "Shield x 2"
@@ -195,10 +194,10 @@ class Chmod(Achievement):
     def get_description(self):
         return self.DESC
     
-    def add_effect(self, player):
-        player.collider.show()
+    def add_effect(self, agent):
+        agent.get_shield_sphere().show()
     def remove_effect(self, player):
-        player.collider.hide()
+        agent.get_shield_sphere().hide()
 
 class DashR(Achievement):
     DESC = "Rapid Fire"

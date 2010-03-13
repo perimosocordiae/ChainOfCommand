@@ -7,6 +7,12 @@ FLOOR_COLLIDER_MASK = BitMask32.bit(4)
 DRONE_PUSHER_MASK = BitMask32.bit(2)
 PROGRAM_PUSHER_MASK = BitMask32.bit(8)
 
+#gravity-related
+GRAVITATIONAL_CONSTANT = -0.15 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
+SAFE_FALL = -5.0 #fall velocity after which damage is induced
+FALL_DAMAGE_MULTIPLIER = 12.0 #How much to damage Tron per 1 over safe fall
+TERMINAL_VELOCITY = -50.0
+
 MODEL_PATH = "../../models"
 SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%MODEL_PATH
