@@ -94,11 +94,12 @@ class Drone(Agent):
         self.panda.setH(self.panda.getH() + 180)
         #move one "unit" towards tron
         tronVec = tron.getPos() - self.panda.getPos()
+        tronVec.setZ(0)
         tronVec.normalize()
         tronVec *= self.speed
         self.handleGravity()
         self.velocity.setX(tronVec.getX())
         self.velocity.setY(tronVec.getY())
-        self.panda.setFluidPos(self.panda.getPos() + tronVec*self.speed)
+        self.panda.setFluidPos(self.panda.getPos() + self.velocity*self.speed)
         self.walking = False
         
