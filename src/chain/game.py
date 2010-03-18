@@ -21,11 +21,11 @@ USE_GLOW = False
 
 class Game(object):
 
-    def __init__(self,map_size=320,tile_size=16, gameLength=180):
+    def __init__(self,map_size=320,tile_size=16, tower_size=16, gameLength=180):
         base.cTrav = CollisionTraverser()
         #wsbase.cTrav.showCollisions(render)
         self.players, self.programs,self.drones,self.walls = {},{},{},{}
-        self.map_size,self.tile_size = map_size,tile_size
+        self.map_size,self.tile_size, self.tower_size = map_size,tile_size, tower_size
         base.disableMouse()
         self.load_env()
         self.timer = OnscreenText(text="Time:", pos=(0,0.9), scale=(0.08), fg=(0,0,1,0.8), bg=(1,1,1,0.8), mayChange=True)
@@ -104,18 +104,18 @@ class Game(object):
         for i in range(num_tiles):
           for j in range(num_tiles):
             egg = eggs[egg_index(i,j,center)]
-            make_tile(environ,egg,(-2*(1+i-center),-2*(1+j-center), 2*wall_height), (0, 0, 180)) #ceiling
+            self.make_tile(environ,egg,(-2*(1+i-center),-2*(1+j-center), 2*wall_height), (0, 0, 180)) #ceiling
             if i == center and j == center: continue #bottom center is already done
-            make_tile(environ,egg,(2*(i-center), 2*(j-center), 0),(0, 0, 0),True) #floor
+            self.make_tile(environ,egg,(2*(i-center), 2*(j-center), 0),(0, 0, 0),True) #floor
         
         #for i,j in iproduct(range(num_tiles),range(wall_height)):
         for i in range(num_tiles):
           for j in range(wall_height):
             egg = eggs[egg_index(i,j,center)]
-            make_tile(environ,egg,(-1-2*center,    2*(i-center),  2*(wall_height-j)-1),(0, 0, 90))  #wall 1
-            make_tile(environ,egg,(-2*(1+i-center), -1-2*center,  2*(wall_height-j)-1),(0,-90,0))   #wall 2
-            make_tile(environ,egg,( 2*center-1,     2*(i-center), 2*j+1),            (0, 0, -90)) #wall 3
-            make_tile(environ,egg,(-2*(1+i-center), 2*center-1,   2*j+1),            (0, 90,0))   #wall 4
+            self.make_tile(environ,egg,(-1-2*center,    2*(i-center),  2*(wall_height-j)-1),(0, 0, 90))  #wall 1
+            self.make_tile(environ,egg,(-2*(1+i-center), -1-2*center,  2*(wall_height-j)-1),(0,-90,0))   #wall 2
+            self.make_tile(environ,egg,( 2*center-1,     2*(i-center), 2*j+1),            (0, 0, -90)) #wall 3
+            self.make_tile(environ,egg,(-2*(1+i-center), 2*center-1,   2*j+1),            (0, 90,0))   #wall 4
         
         #add collision handlers for walls
         self.add_wall("wall1", environ,
@@ -147,7 +147,7 @@ class Game(object):
         
         # make some random bunkers
         for _ in range(4):
-            make_column(environ, choice(eggs), randint(-num_tiles,num_tiles), randint(-num_tiles,num_tiles), randint(2,wall_height))
+            self.make_column(environ, choice(eggs), randint(-num_tiles,num_tiles), randint(-num_tiles,num_tiles), randint(2,wall_height))
     
     def timerTask(self, task):
         self.gameTime = self.endTime - time()
@@ -159,25 +159,25 @@ class Game(object):
             sys.exit()
         return task.again
         
-def make_column(parent,egg,x,y,h):
-    for z in range(h):
-        make_tile(parent,egg,(x,   y,   2*z+1),(0,  90,0))
-        make_tile(parent,egg,(x,   y+2, 2*z+1),(180,90,0))
-        make_tile(parent,egg,(x+1, y+1, 2*z+1),(90, 90,0))
-        make_tile(parent,egg,(x-1, y+1, 2*z+1),(270,90,0))
-    # add a pusher for the bottom of the tower - do INSIDE the loop if
-    #Tron can jump... for now this is more esfficient
-    towerCollider = parent.attachNewNode(CollisionNode("tower_base"))
-    towerCollider.node().addSolid(CollisionSphere(Point3(x, y, 1.0), 2.0))
-    towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
-    
-# static functions, not in the game class
-def make_tile(parent,fname,pos,hpr, addCollider=False):
-    tile = loader.loadModel(fname)
-    tile.reparentTo(parent)
-    tile.setScale(1.0, 1.0, 1.0)
-    tile.setPos(*pos)
-    tile.setHpr(*hpr)
+    def make_column(self, parent,egg,x,y,h):
+        for z in range(h):
+            self.make_tile(parent,egg,(x,   y,   (self.tower_size / self.tile_size) * (2*z + 1)),(0,  90,0), False, (self.tower_size / self.tile_size))
+            self.make_tile(parent,egg,(x,   (y+2*(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(180,90,0), False, (self.tower_size / self.tile_size))
+            self.make_tile(parent,egg,((x+(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(90, 90,0), False, (self.tower_size / self.tile_size))
+            self.make_tile(parent,egg,((x-(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(270,90,0), False, (self.tower_size / self.tile_size))
+        # add a pusher for the bottom of the tower - do INSIDE the loop if
+        #Tron can jump... for now this is more esfficient
+        towerCollider = parent.attachNewNode(CollisionNode("tower_base"))
+        towerCollider.node().addSolid(CollisionSphere(Point3(x, y, (self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*2.0))
+        towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        
+    # static functions, not in the game class
+    def make_tile(self, parent,fname,pos,hpr, addCollider=False, scale=1.0):
+        tile = loader.loadModel(fname)
+        tile.reparentTo(parent)
+        tile.setScale(scale, scale, scale)
+        tile.setPos(pos)
+        tile.setHpr(*hpr)
 
 def egg_index(i,j,center):
     if i < center and j < center: return 1

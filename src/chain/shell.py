@@ -124,7 +124,7 @@ def add_drone(g):
         g.add_drone()
 
 def main():
-    g = Game(360,12,120)
+    g = Game(360,60.0,12.0,120)
     g.add_player('player_1')
     print "added player"
     for _ in range(4):
@@ -132,8 +132,8 @@ def main():
         g.add_program(Chmod)
         g.add_program(DashR)
         g.add_program(RAM)
-    for _ in range(5):
-        g.add_drone()
+    #for _ in range(5):
+    #    g.add_drone()
     g.add_event_handler()
     g.add_background_music()
     Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
