@@ -313,7 +313,7 @@ class Player(Agent):
             else:                  self.StopMovingAnim()
 
         # actually move tron, based on the values in self.velocity
-        self.tron.setFluidPos(self.tron.getPos() + self.velocity)
+        self.tron.setFluidPos(self.tron.getPos() + self.velocity) # globalClock.getDt()
         return Task.cont
     
     def get_xy_velocity(self, cmds):
