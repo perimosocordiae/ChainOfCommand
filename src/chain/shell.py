@@ -19,7 +19,7 @@ LOGO = """\n\n\n
  / /___/ / / / /_/ / / / / /  / /_/ / __/  
  \____/_/ /_/\__,_/_/_/ /_/   \____/_/     
                                           
-    ______                                           __
+    ______                                          __
    / ____/___  ____ ___  ____ ___  ____ _____  ____/ /
   / /   / __ \/ __ `__ \/ __ `__ \/ __ `/ __ \/ __  / 
  / /___/ /_/ / / / / / / / / / / / /_/ / / / / /_/ /  
@@ -37,12 +37,14 @@ class Shell(object):
             self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
             self.output = OnscreenText(text="\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
             self.intro()
-            self.cmd_dict = { 'quit' : self.quit,
-                              'exit' : self.quit,
-                              'help' : self.help,
-                              'man' : self.manual,
-                              'scores' : self.scores,
-                              'start': self.start_game }
+            self.cmd_dict = { 
+                'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
+                'help' : self.help, 'ls' : self.help, 'dir' : self.help,
+                'man' : self.manual,
+                'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
+                'rm': self.permission_error,
+                'start': self.start_game, 'run': self.start_game
+            }
 
     def intro(self):
         textType = Sequence(Wait(0.5))
@@ -77,6 +79,9 @@ class Shell(object):
     def quit(self,arglist=[]):
         self.append_line("Bye!")
         sys.exit()
+
+    def permission_error(self,arglist=[]):
+        self.append_line("Error: permission denied")
         
     def help(self,arglist=[]):
         self.append_line("Available Commands:")

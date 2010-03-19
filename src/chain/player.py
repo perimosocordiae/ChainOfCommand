@@ -14,7 +14,7 @@ from agent import Agent
 from constants import *
 
 #Constants
-MOTION_MULTIPLIER = 3.0
+MOTION_MULTIPLIER = 4.0
 TURN_MULTIPLIER = 0.5
 LOOK_MULTIPLIER = 0.3
 
