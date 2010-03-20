@@ -39,7 +39,7 @@ PROGRAMS = {'rm' : 'Doubles attack power',
 class Shell(object):
     def __init__(self,quick):
         if not quick:
-            main(1337,None)
+            self.main(1337,None)
         else:
             self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
             self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
@@ -57,14 +57,13 @@ class Shell(object):
 
     def intro(self):
         textType = Sequence(Wait(0.5))
-        for char in INTRO:
-            if char == "\n":
-                textType.append(Func(self.append_line, ""))
-                textType.append(Wait(0.5))
-            else:
+        for line in INTRO.splitlines():
+            for char in line:
                 textType.append(Func(self.append_char, char))
                 textType.append(Wait(CHARACTER_DELAY))
-        for line in LOGO.split('\n') :
+            textType.append(Func(self.append_line, ""))
+            textType.append(Wait(0.5))
+        for line in LOGO.splitlines() :
             textType.append(Func(self.append_line, line));
             textType.append(Wait(CHARACTER_DELAY))
         for char in PROMPT:
@@ -109,7 +108,7 @@ class Shell(object):
         
     def help(self,cmd,arglist=[]):
         self.append_line("Available Commands:")
-        for cmd in self.cmd_dict:
+        for cmd in self.cmd_dict.keys():
             self.append_line("   " + cmd)
             
     def manual(self,cmd,arglist=[]):
@@ -161,7 +160,7 @@ class Shell(object):
         Sequence(Wait(1.0), Func(lambda: c.send("Client: %s"%uname()[1]))).loop()
         Sequence(Wait(0.1), Func(lambda: print_data(c))).loop()
         
-        if True:
+        if False:
             g = Game(360,60.0,12.0,120)
             g.add_player('player_1')
             for _ in range(4):
