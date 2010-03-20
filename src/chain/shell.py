@@ -1,4 +1,5 @@
 import sys
+from platform import uname
 from time import sleep
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
@@ -157,7 +158,7 @@ class Shell(object):
             Server(port_num)
             ip = "127.0.0.1"
         c = Client(ip,port_num)
-        Sequence(Wait(1.0), Func(lambda: c.send("Client: %s"%ip))).loop()
+        Sequence(Wait(1.0), Func(lambda: c.send("Client: %s"%uname()[1]))).loop()
         Sequence(Wait(0.1), Func(lambda: print_data(c))).loop()
         
         if False:
