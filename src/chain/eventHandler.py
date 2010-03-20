@@ -22,6 +22,7 @@ class PlayerEventHandler(DirectObject):
         
         #space to pick up a program and put in next empty slot
         self.accept('space',playr.collect)
+        self.accept('space-repeat',playr.collect)
         
         #drop program i; if we go past 9 programs, we'll need another key system anyway
         for i in range(1,9):

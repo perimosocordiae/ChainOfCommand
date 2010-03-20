@@ -51,6 +51,7 @@ class Agent(object):
         #through things?  Or let him jump through things.  If he can't, adapt
         #2nd half of if statement to include 2nd ray.
         z_vel = self.velocity.getZ()
+        print self.velocity
         if self.in_air() or z_vel > 0:
             self.velocity.setZ(max(z_vel + GRAVITATIONAL_CONSTANT, TERMINAL_VELOCITY)) # jump / fall
         else:

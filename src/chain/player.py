@@ -14,11 +14,11 @@ from agent import Agent
 from constants import *
 
 #Constants
-MOTION_MULTIPLIER = 4.0
+MOTION_MULTIPLIER = 150.0
 TURN_MULTIPLIER = 0.5
 LOOK_MULTIPLIER = 0.3
 
-JUMP_SPEED = 4.0 #make sure this stays less than SAFE_FALL - he should
+JUMP_SPEED = 150.0 #make sure this stays less than SAFE_FALL - he should
                  #be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
@@ -323,14 +323,14 @@ class Player(Agent):
             else:                  self.StopMovingAnim()
 
         # actually move tron, based on the values in self.velocity
-        self.tron.setFluidPos(self.tron.getPos() + self.velocity) # globalClock.getDt()
+        self.tron.setFluidPos(self.tron.getPos() + (self.velocity * globalClock.getDt()))
         return Task.cont
     
     def get_xy_velocity(self, cmds):
         new_vel = Vec2(0, 0)
         for cmd in cmds:
             new_vel += self.get_partial_velocity(cmd)
-    
+        
         new_vel.normalize()
         new_vel *= MOTION_MULTIPLIER
         return new_vel
