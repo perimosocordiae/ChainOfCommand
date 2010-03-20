@@ -100,6 +100,6 @@ class Drone(Agent):
         self.handleGravity()
         self.velocity.setX(tronVec.getX())
         self.velocity.setY(tronVec.getY())
-        self.panda.setFluidPos(self.panda.getPos() + self.velocity*self.speed)
+        self.panda.setFluidPos(self.panda.getPos() + (self.velocity*self.speed* globalClock.getDt()))
         self.walking = False
         
