@@ -13,7 +13,7 @@ PROGRAM_PUSHER_MASK = BitMask32.bit(8)
 #FALL_DAMAGE_MULTIPLIER = 12.0 #How much to damage Tron per 1 over safe fall
 #TERMINAL_VELOCITY = -50.0
 
-GRAVITATIONAL_CONSTANT = -20 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
+GRAVITATIONAL_CONSTANT = -5 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
 SAFE_FALL = -5000.0 #fall velocity after which damage is induced
 FALL_DAMAGE_MULTIPLIER = 10.0 #How much to damage Tron per 1 over safe fall
 TERMINAL_VELOCITY = -5000000.0

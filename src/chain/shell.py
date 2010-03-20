@@ -161,7 +161,7 @@ class Shell(object):
         Sequence(Wait(1.0), Func(lambda: c.send("Client: %s"%uname()[1]))).loop()
         Sequence(Wait(0.1), Func(lambda: print_data(c))).loop()
         
-        if False:
+        if True:
             g = Game(360,60.0,12.0,120)
             g.add_player('player_1')
             for _ in range(4):

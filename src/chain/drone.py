@@ -15,7 +15,7 @@ class Drone(Agent):
         if not pos: pos = game.rand_point()
         self.panda.setPos(pos[0],pos[1],0)
         self.setup_collider()
-        self.speed = random()+0.5
+        self.speed = (random()+0.5)*6
     
     def damage(self):
         return 10
