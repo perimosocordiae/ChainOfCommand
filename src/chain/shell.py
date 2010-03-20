@@ -1,4 +1,3 @@
-#from symbol import arglist
 import sys
 from time import sleep
 import direct.directbase.DirectStart
@@ -155,23 +154,22 @@ class Shell(object):
     
     def main(self,port_num,ip):
         if not ip:
-            s = Server(port_num)
-            Sequence(Wait(0.1), Func(print_clients,s)).loop()
+            Server(port_num)
             ip = "127.0.0.1"
         c = Client(ip,port_num)
         Sequence(Wait(1.0), Func(lambda: c.send("Client: %s"%ip))).loop()
+        Sequence(Wait(0.1), Func(lambda: print_data(c))).loop()
         
-        #    g = Game(360,60.0,12.0,120)
-        #    g.add_player('player_1')
-        #    print "added player"
-        #    for _ in range(4):
-        #        g.add_program(Rm)
-        #        g.add_program(Chmod)
-        #        g.add_program(DashR)
-        #        g.add_program(RAM)
-        #    g.add_event_handler()
-        #    g.add_background_music()
-        #    Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+        if False:
+            g = Game(360,60.0,12.0,120)
+            g.add_player('player_1')
+            for _ in range(4):
+                g.add_program(Rm)
+                g.add_program(Chmod)
+                g.add_program(DashR)
+                g.add_program(RAM)
+            g.add_event_handler()
+            Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
         
         self.output.stash()
         self.prompt.stash()
@@ -183,8 +181,8 @@ def add_drone(g):
     if len(g.drones) < 20:
         g.add_drone()
 
-def print_clients(s):
-    data = s.getData()
+def print_data(c):
+    data = c.getData()
     if len(data) > 0:
         print data
 

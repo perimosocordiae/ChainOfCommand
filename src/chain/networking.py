@@ -42,6 +42,7 @@ class Server(NetworkBase):
         taskMgr.add(self.__tskDisconnectPolling, "serverDisconnectTask", -39)
         
     def __tskListenerPolling(self, task):
+        # look for new clients
         if self.cListener.newConnectionAvailable():
             rendezvous = PointerToConnection()
             netAddress = NetAddress()
@@ -51,6 +52,9 @@ class Server(NetworkBase):
                 newConnection = newConnection.p()
                 self.activeConnections.append(newConnection) # Remember connection
                 self.cReader.addConnection(newConnection)     # Begin reading connection
+        # republish messages
+        for d in self.getData():
+            self.broadcast(d)
         return Task.cont
     
     def __tskDisconnectPolling(self, task):
