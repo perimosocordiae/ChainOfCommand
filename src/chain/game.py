@@ -33,7 +33,6 @@ class Game(object):
         self.endTime = self.startTime + gameLength
         self.gameTime = self.endTime - time()
         self.add_event_handler()
-        self.add_background_music()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
         
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
@@ -65,14 +64,6 @@ class Game(object):
     
     def add_wall(self, name, parent, p1, p2, p3, p4):
         self.walls[name] = Wall(self, name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
-    
-    def add_background_music(self):
-        # from http://www.newgrounds.com/audio/listen/287442
-        backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
-        backgroundMusic.setVolume(0.3)
-        backgroundMusic.setTime(35)  # music automatically starts playing when this command is issued
-        print "Track: City in Flight in Neon Light" # attribution
-        print "Author: Trevor Dericks"
 
     def load_env(self):
         #add the lighting

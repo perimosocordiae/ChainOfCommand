@@ -41,6 +41,7 @@ class Player(Agent):
         self.setup_sounds()
         self.handleEvents = True
         self.laserGlow = False
+        self.add_background_music()
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
     
@@ -59,10 +60,19 @@ class Player(Agent):
         self.sounds = dict(zip(keys, [base.sfxManagerList[0].getSound(f % SOUND_PATH) for f in fnames]))
         for s in self.sounds.itervalues():
             s.setVolume(0.3)
+            
+    def add_background_music(self):
+        # from http://www.newgrounds.com/audio/listen/287442
+        self.backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
+        self.backgroundMusic.setVolume(0.3)
+        self.backgroundMusic.setTime(35)  # music automatically starts playing when this command is issued
+        print "Track: City in Flight in Neon Light" # attribution
+        print "Author: Trevor Dericks"
     
     def toggle_background_music(self):
-        base.enableMusic(not base.musicManager.getActive()) 
-        # bug, can't turn on once it's off
+        base.enableMusic(not base.musicManager.getActive())
+        if base.musicManager.getActive():
+            self.backgroundMusic.setTime(35)
         
     def toggle_sound_effects(self):
         base.enableSoundEffects(not base.sfxManagerList[0].getActive())
