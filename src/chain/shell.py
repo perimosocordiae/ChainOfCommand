@@ -1,12 +1,15 @@
+#from symbol import arglist
 import sys
+from time import sleep
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode
+from networking import Client,Server
 from game import Game
 from program import DashR, Rm, Chmod, RAM
-import time
+from constants import MODEL_PATH
 
 CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
@@ -14,28 +17,33 @@ PROMPT = "Enter a command"
 # generated with: figlet -f slant "Chain of Command"
 LOGO = """\n\n\n
     ________          _                ____
-   / ____/ /_  ____ _(_)___     ____  / __/
+   / ____/ /_  ____  (_)___     ____  / __/
   / /   / __ \/ __ `/ / __ \   / __ \/ /_  
  / /___/ / / / /_/ / / / / /  / /_/ / __/  
  \____/_/ /_/\__,_/_/_/ /_/   \____/_/     
                                           
     ______                                          __
-   / ____/___  ____ ___  ____ ___  ____ _____  ____/ /
+   / ____/___  ____ ___  ____ ___  ____ ____  ____/ /
   / /   / __ \/ __ `__ \/ __ `__ \/ __ `/ __ \/ __  / 
- / /___/ /_/ / / / / / / / / / / / /_/ / / / / /_/ /  
+ / /___/ /_/ / / / / / / / / / / / /_/ / / / / /_/  /  
  \____/\____/_/ /_/ /_/_/ /_/ /_/\__,_/_/ /_/\__,_/   
 \n\n\n\n\n
 """
+PROGRAMS = {'rm' : 'Doubles attack power',
+            'chmod' : 'Doubles shield strength',
+            '-r' : 'Increases shoot speed',
+            'RAM' : 'Provides an additional program slot' 
+           }
 
 
 class Shell(object):
     def __init__(self,quick):
-        if (not(quick)):
-            main()
+        if not quick:
+            main(1337,None)
         else:
-            self.font = loader.loadFont('../../models/FreeMono.ttf')
+            self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
             self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
-            self.output = OnscreenText(text="\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
+            self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
             self.intro()
             self.cmd_dict = { 
                 'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
@@ -45,6 +53,7 @@ class Shell(object):
                 'rm': self.permission_error,
                 'start': self.start_game, 'run': self.start_game
             }
+            self.cmd_hist = [""]
 
     def intro(self):
         textType = Sequence(Wait(0.5))
@@ -67,33 +76,52 @@ class Shell(object):
     def user_input(self):
         self.prompt = DirectLabel(text=">", frameSize=(-0.05,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font, )
         self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=38, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
+        self.screen.accept('arrow_up',self.up_hist)
+        self.screen.accept('arrow_down',self.down_hist)
         self.input.enterText("")
+    
+    def up_hist(self):
+        self.cmd_pos = max(self.cmd_pos-1,-len(self.cmd_hist)+1)
+        self.input.enterText(self.cmd_hist[self.cmd_pos])
+    
+    def down_hist(self):
+        self.cmd_pos = min(self.cmd_pos+1,0)
+        self.input.enterText(self.cmd_hist[self.cmd_pos])
         
-    def start_game(self,arglist=[]):
-        self.output.stash()
-        self.prompt.stash()
-        self.input.stash()
-        self.screen.stash()
-        main()
+    def start_game(self,cmd,arglist=[]):
+        if len(arglist) < 2 or arglist[0] not in ['host','join']:
+            self.append_line("Usage: %s host [port_num]"%cmd)
+            self.append_line("       %s join [port_num] [host_ip]"%cmd)
+            return
+        if arglist[0] == 'host':
+            self.main(int(arglist[1]),None)
+        else:
+            if len(arglist) == 2: self.append_line("Error: no IP provided")
+            else : self.main(int(arglist[1]),arglist[2])
 
-    def quit(self,arglist=[]):
+    def quit(self,cmd,arglist=[]):
         self.append_line("Bye!")
+        sleep(0.5)
         sys.exit()
 
-    def permission_error(self,arglist=[]):
+    def permission_error(self,cmd,arglist=[]):
         self.append_line("Error: permission denied")
         
-    def help(self,arglist=[]):
+    def help(self,cmd,arglist=[]):
         self.append_line("Available Commands:")
         for cmd in self.cmd_dict:
             self.append_line("   " + cmd)
             
-    def manual(self,arglist=[]):
-        self.append_line("Instructions:")
-        for i in range(0,10):
-            self.append_line("   Blah")
+    def manual(self,cmd,arglist=[]):
+        if len(arglist) == 0:
+            self.append_line("Usage: man [program]")
+            self.append_line("Program listing: %s"%', '.join(PROGRAMS.keys()))
+        elif arglist[0] in PROGRAMS:
+            self.append_line("%s -- %s"%(arglist[0],PROGRAMS[arglist[0]]))
+        else:
+            self.append_line("Error: no such program: %s"%arglist[0])
             
-    def scores(self,arglist=[]):
+    def scores(self,cmd,arglist=[]):
         self.append_line("High Scores: ")
         self.append_line("   1. Dude - 42")
 
@@ -110,37 +138,55 @@ class Shell(object):
         self.output.setText('\n'.join(lines))
         
     def append_char(self,char):
-        text = self.output.appendText(char)
+        self.output.appendText(char)
     
     def parse_cmd(self,str):
+        self.cmd_hist.append(str)
+        self.cmd_pos = 0
         self.append_line("> %s"%str)
         input = str.split()
         cmd,args = input[0],input[1:]
         if cmd in self.cmd_dict:
-            self.cmd_dict[cmd](args)
+            self.cmd_dict[cmd](cmd,args)
         else:
             self.append_line("unknown command: %s" % cmd)
         self.input.enterText("")
         self.input.setFocus()
+    
+    def main(self,port_num,ip):
+        if not ip:
+            s = Server(port_num)
+            Sequence(Wait(0.1), Func(print_clients,s)).loop()
+            ip = "127.0.0.1"
+        c = Client(ip,port_num)
+        Sequence(Wait(1.0), Func(lambda: c.send("Client: %s"%ip))).loop()
+        
+        #    g = Game(360,60.0,12.0,120)
+        #    g.add_player('player_1')
+        #    print "added player"
+        #    for _ in range(4):
+        #        g.add_program(Rm)
+        #        g.add_program(Chmod)
+        #        g.add_program(DashR)
+        #        g.add_program(RAM)
+        #    g.add_event_handler()
+        #    g.add_background_music()
+        #    Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+        
+        self.output.stash()
+        self.prompt.stash()
+        self.input.stash()
+        self.screen.stash()
 # end Shell class
 
 def add_drone(g):
     if len(g.drones) < 20:
         g.add_drone()
 
-def main():
-    g = Game(360,60.0,12.0,120)
-    g.add_player('player_1')
-    print "added player"
-    for _ in range(4):
-        g.add_program(Rm)
-        g.add_program(Chmod)
-        g.add_program(DashR)
-        g.add_program(RAM)
-    #for _ in range(5):
-    #    g.add_drone()
-    g.add_event_handler()
-    Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+def print_clients(s):
+    data = s.getData()
+    if len(data) > 0:
+        print data
 
 if __name__ == '__main__':
     Shell(True)
