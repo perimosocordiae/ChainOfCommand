@@ -25,6 +25,9 @@ class Game(object):
     def __init__(self,ip,port_num,map_size=320,tile_size=16, tower_size=16, gameLength=180):
         self.client = Client(ip,port_num)
         taskMgr.add(self.handshakeTask, 'handshakeTask')
+        print "before"
+        while taskMgr.hasTaskNamed("handshakeTask"): pass
+        print "after"
         base.cTrav = CollisionTraverser()
         #wsbase.cTrav.showCollisions(render)
         self.players, self.programs,self.drones,self.walls = {},{},{},{}

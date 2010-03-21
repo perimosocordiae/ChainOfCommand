@@ -181,6 +181,10 @@ class Shell(object):
     
     def main(self,port_num,ip,last=False):
         print "starting up"
+        
+        if last:
+            g.client.send("start")
+            return
         g = Game(ip,port_num,360,60.0,12.0,120)
         print "game initialized"
         for _ in range(4):
@@ -192,8 +196,6 @@ class Shell(object):
         g.add_event_handler()
         #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
         
-        if last:
-            g.client.send("start")
 
 
 # end Shell class
