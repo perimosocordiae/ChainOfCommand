@@ -46,10 +46,10 @@ class Shell(object):
             self.intro()
             self.cmd_dict = { 
                 'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
-                'help' : self.help, 'ls' : self.help, 'dir' : self.help,
+                'help' : self.help, 'ls' : self.help, 'dir' : self.help, 'wtf': self.help,
                 'man' : self.manual,
                 'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
-                'rm': self.permission_error,
+                'rm': self.permission_error, 'sudo': self.permission_error,
                 'start': self.start_game, 'run': self.start_game
             }
             self.cmd_hist = [""]
@@ -76,6 +76,7 @@ class Shell(object):
         self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
         self.screen.accept('arrow_up',self.up_hist)
         self.screen.accept('arrow_down',self.down_hist)
+        self.screen.accept('tab', self.tab_completion)
         self.input.enterText("")
     
     def up_hist(self):
@@ -85,6 +86,19 @@ class Shell(object):
     def down_hist(self):
         self.cmd_pos = min(self.cmd_pos+1,0)
         self.input.enterText(self.cmd_hist[self.cmd_pos])
+        
+    def tab_completion(self):
+        currentInput = self.input.get()
+        possibleCommand = ""
+        for validCommand in self.cmd_dict :
+            if validCommand.startswith(currentInput) :
+                if possibleCommand == "" :
+                    possibleCommand = validCommand
+                else :
+                    possibleCommand = ""
+                    return
+        if possibleCommand != "":
+            self.input.enterText(possibleCommand)
         
     def start_game(self,cmd,arglist=[]):
         if len(arglist) < 2 or arglist[0] not in ['host','join']:
@@ -192,5 +206,5 @@ def print_data(c):
         print data
 
 if __name__ == '__main__':
-    Shell(False)
+    Shell(True)
     run()
