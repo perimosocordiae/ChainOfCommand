@@ -1,11 +1,10 @@
 import sys
 from time import sleep
-from thread import start_new_thread
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import TextNode
+from pandac.PandaModules import TextNode, Thread
 from networking import Server
 from game import Game
 from program import DashR, Rm, Chmod, RAM
@@ -106,7 +105,7 @@ class Shell(object):
             self.append_line("       %s join [port_num] [host_ip]"%cmd)
             return
         if arglist[0] == 'host':
-            self.main(int(arglist[1]),None)
+            self.start_server(int(arglist[1]))
         else:
             if len(arglist) == 2: 
                 self.append_line("Error: no IP provided")
@@ -175,12 +174,12 @@ class Shell(object):
         self.input.enterText("")
         self.input.setFocus()
     
-    def main(self,port_num,ip):
-        is_server = not ip
-        if is_server:
-            start_new_thread(lambda p: Server(p),(port_num,))
-            ip = "127.0.0.1"
-          
+    def start_server(self,port_num):
+        s = Server(port_num)
+        raw_input("press enter")
+        s.broadcast("start")
+    
+    def main(self,port_num,ip = "127.0.0.1"):
         print "starting up"
         g = Game(ip,port_num,360,60.0,12.0,120)
         print "game initialized"
@@ -193,8 +192,11 @@ class Shell(object):
         g.add_event_handler()
         #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
         
-        if is_server:
-            raw_input("press enter when everyone has joined")
+        if False: #is_server:
+            print "sleeping now, you have 10 seconds"
+            for i in range(10):
+                print "time left:",10-i
+                Thread.sleep(1)
             print g.players
             for p in g.players:
                 g.client.send("player %s"%p)

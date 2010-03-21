@@ -163,7 +163,8 @@ class Game(object):
     
     def handshakeTask(self,task):
         data = self.client.getData()
-        if len(data) == 0: return task.again
+        if len(data) == 0: return task.cont
+        print data
         for d in data:
             ds = d.split()
             if ds[0] == 'seed':
@@ -176,7 +177,7 @@ class Game(object):
             elif ds[0] == 'start':
                 print "starting"
                 return task.done # ends task
-        return task.again
+        return task.cont
     
     def network_listen(self):
         data = self.client.getData()
