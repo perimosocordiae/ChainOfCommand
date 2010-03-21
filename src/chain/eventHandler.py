@@ -59,6 +59,7 @@ class GameEventHandler(DirectObject):
     def __init__(self, game):
         self.game = game
         self.pusherHandler = CollisionHandlerPusher()
+        self.pusherHandler.setHorizontal(True)
         self.collisionHandler = CollisionHandlerEvent()
         self.collisionHandler.addInPattern('%fn-into-%in')
         self.collisionHandler.addAgainPattern('%fn-repeat-%in')

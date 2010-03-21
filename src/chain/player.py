@@ -17,9 +17,7 @@ from constants import *
 MOTION_MULTIPLIER = 150.0
 TURN_MULTIPLIER = 0.5
 LOOK_MULTIPLIER = 0.3
-
-JUMP_SPEED = 100.0 #make sure this stays less than SAFE_FALL - he should
-                 #be able to jump up & down w/o getting hurt!
+JUMP_SPEED = 100.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
@@ -28,12 +26,115 @@ HUD_PROG_SCALE = 0.08
 HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 
 class Player(Agent):
-
     def __init__(self, game, name):
         super(Player, self).__init__(game, name)
         self.programs = [None, None, None]
         self.killcount = 0
         self.setup_collider()
+        #add the camera collider:
+        self.collisionQueue = CollisionHandlerQueue()
+    
+    def setup_collider(self):
+        self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
+        self.pusher = self.attach_collision_node("%s_wall" % self.name, CollisionSphere(0, 0, 0, 12), WALL_COLLIDER_MASK)
+        #self.pusher.show()
+    
+    def set_glow(self, glow):
+        if glow:
+            self.tron.setTexture(self.ts, self.glow)
+        else:
+            self.tron.clearTexture(self.ts)
+    
+    def get_shield_sphere(self):
+        return self.collider
+    
+    def get_model(self):
+        return self.tron
+    
+    def findCrosshairHit(self):
+        base.cTrav.traverse(render)
+        if self.collisionQueue.getNumEntries() == 0: return ""
+        # This is so we get the closest object
+        self.collisionQueue.sortEntries()
+        
+        for i in range(self.collisionQueue.getNumEntries()):
+            pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
+            if 'donthitthis' in pickedObj: continue
+            if '_wall' in pickedObj: continue
+            if not (self.name in pickedObj): break
+        return pickedObj
+    
+    def set_laser_glow(self, glow):
+        self.laserGlow = glow
+    
+    def die(self):
+        del self.game.players[self.name]
+        self.collider.removeNode()
+        self.pusher.removeNode()
+        self.tron.cleanup()
+        self.tron.removeNode()
+        print "%s died!"%self.name
+    
+    def get_base_damage(self):
+        return BASE_DAMAGE
+    
+    def jump(self):
+        if self.handleEvents: super(Player, self).jump() 
+    
+    def get_origin_height(self):
+        return TRON_ORIGIN_HEIGHT
+    
+    def get_jump_speed(self):
+        return JUMP_SPEED
+        
+    def StartMovingAnim(self):
+        if self.running: return
+        self.running = True
+        self.shortRun.loop()
+        
+    def StopMovingAnim(self):
+        if not self.running: return
+        self.tron.stop()
+        if self.shortRun.isPlaying():
+            run = self.shortRun
+            t = run.getT()
+            run.start(startT=t)
+        self.running = False
+        
+    def load_model(self):
+        #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
+        self.tron = Actor.Actor("%s/tron" % MODEL_PATH, {"running":"%s/tron_anim_updated" % MODEL_PATH})
+        self.tron.reparentTo(render)
+        self.tron.setScale(0.4, 0.4, 0.4)
+        self.tron.setHpr(0, 0, 0)
+        self.tron.setPos(-4, 34, TRON_ORIGIN_HEIGHT)
+        self.tron.pose("running", 46)
+        self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame=46)
+
+        self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame=46)
+        self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
+        self.running = False
+        Laser() # pre-cache laser model
+        
+        self.ts = TextureStage('ts')
+        self.ts.setMode(TextureStage.MGlow)
+        self.glow = loader.loadTexture("%s/tron-glow_on.png"%MODEL_PATH)
+        self.ts.setSort(9)
+        #self.no_glow = loader.loadTexture(NO_GLOW)
+        #self.tron.setTexture(self.ts, self.no_glow)
+        self.set_glow(False)
+        
+    def initialize_camera(self):
+        cameraNode = CollisionNode('cameracnode_%s'%self.name)
+        cameraNP = base.camera.attachNewNode(cameraNode)
+        cameraNP.node().setIntoCollideMask(0)
+        self.cameraRay = CollisionRay(0, base.camera.getY(), 0, 0, 1, 0)
+        cameraNode.addSolid(self.cameraRay)
+        base.cTrav.addCollider(cameraNP, self.collisionQueue)
+
+class LocalPlayer(Player):
+    def __init__(self, game, client):
+        super(LocalPlayer, self).__init__(game, 'me')
         self.setup_camera()
         self.setup_HUD()
         self.setup_shooting()
@@ -42,17 +143,15 @@ class Player(Agent):
         self.handleEvents = True
         self.laserGlow = False
         self.add_background_music()
-        #add the camera collider:
-        self.collisionQueue = CollisionHandlerQueue()
     
     def initialize_camera(self):
-        cameraNode = CollisionNode('cameracnode')
-        cameraNP = base.camera.attachNewNode(cameraNode)
-        cameraNP.node().setIntoCollideMask(0)
-        self.cameraRay = CollisionRay(0, base.camera.getY(), 0, 0, 1, 0)
-        cameraNode.addSolid(self.cameraRay)
-        base.cTrav.addCollider(cameraNP, self.collisionQueue)
+        super(LocalPlayer,self).initialize_camera()
         base.camLens.setNearFar(10, 3000)
+    
+    def die(self):
+        super(LocalPlayer,self).die()
+        #TODO something better here!
+        sys.exit("GAME OVER, YOU DEAD") 
     
     def setup_sounds(self):
         keys = ['laser', 'yes', 'no', 'snarl']
@@ -79,7 +178,7 @@ class Player(Agent):
 
     def target(self):
         objHit = self.findCrosshairHit()
-        if objHit in self.game.drones: #turn the crosshairs red
+        if objHit in self.game.drones or objHit in self.game.players: #turn the crosshairs red
             self.crosshairs.setImage("%s/crosshairs_locked.tif" % MODEL_PATH)
         elif objHit in self.game.programs:
             self.crosshairs.setImage("%s/crosshairs_program.tif" % MODEL_PATH)
@@ -112,6 +211,14 @@ class Player(Agent):
             print "hit program %s for %d damage" % (objHit, self.damage())
             if p.is_dead():
                 print "Oh no, you blew up a program!"
+        elif objHit in self.game.players:
+            p = self.game.players[objHit]
+            p.hit(self.damage())
+            print "hit %s for %d damage" % (objHit, self.damage())
+            if p.is_dead():
+                print "you killed %s!"%objHit
+                self.killcount += 1
+                self.killHUD.setText("Frags: %d" % self.killcount)
         #end if 
         self.fire_laser()
    
@@ -131,27 +238,6 @@ class Player(Agent):
             laser.set_glow(True)
         #the .005 is a fudge factor - it just makes things work better
         laser.fire(Vec3(sin(h) * pcos, -cos(h) * pcos, sin(p) + 0.005) * LASER_SPEED)
-    
-    def findCrosshairHit(self):
-        base.cTrav.traverse(render)
-        if self.collisionQueue.getNumEntries() == 0: return ""
-        # This is so we get the closest object
-        self.collisionQueue.sortEntries()
-        for i in range(self.collisionQueue.getNumEntries()):
-            pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
-            if 'donthitthis' in pickedObj: continue 
-            if not (self.name in pickedObj): break
-        return pickedObj
-    
-    def set_laser_glow(self, glow):
-        self.laserGlow = glow
-    
-    def die(self):
-        #TODO something better here!
-        sys.exit("GAME OVER, YOU DEAD")    
-    
-    def get_base_damage(self):
-        return BASE_DAMAGE
     
     def hit(self, amt=0):
         super(Player, self).hit(amt)
@@ -191,6 +277,8 @@ class Player(Agent):
             for txt in self.programHUD:
                 #they couldn't just make it simple and override getX() could they?
                 txt.setX(txt.getPos()[0] - 0.15)
+<<<<<<< .mine
+=======
     
     def load_model(self):
         #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
@@ -206,31 +294,7 @@ class Player(Agent):
         self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
         Laser() # pre-cache laser model
-        
-        self.ts = TextureStage('ts')
-        self.ts.setMode(TextureStage.MGlow)
-        self.glow = loader.loadTexture("%s/tron-glow_on.png"%MODEL_PATH)
-        self.ts.setSort(9)
-        #self.no_glow = loader.loadTexture(NO_GLOW)
-        #self.tron.setTexture(self.ts, self.no_glow)
-        self.set_glow(False)
-    
-    def set_glow(self, glow):
-        if glow:
-            self.tron.setTexture(self.ts, self.glow)
-        else:
-            self.tron.clearTexture(self.ts)
-
-    def setup_collider(self):
-        self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
-        self.pusher = self.attach_collision_node("%s_wall" % self.name, CollisionSphere(0, 0, 0, 12), WALL_COLLIDER_MASK)
-        #self.pusher.show()
-    
-    def get_shield_sphere(self):
-        return self.collider
-    
-    def get_model(self):
-        return self.tron
+>>>>>>> .r89
         
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
@@ -343,29 +407,6 @@ class Player(Agent):
             return Vec2(sin(h), -cos(h))
         else:
             return Vec2(-sin(h), cos(h))
-
-    def jump(self):
-        if self.handleEvents: super(Player, self).jump() 
-    
-    def get_origin_height(self):
-        return TRON_ORIGIN_HEIGHT
-    
-    def get_jump_speed(self):
-        return JUMP_SPEED
-        
-    def StartMovingAnim(self):
-        if self.running: return
-        self.running = True
-        self.shortRun.loop()
-        
-    def StopMovingAnim(self):
-        if not self.running: return
-        self.tron.stop()
-        if self.shortRun.isPlaying():
-            run = self.shortRun
-            t = run.getT()
-            run.start(startT=t)
-        self.running = False
     
     def LookAtMouse(self):
         md = base.win.getPointer(0)

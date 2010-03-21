@@ -1,12 +1,11 @@
 import sys
-from platform import uname
 from time import sleep
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode
-from networking import Client,Server
+from networking import Server
 from game import Game
 from program import DashR, Rm, Chmod, RAM
 from constants import MODEL_PATH
@@ -95,8 +94,12 @@ class Shell(object):
         if arglist[0] == 'host':
             self.main(int(arglist[1]),None)
         else:
-            if len(arglist) == 2: self.append_line("Error: no IP provided")
-            else : self.main(int(arglist[1]),arglist[2])
+            if len(arglist) == 2: 
+                self.append_line("Error: no IP provided")
+                return
+            else: 
+                self.main(int(arglist[1]),arglist[2])
+        self.hide_shell()
 
     def quit(self,cmd,arglist=[]):
         self.append_line("Bye!")
@@ -123,7 +126,13 @@ class Shell(object):
     def scores(self,cmd,arglist=[]):
         self.append_line("High Scores: ")
         self.append_line("   1. Dude - 42")
-
+        
+    def hide_shell(self):
+        self.output.stash()
+        self.prompt.stash()
+        self.input.stash()
+        self.screen.stash()
+        
     def resume_shell(self):
         self.output.unstash()
         self.prompt.unstash()
@@ -153,28 +162,24 @@ class Shell(object):
         self.input.setFocus()
     
     def main(self,port_num,ip):
-        if not ip:
+        if not ip: # means we need to start the server
             Server(port_num)
             ip = "127.0.0.1"
-        c = Client(ip,port_num)
-        Sequence(Wait(1.0), Func(lambda: c.send("Client: %s"%uname()[1]))).loop()
-        Sequence(Wait(0.1), Func(lambda: print_data(c))).loop()
+        print "starting up"
+        g = Game(ip,port_num,360,60.0,12.0,120)
+        print "game started"
+        g.add_player('shubho')
+        print "shubho added"
+        for _ in range(4):
+            g.add_program(Rm)
+            g.add_program(Chmod)
+            g.add_program(DashR)
+            g.add_program(RAM)
+        print "programs added"
+        g.add_event_handler()
+        Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
 
-        if True:
-            g = Game(360,60.0,12.0,120)
-            g.add_player('player_1')
-            for _ in range(4):
-                g.add_program(Rm)
-                g.add_program(Chmod)
-                g.add_program(DashR)
-                g.add_program(RAM)
-            g.add_event_handler()
-            Sequence(Wait(20.0), Func(lambda:add_drone(g))).loop()
-        
-        self.output.stash()
-        self.prompt.stash()
-        self.input.stash()
-        self.screen.stash()
+
 # end Shell class
 
 def add_drone(g):
@@ -187,5 +192,5 @@ def print_data(c):
         print data
 
 if __name__ == '__main__':
-    Shell(True)
+    Shell(False)
     run()

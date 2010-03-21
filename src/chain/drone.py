@@ -89,7 +89,7 @@ class Drone(Agent):
         return Task.cont
     
     def follow_tron(self):
-        tron = self.game.players['player_1'].tron
+        tron = self.game.players[self.game.players.keys()[-1]].tron
         self.panda.lookAt(tron)
         self.panda.setH(self.panda.getH() + 180)
         #move one "unit" towards tron

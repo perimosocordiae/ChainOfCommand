@@ -2,6 +2,7 @@ from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
 from direct.task.Task import Task
 from pandac.PandaModules import *
+from time import time
 
 class NetworkBase(object): # abstract base class for the client and server classes
     def __init__(self,port):
@@ -12,6 +13,11 @@ class NetworkBase(object): # abstract base class for the client and server class
 
     def __processData(self, netDatagram):
         return PyDatagramIterator(netDatagram).getString()
+    
+    def send(self, data, conn):
+        pdg = PyDatagram()
+        pdg.addString(data)
+        self.cWriter.send(pdg, conn)
         
     def getData(self):
         data = []
@@ -29,6 +35,7 @@ class Server(NetworkBase):
         self.backlog = backlog
         self.cListener = QueuedConnectionListener(self.cManager, 0)
         self.activeConnections = []
+        self.rand_seed = int(time())
         self.__connect(self.port, self.backlog)
         self.__startPolling()
 
@@ -52,9 +59,11 @@ class Server(NetworkBase):
                 newConnection = newConnection.p()
                 self.activeConnections.append(newConnection) # Remember connection
                 self.cReader.addConnection(newConnection)     # Begin reading connection
+                self.send(str(self.rand_seed),newConnection) # send the new client the random seed
         # republish messages
         for d in self.getData():
             self.broadcast(d)
+        #self.broadcast('time: %s'%time())
         return Task.cont
     
     def __tskDisconnectPolling(self, task):
@@ -71,13 +80,11 @@ class Server(NetworkBase):
                     del self.activeConnections[c]
                     break       
         return Task.cont
-        
+    
     def broadcast(self, data):
         # Broadcast data out to all activeConnections
         for con in self.activeConnections:
-            pdg = PyDatagram()
-            pdg.addString(data)
-            self.cWriter.send(pdg, con)
+            self.send(data, con)
         
     def getClients(self):
         # return a list of all activeConnections
@@ -112,9 +119,7 @@ class Client(NetworkBase):
         return Task.cont
     
     def send(self, data):
-        pdg = PyDatagram()
-        pdg.addString(data)
-        self.cWriter.send(pdg, self.server_conn)
+        self.send(pdg, self.server_conn)
         
     def is_connected(self):
         return self.server_conn != None

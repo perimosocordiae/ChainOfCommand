@@ -1,19 +1,19 @@
-from random import randint, choice
+from time import time, sleep
+import sys
+from random import randint, choice, seed
 #from itertools import product as iproduct
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionSphere, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
-from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4
+from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4, Vec3, Point3
 from direct.filter.CommonFilters import CommonFilters
-from player import Player
-from drone import Drone
-from wall import Wall
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
-from time import time
-from pandac.PandaModules import Vec3, Point3
-import sys
+from player import Player,LocalPlayer
+from drone import Drone
+from wall import Wall
+from networking import Client
 from constants import *
 
 #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
@@ -21,7 +21,12 @@ USE_GLOW = False
 
 class Game(object):
 
-    def __init__(self,map_size=320,tile_size=16, tower_size=16, gameLength=180):
+    def __init__(self,ip,port_num,map_size=320,tile_size=16, tower_size=16, gameLength=180):
+        client = Client(ip,port_num)
+        #d = client.getData()
+        #while len(d) == 0: sleep(0.1); d = client.getData() # wait for the server to send a seed
+        #self.rand_seed = int(d[0])
+        #seed(self.rand_seed)
         base.cTrav = CollisionTraverser()
         #wsbase.cTrav.showCollisions(render)
         self.players, self.programs,self.drones,self.walls = {},{},{},{}
@@ -34,8 +39,8 @@ class Game(object):
         self.gameTime = self.endTime - time()
         self.add_event_handler()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
-        
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
+        self.add_local_player(client)
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-2),randint(-self.map_size+1,self.map_size-2))
@@ -44,7 +49,11 @@ class Game(object):
         self.eventHandle = GameEventHandler(self)
         for player in self.players.itervalues():
             player.initialize_camera()
-    
+            
+    def add_local_player(self,client):
+        self.players['me'] = LocalPlayer(self,client)
+        self.eventHandle.addPlayerHandler(self.players['me'])
+            
     def add_player(self,pname):
         self.players[pname] = Player(self,pname)
         self.eventHandle.addPlayerHandler(self.players[pname])

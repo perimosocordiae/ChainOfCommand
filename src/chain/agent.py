@@ -26,7 +26,7 @@ class Agent(object):
     def setup_floor_collider(self):
         self.floorQueue = CollisionHandlerQueue()
         
-        self.lifterRay = CollisionRay(0, 0, 0, 0, 0, -1) #ray pointing down
+        self.lifterRay = CollisionRay(0, 0, 10-self.get_origin_height(), 0, 0, -1) #ray pointing down
         self.lifter = self.attach_collision_node("%s_floor" % self.name, self.lifterRay, FLOOR_COLLIDER_MASK)
         self.lifter.node().setIntoCollideMask(0)
         
