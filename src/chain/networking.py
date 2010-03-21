@@ -61,7 +61,7 @@ class Server(NetworkBase):
                 newConnection = newConnection.p()
                 self.activeConnections.append(newConnection) # Remember connection
                 self.cReader.addConnection(newConnection)     # Begin reading connection
-                self.send(str(self.rand_seed),newConnection) # send the new client the random seed
+                #self.send(str(self.rand_seed),newConnection) # send the new client the random seed
         # republish messages
         for d in self.getData():
             self.broadcast(d)
@@ -120,8 +120,8 @@ class Client(NetworkBase):
             self.connected = False     
         return Task.cont
     
-    def send(self, data):
-        self.send(pdg, self.server_conn)
+    def send(self, data, conn=None):
+        super(Client,self).send(data, self.server_conn)
         
     def is_connected(self):
         return self.server_conn != None

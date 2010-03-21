@@ -191,7 +191,7 @@ class Shell(object):
             g.add_program(RAM)
         print "programs added"
         g.add_event_handler()
-        Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+        #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
 
 
 # end Shell class

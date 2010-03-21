@@ -7,26 +7,25 @@ class PlayerEventHandler(DirectObject):
     
     def __init__(self, playr):
         self.player = playr
+        # local effect keys
         self.accept('f',playr.switchPerspective)
         self.accept('wheel_up',playr.zoomIn)
         self.accept('wheel_down',playr.zoomOut)
-        self.accept('mouse1',playr.click)
-        self.accept('mouse1-up',playr.clickRelease)
-        self.accept('escape',sys.exit) # hack, for now
-        self.accept('e',playr.jump)
+        self.accept('escape',playr.die) # hack, for now
         self.accept('p',self.pause_menu)
         self.accept('m',playr.toggle_background_music)
-            # above line toggles background music when you press m
         self.accept('n',playr.toggle_sound_effects)
-            # above line toggles sound effects when you press n
+        self.accept('e',playr.jump)
         
-        #space to pick up a program and put in next empty slot
+        # networked events
+        self.accept('mouse1',playr.click)
+        self.accept('mouse1-up',playr.clickRelease)
         self.accept('space',playr.collect)
         self.accept('space-repeat',playr.collect)
         
         #drop program i; if we go past 9 programs, we'll need another key system anyway
-        for i in range(1,9):
-            self.accept('%d'%i,playr.drop,[i-1])
+        for i in range(9):
+            self.accept('%d'%(i+1),playr.drop,[i])
         
         self.timeout = False
         

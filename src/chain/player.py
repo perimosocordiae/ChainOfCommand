@@ -30,6 +30,8 @@ class Player(Agent):
         super(Player, self).__init__(game, name)
         self.programs = [None, None, None]
         self.killcount = 0
+        self.handleEvents = True
+        self.laserGlow = False
         self.setup_collider()
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
@@ -131,19 +133,30 @@ class Player(Agent):
         self.cameraRay = CollisionRay(0, base.camera.getY(), 0, 0, 1, 0)
         cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
+    
+    def move(self,vel):
+        self.tron.setFluidPos(self.tron.getPos() + (vel * globalClock.getDt()))
 
 class LocalPlayer(Player):
-    def __init__(self, game, client):
-        super(LocalPlayer, self).__init__(game, 'me')
+    def __init__(self, game, name, client):
+        super(LocalPlayer, self).__init__(game, name)
+        self.client = client
+        Sequence(Wait(0.03), Func(self.network_listen)).loop()
         self.setup_camera()
         self.setup_HUD()
         self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
-        self.handleEvents = True
-        self.laserGlow = False
         self.add_background_music()
     
+    def network_listen(self):
+        data = self.client.getData()
+        if len(data) == 0: return
+        for d in data:
+            name,vecstr = d.split(':')
+            vel = eval(vecstr)
+            self.game.players[name].move(vel)
+        
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
         base.camLens.setNearFar(10, 3000)
@@ -152,7 +165,7 @@ class LocalPlayer(Player):
         super(LocalPlayer,self).die()
         #TODO something better here!
         sys.exit("GAME OVER, YOU DEAD") 
-    
+        
     def setup_sounds(self):
         keys = ['laser', 'yes', 'no', 'snarl']
         fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Collect_fail.mp3", "%s/Snarl.mp3"]
@@ -367,9 +380,9 @@ class LocalPlayer(Player):
             
             if not len(cmds) == 0: self.StartMovingAnim()
             else:                  self.StopMovingAnim()
-
-        # actually move tron, based on the values in self.velocity
-        self.tron.setFluidPos(self.tron.getPos() + (self.velocity * globalClock.getDt()))
+        
+        # send command to move tron, based on the values in self.velocity
+        self.client.send("%s:%s"%(self.name,self.velocity))
         #print self.velocity * globalClock.getDt()
         return Task.cont
     

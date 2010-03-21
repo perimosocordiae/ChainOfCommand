@@ -197,7 +197,7 @@ class Chmod(Achievement):
     def add_effect(self, agent):
         agent.get_shield_sphere().show()
     def remove_effect(self, player):
-        agent.get_shield_sphere().hide()
+        player.get_shield_sphere().hide()
 
 class DashR(Achievement):
     DESC = "Rapid Fire"

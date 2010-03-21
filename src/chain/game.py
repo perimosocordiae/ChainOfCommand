@@ -1,4 +1,5 @@
 from time import time, sleep
+from platform import uname
 import sys
 from random import randint, choice, seed
 #from itertools import product as iproduct
@@ -51,8 +52,9 @@ class Game(object):
             player.initialize_camera()
             
     def add_local_player(self,client):
-        self.players['me'] = LocalPlayer(self,client)
-        self.eventHandle.addPlayerHandler(self.players['me'])
+        name = uname()[0]
+        self.players[name] = LocalPlayer(self,name,client)
+        self.eventHandle.addPlayerHandler(self.players[name])
             
     def add_player(self,pname):
         self.players[pname] = Player(self,pname)
