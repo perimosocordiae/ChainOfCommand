@@ -95,7 +95,6 @@ class Shell(object):
                 if possibleCommand == "" :
                     possibleCommand = validCommand
                 else :
-                    possibleCommand = ""
                     return
         if possibleCommand != "":
             self.input.enterText(possibleCommand)

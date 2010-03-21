@@ -167,8 +167,8 @@ class LocalPlayer(Player):
         sys.exit("GAME OVER, YOU DEAD") 
         
     def setup_sounds(self):
-        keys = ['laser', 'yes', 'no', 'snarl']
-        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Collect_fail.mp3", "%s/Snarl.mp3"]
+        keys = ['laser', 'yes', 'snarl']
+        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Snarl.mp3"]
         self.sounds = dict(zip(keys, [base.sfxManagerList[0].getSound(f % SOUND_PATH) for f in fnames]))
         for s in self.sounds.itervalues():
             s.setVolume(0.3)
@@ -263,7 +263,6 @@ class LocalPlayer(Player):
         #sound/message depends on status
         i, prog = super(Player, self).collect()
         if not prog:
-            self.sounds['no'].play()
             if i >= 0: 
                 print "No empty slots!"
             else:
