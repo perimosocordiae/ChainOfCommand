@@ -7,7 +7,7 @@ import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionSphere, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
-from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4, Vec3, Point3
+from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4, Vec3, Point3, VBase3
 from direct.filter.CommonFilters import CommonFilters
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
@@ -44,6 +44,7 @@ class Game(object):
         for pname in self.players:
             self.add_player(pname)
         self.add_local_player()
+        self.add_event_handler()
         print "game initialized"
         self.add_event_handler()
         for _ in range(4):
@@ -204,11 +205,10 @@ class Game(object):
         data = self.client.getData()
         if len(data) == 0: return
         for d in data:
-            try:
-                name,vecstr = d.split(':')
-                vel = eval(vecstr)
-                self.players[name].move(vel)
-            except: pass
+            name,vecstr,hprstr = d.split(':')
+            vel = eval(vecstr)
+            hpr = eval(hprstr)
+            self.players[name].move(vel,hpr)
     
     def make_column(self, parent,egg,x,y,h, scale):
         for z in range(h):

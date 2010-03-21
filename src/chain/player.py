@@ -134,8 +134,10 @@ class Player(Agent):
         cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
     
-    def move(self,vel):
+    def move(self,vel,hpr):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
+        #self.tron.setHpr(hpr)
+        print "moving",vel,hpr
 
 class LocalPlayer(Player):
     def __init__(self, game, name):
@@ -372,7 +374,7 @@ class LocalPlayer(Player):
             else:                  self.StopMovingAnim()
         
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send("%s:%s"%(self.name,self.velocity))
+        self.game.client.send("%s:%s:%s"%(self.name,self.velocity,self.tron.getHpr()))
         #print self.velocity * globalClock.getDt()
         return Task.cont
     
@@ -405,6 +407,6 @@ class LocalPlayer(Player):
             newP = max(min(newP, 80), -80)
             base.camera.setP(newP)
             #make sure lifter continues to point straight down
-            angle = radians(self.tron.getP())
+            #angle = radians(self.tron.getP())
             #self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
         
