@@ -137,7 +137,7 @@ class Player(Agent):
         # the camera follows tron
         self.get_camera().reparentTo(self.tron)
         self.get_camera().setPos(0, 40, TRON_ORIGIN_HEIGHT)
-        self.get_camera().setHpr(180, -30, 0)
+        self.get_camera().setHpr(180, 0, 0)
         
     def initialize_camera(self):
         cameraNode = CollisionNode('cameracnode_%s'%self.name)
@@ -174,6 +174,7 @@ class Player(Agent):
         if not self.handleEvents: return
         #first get a ray coming from the camera and see what it first collides with
         objHit,spotHit = self.findCrosshairHit()
+        print objHit
         if objHit in self.game.drones:
             d = self.game.drones[objHit]
             d.hit(self.damage())
@@ -207,8 +208,8 @@ class Player(Agent):
         laser.model.setScale(16.0)
         laser.model.setHpr(self.tron.getHpr())
         laser.model.setH(laser.model.getH())
-        laser.model.setP(-base.camera.getP())
-        h, p = radians(self.tron.getH()), radians(base.camera.getP())
+        laser.model.setP(-self.get_camera().getP())
+        h, p = radians(self.tron.getH()), radians(self.get_camera().getP())
         pcos = cos(p)
         if self.laserGlow:
             laser.set_glow(True)
@@ -238,6 +239,7 @@ class Player(Agent):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
         self.get_camera().setP(self.get_camera().getP() + hpr.getY())
+        print self.get_camera().getP()
         if anim == 'start':  self.StartMovingAnim()
         elif anim == 'stop': self.StopMovingAnim()
         if firing:
