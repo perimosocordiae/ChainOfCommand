@@ -172,15 +172,16 @@ class Shell(object):
         self.output.appendText(char)
     
     def parse_cmd(self,str):
-        self.cmd_hist.append(str)
-        self.cmd_pos = 0
         self.append_line("> %s"%str)
-        input = str.split()
-        cmd,args = input[0],input[1:]
-        if cmd in self.cmd_dict:
-            self.cmd_dict[cmd](cmd,args)
-        else:
-            self.append_line("unknown command: %s" % cmd)
+        if str :
+            self.cmd_hist.append(str)
+            input = str.split()
+            cmd,args = input[0],input[1:]
+            if cmd in self.cmd_dict:
+                self.cmd_dict[cmd](cmd,args)
+            else:
+                self.append_line("unknown command: %s" % cmd)
+        self.cmd_pos = 0
         self.input.enterText("")
         self.input.setFocus()
     

@@ -45,13 +45,13 @@ class Game(object):
             self.add_player(pname)
         self.add_local_player()
         print "game initialized"
+        self.add_event_handler()
         for _ in range(4):
             self.add_program(Rm)
             self.add_program(Chmod)
             self.add_program(DashR)
             self.add_program(RAM)
         print "programs added"
-        self.add_event_handler()
         #Sequence(Wait(2.0), Func(self.add_drone)).loop()
 
     def rand_point(self): # get a random point that's also a valid play location
@@ -67,7 +67,6 @@ class Game(object):
         name = uname()[1]
         print "adding local player:",name
         self.players[name] = LocalPlayer(self,name)
-        self.eventHandle.addPlayerHandler(self.players[name])
             
     def add_player(self,pname):
         print "making player: %s"%pname
