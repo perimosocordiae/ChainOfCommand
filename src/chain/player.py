@@ -136,7 +136,7 @@ class Player(Agent):
     
     def move(self,vel,hpr):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
-        self.tron.setH(hpr.getX())
+        self.tron.setH(self.tron.getH() + hpr.getX())
 
 class LocalPlayer(Player):
     def __init__(self, game, name):
@@ -152,7 +152,7 @@ class LocalPlayer(Player):
     
     def move(self,vel,hpr):
         super(LocalPlayer,self).move(vel,hpr)
-        base.camera.setP(hpr.getY())
+        base.camera.setP(base.camera.getP() + hpr.getY())
         center = base.win.getXSize() / 2
         base.win.movePointer(0, center, center)
         
@@ -405,11 +405,11 @@ class LocalPlayer(Player):
         md = base.win.getPointer(0)
         x, y = md.getX(), md.getY()
         center = base.win.getXSize() / 2
-        self.hpr.setX(self.tron.getH() - (TURN_MULTIPLIER * (x - center)))
-        newP = base.camera.getP() - (LOOK_MULTIPLIER * (y - center))
+        self.hpr.setX(-(TURN_MULTIPLIER * (x - center)))
+        newP = base.camera.getP()-(LOOK_MULTIPLIER * (y - center))
         #keep within +- 90 degrees
         newP = max(min(newP, 80), -80)
-        self.hpr.setY(newP)
+        self.hpr.setY(newP - base.camera.getP())
         #make sure lifter continues to point straight down
         #angle = radians(self.tron.getP())
         #self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
