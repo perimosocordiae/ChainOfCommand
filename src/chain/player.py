@@ -32,6 +32,7 @@ class Player(Agent):
         self.killcount = 0
         self.handleEvents = True
         self.laserGlow = False
+        self.camera = None
         self.setup_collider()
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
@@ -55,16 +56,17 @@ class Player(Agent):
     
     def findCrosshairHit(self):
         base.cTrav.traverse(render)
-        if self.collisionQueue.getNumEntries() == 0: return ""
+        if self.collisionQueue.getNumEntries() == 0: return "",""
         # This is so we get the closest object
         self.collisionQueue.sortEntries()
         
         for i in range(self.collisionQueue.getNumEntries()):
             pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
+            pickedSpot = self.collisionQueue.getEntry(i).getSurfacePoint(render)
             if 'donthitthis' in pickedObj: continue
             if '_wall' in pickedObj: continue
             if not (self.name in pickedObj): break
-        return pickedObj
+        return pickedObj, pickedSpot
     
     def set_laser_glow(self, glow):
         self.laserGlow = glow
@@ -125,26 +127,129 @@ class Player(Agent):
         #self.no_glow = loader.loadTexture(NO_GLOW)
         #self.tron.setTexture(self.ts, self.no_glow)
         self.set_glow(False)
+    
+    def get_camera(self):
+        if self.camera == None:
+            self.camera = self.tron.attachNewNode("Camera")
+        return self.camera
+    
+    def setup_camera(self):
+        # the camera follows tron
+        self.get_camera().reparentTo(self.tron)
+        self.get_camera().setPos(0, 40, TRON_ORIGIN_HEIGHT)
+        self.get_camera().setHpr(180, -30, 0)
         
     def initialize_camera(self):
         cameraNode = CollisionNode('cameracnode_%s'%self.name)
-        cameraNP = base.camera.attachNewNode(cameraNode)
+        cameraNP = self.get_camera().attachNewNode(cameraNode)
         cameraNP.node().setIntoCollideMask(0)
-        self.cameraRay = CollisionRay(0, base.camera.getY(), 0, 0, 1, 0)
+        self.cameraRay = CollisionRay(0, self.get_camera().getY(), 0, 0, 1, 0)
         cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
     
-    def move(self,vel,hpr,anim):
+    def switchPerspective(self):
+        #Switch between 3 perspectives
+        if not self.handleEvents: return
+        if self.get_camera().getY() > 60:
+            self.get_camera().setPos(0, 0, TRON_ORIGIN_HEIGHT)
+        elif self.get_camera().getY() > 20:
+            self.get_camera().setPos(0, 100, TRON_ORIGIN_HEIGHT)
+        else:
+            self.get_camera().setPos(0, 40, TRON_ORIGIN_HEIGHT)
+        self.cameraRay.setOrigin(Point3(0, self.get_camera().getY(), 0))
+    
+    def zoomIn(self):
+        if not self.handleEvents: return
+        if self.get_camera().getY() > 0:
+            self.get_camera().setY(self.get_camera().getY() - 2)
+        self.cameraRay.setOrigin(Point3(0, self.get_camera().getY(), 0))
+            
+    def zoomOut(self):
+        if not self.handleEvents: return
+        if self.get_camera().getY() < 100:
+            self.get_camera().setY(self.get_camera().getY() + 2)
+        self.cameraRay.setOrigin(Point3(0, self.get_camera().getY(), 0))
+    
+    def shoot(self):
+        if not self.handleEvents: return
+        #first get a ray coming from the camera and see what it first collides with
+        objHit,spotHit = self.findCrosshairHit()
+        if objHit in self.game.drones:
+            d = self.game.drones[objHit]
+            d.hit(self.damage())
+            print "hit drone %s for %d damage" % (objHit, self.damage())
+            if d.is_dead():
+                print "killed it!"
+                self.killcount += 1
+                self.killHUD.setText("Kills: %d" % self.killcount)
+        elif objHit in self.game.programs:
+            p = self.game.programs[objHit]
+            p.hit(self.damage())
+            print "hit program %s for %d damage" % (objHit, self.damage())
+            if p.is_dead():
+                print "Oh no, you blew up a program!"
+        elif objHit in self.game.players:
+            p = self.game.players[objHit]
+            p.hit(self.damage())
+            print "hit %s for %d damage" % (objHit, self.damage())
+            if p.is_dead():
+                print "you killed %s!"%objHit
+                self.killcount += 1
+                self.killHUD.setText("Kills: %d" % self.killcount)
+        #end if 
+        self.fire_laser(objHit,spotHit)
+   
+    def fire_laser(self, objHit, spotHit):
+        self.sounds['laser'].play()
+        startPos = self.tron.getPos()
+        startPos.setZ(startPos.getZ() + 2)
+        laser = Laser()
+        laser.set_pos(startPos)
+        laser.model.setScale(16.0)
+        laser.model.setHpr(self.tron.getHpr())
+        laser.model.setH(laser.model.getH())
+        laser.model.setP(-base.camera.getP())
+        h, p = radians(self.tron.getH()), radians(base.camera.getP())
+        pcos = cos(p)
+        if self.laserGlow:
+            laser.set_glow(True)
+        #the .005 is a fudge factor - it just makes things work better
+        laser.fire(Vec3(sin(h) * pcos, -cos(h) * pcos, sin(p) + 0.005) * LASER_SPEED)
+    
+    def collect(self):
+        #sound/message depends on status
+        i, prog = super(Player, self).collect()
+        if not prog:
+            if i >= 0: 
+                print "No empty slots!"
+            else:
+                print "No program to pick up!"
+        else:
+            self.sounds['yes'].play()
+            print "Program get: %s" % prog.name
+            if i >= 0:
+                self.programHUD[i].setText("|  %s  |" % prog.name)
+    
+    def drop(self, i):
+        if (super(Player, self).drop(i)):
+            print "Program dropped: %s" %self.programs[i]
+            self.programHUD[i].setText("|        |")
+    
+    def move(self,vel,hpr,anim,firing):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
+        self.get_camera().setP(self.get_camera().getP() + hpr.getY())
         if anim == 'start':  self.StartMovingAnim()
         elif anim == 'stop': self.StopMovingAnim()
+        if firing:
+            self.shoot()
 
 class LocalPlayer(Player):
     def __init__(self, game, name):
         super(LocalPlayer, self).__init__(game, name)
         self.hpr = VBase3(0,0,0)
-        Sequence(Wait(0.03), Func(self.game.network_listen)).loop()
+        Sequence(Wait(SERVER_TICK), Func(self.game.network_listen)).loop()
+        self.shooting = False
         self.setup_camera()
         self.setup_HUD()
         self.setup_shooting()
@@ -152,15 +257,18 @@ class LocalPlayer(Player):
         self.setup_sounds()
         self.add_background_music()
     
-    def move(self,vel,hpr,anim):
-        super(LocalPlayer,self).move(vel,hpr,anim)
-        base.camera.setP(base.camera.getP() + hpr.getY())
+    def move(self,vel,hpr,anim, firing):
+        super(LocalPlayer,self).move(vel,hpr,anim,firing)
+        self.shooting = False
         center = base.win.getXSize() / 2
         base.win.movePointer(0, center, center)
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
         #base.camLens.setNearFar(10, 3000)
+    
+    def get_camera(self):
+        return base.camera
     
     def die(self):
         super(LocalPlayer,self).die()
@@ -191,7 +299,7 @@ class LocalPlayer(Player):
         base.enableSoundEffects(not base.sfxManagerList[0].getActive())
 
     def target(self):
-        objHit = self.findCrosshairHit()
+        objHit,spotHit = self.findCrosshairHit()
         if objHit in self.game.drones or objHit in self.game.players: #turn the crosshairs red
             self.crosshairs.setImage("%s/crosshairs_locked.tif" % MODEL_PATH)
         elif objHit in self.game.programs:
@@ -201,85 +309,21 @@ class LocalPlayer(Player):
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def click(self):
-        self.shoot()
+        #self.shoot()
         delay = self.rapid_fire()
+        self.shooting = True
         taskMgr.doMethodLater(delay, self.updateShotTask, "updateShotTask")
         
     def clickRelease(self):
+        self.shooting = False
         taskMgr.remove("updateShotTask")
         
-    
-    def shoot(self):
-        if not self.handleEvents: return
-        #first get a ray coming from the camera and see what it first collides with
-        objHit = self.findCrosshairHit()
-        if objHit in self.game.drones:
-            d = self.game.drones[objHit]
-            d.hit(self.damage())
-            print "hit drone %s for %d damage" % (objHit, self.damage())
-            if d.is_dead():
-                print "killed it!"
-                self.killcount += 1
-                self.killHUD.setText("Kills: %d" % self.killcount)
-        elif objHit in self.game.programs:
-            p = self.game.programs[objHit]
-            p.hit(self.damage())
-            print "hit program %s for %d damage" % (objHit, self.damage())
-            if p.is_dead():
-                print "Oh no, you blew up a program!"
-        elif objHit in self.game.players:
-            p = self.game.players[objHit]
-            p.hit(self.damage())
-            print "hit %s for %d damage" % (objHit, self.damage())
-            if p.is_dead():
-                print "you killed %s!"%objHit
-                self.killcount += 1
-                self.killHUD.setText("Kills: %d" % self.killcount)
-        #end if 
-        self.fire_laser()
-   
-    def fire_laser(self):
-        self.sounds['laser'].play()
-        startPos = self.tron.getPos()
-        startPos.setZ(startPos.getZ() + 2)
-        laser = Laser()
-        laser.set_pos(startPos)
-        laser.model.setScale(16.0)
-        laser.model.setHpr(self.tron.getHpr())
-        laser.model.setH(laser.model.getH())
-        laser.model.setP(-base.camera.getP())
-        h, p = radians(self.tron.getH()), radians(base.camera.getP())
-        pcos = cos(p)
-        if self.laserGlow:
-            laser.set_glow(True)
-        #the .005 is a fudge factor - it just makes things work better
-        laser.fire(Vec3(sin(h) * pcos, -cos(h) * pcos, sin(p) + 0.005) * LASER_SPEED)
-    
     def hit(self, amt=0):
         super(Player, self).hit(amt)
         self.sounds['snarl'].play()
         self.flashRed.start() # flash the screen red
         print "hit! health = %d" % self.health
         self.healthHUD.setText("HP: %d" % self.health)
-    
-    def collect(self):
-        #sound/message depends on status
-        i, prog = super(Player, self).collect()
-        if not prog:
-            if i >= 0: 
-                print "No empty slots!"
-            else:
-                print "No program to pick up!"
-        else:
-            self.sounds['yes'].play()
-            print "Program get: %s" % prog.name
-            if i >= 0:
-                self.programHUD[i].setText("|  %s  |" % prog.name)
-    
-    def drop(self, i):
-        if (super(Player, self).drop(i)):
-            print "Program dropped: %s" %self.programs[i]
-            self.programHUD[i].setText("|        |")
     
     def add_slot(self):
         currentCount = len(self.programs)
@@ -324,44 +368,19 @@ class LocalPlayer(Player):
             self.redScreen = None
 
     def setup_camera(self):
+        super(LocalPlayer,self).setup_camera()
         inputState.watch('forward', 'w', 'w-up') 
         inputState.watch('backward', 's', 's-up')
         inputState.watch('moveleft', 'a', 'a-up')
         inputState.watch('moveright', 'd', 'd-up')
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
-        # the camera follows tron
-        base.camera.reparentTo(self.tron)
-        base.camera.setPos(0, 40, TRON_ORIGIN_HEIGHT)
-        base.camera.setHpr(180, -30, 0)
     
-    def switchPerspective(self):
-        #Switch between 3 perspectives
-        if not self.handleEvents: return
-        if base.camera.getY() > 60:
-            base.camera.setPos(0, 0, TRON_ORIGIN_HEIGHT)
-        elif base.camera.getY() > 20:
-            base.camera.setPos(0, 100, TRON_ORIGIN_HEIGHT)
-        else:
-            base.camera.setPos(0, 40, TRON_ORIGIN_HEIGHT)
-        self.cameraRay.setOrigin(Point3(0, base.camera.getY(), 0))
-    
-    def zoomIn(self):
-        if not self.handleEvents: return
-        if base.camera.getY() > 0:
-            base.camera.setY(base.camera.getY() - 2)
-        self.cameraRay.setOrigin(Point3(0, base.camera.getY(), 0))
-            
-    def zoomOut(self):
-        if not self.handleEvents: return
-        if base.camera.getY() < 100:
-            base.camera.setY(base.camera.getY() + 2)
-        self.cameraRay.setOrigin(Point3(0, base.camera.getY(), 0))
-        
     def setup_shooting(self):
         inputState.watch('shoot', 'mouse1', 'mouse1-up')
     
     def updateShotTask(self, task):
-        self.shoot()
+        #self.shoot()
+        self.shooting = True
         return task.again
         
     #Task to move the camera
@@ -381,7 +400,7 @@ class LocalPlayer(Player):
             else:                anim = '"stop"'
         
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim]))
+        self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim,str(self.shooting)]))
         #print self.velocity * globalClock.getDt()
         return Task.cont
     

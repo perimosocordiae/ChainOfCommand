@@ -218,9 +218,9 @@ class Game(object):
         for d in data:
             ds = d.split(':')
             name,strs = ds[0],ds[1:]
-            vel,hpr,anim = map(eval,strs)
+            vel,hpr,anim,firing = map(eval,strs)
             if name in self.players:
-                self.players[name].move(vel,hpr,anim)
+                self.players[name].move(vel,hpr,anim,firing)
     
     def make_column(self, parent,egg,x,y,h, scale):
         for z in range(h):
