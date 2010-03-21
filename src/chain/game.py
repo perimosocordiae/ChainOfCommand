@@ -88,7 +88,7 @@ class Game(object):
     
     def add_wall(self, name, parent, p1, p2, p3, p4):
         self.walls[name] = Wall(self, name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
-        self.eventHandle.addWallHandler(self.walls[name])
+        #self.eventHandle.addWallHandler(self.walls[name])
 
     def load_env(self):
         #add the lighting
@@ -208,7 +208,8 @@ class Game(object):
             name,vecstr,hprstr = d.split(':')
             vel = eval(vecstr)
             hpr = eval(hprstr)
-            self.players[name].move(vel,hpr)
+            if name in self.players:
+                self.players[name].move(vel,hpr)
     
     def make_column(self, parent,egg,x,y,h, scale):
         for z in range(h):

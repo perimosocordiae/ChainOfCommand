@@ -136,8 +136,7 @@ class Player(Agent):
     
     def move(self,vel,hpr):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
-        #self.tron.setHpr(hpr)
-        print "moving",vel,hpr
+        self.tron.setHpr(hpr)
 
 class LocalPlayer(Player):
     def __init__(self, game, name):
