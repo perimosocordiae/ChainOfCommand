@@ -131,6 +131,11 @@ class GameEventHandler(DirectObject):
         self.accept("%s_wall-repeat-%s"%(tName,"tower_base"),  self.tronHitsWall)
         t.initialize_camera()
     
+    def addWallHandler(self, w):
+        for t in self.game.players.iterkeys():
+            self.accept("%s_wall-into-%s"%(t,w.name),  self.tronHitsWall)
+            self.accept("%s_wall-repeat-%s"%(t,w.name),  self.tronHitsWall)
+    
     def tronHitsDrone(self,entry):
         tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
         try:
