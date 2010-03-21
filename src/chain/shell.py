@@ -36,9 +36,9 @@ PROGRAMS = {'rm' : 'Doubles attack power',
 
 
 class Shell(object):
-    def __init__(self,quick):
-        if not quick:
-            self.main(1337,None)
+    def __init__(self,full):
+        if not full:
+            self.main(1337,"localhost")
         else:
             self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
             self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
@@ -102,7 +102,7 @@ class Shell(object):
     def start_game(self,cmd,arglist=[]):
         if len(arglist) < 2 or arglist[0] not in ['host','join']:
             self.append_line("Usage: %s host [port_num]"%cmd)
-            self.append_line("       %s join [port_num] [host_ip]"%cmd)
+            self.append_line("       %s join [port_num] [host_ip] <last>"%cmd)
             return
         if arglist[0] == 'host':
             self.start_server(int(arglist[1]))
