@@ -37,39 +37,47 @@ PROGRAMS = {'rm' : 'Doubles attack power',
 
 class Shell(object):
     def __init__(self,full):
-        if not full:
-            self.main(1337,"localhost")
-        else:
-            self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
-            self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
-            self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
-            self.intro()
-            self.cmd_dict = { 
-                'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
-                'help' : self.help, 'ls' : self.help, 'dir' : self.help, 'wtf': self.help,
-                'man' : self.manual,
-                'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
-                'rm': self.permission_error, 'sudo': self.permission_error,
-                'start': self.start_game, 'run': self.start_game
-            }
-            self.cmd_hist = [""]
+        self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
+        self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
+        self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
+        self.intro(full)
+        self.cmd_dict = { 
+            'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
+            'help' : self.help, 'ls' : self.help, 'dir' : self.help, 'wtf': self.help,
+            'man' : self.manual,
+            'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
+            'rm': self.permission_error, 'sudo': self.permission_error,
+            'start': self.start_game, 'run': self.start_game
+        }
+        self.cmd_hist = [""]
 
-    def intro(self):
-        textType = Sequence(Wait(0.5))
-        for line in INTRO.splitlines():
-            for char in line:
+    def intro(self,full):
+        if full:
+            textType = Sequence(Wait(0.5))
+            for line in INTRO.splitlines():
+                for char in line:
+                    textType.append(Func(self.append_char, char))
+                    textType.append(Wait(CHARACTER_DELAY))
+                textType.append(Func(self.append_line, ""))
+                textType.append(Wait(0.5))
+            for line in LOGO.splitlines() :
+                textType.append(Func(self.append_line, line))
+                textType.append(Wait(CHARACTER_DELAY))
+            for char in PROMPT:
                 textType.append(Func(self.append_char, char))
                 textType.append(Wait(CHARACTER_DELAY))
-            textType.append(Func(self.append_line, ""))
-            textType.append(Wait(0.5))
-        for line in LOGO.splitlines() :
-            textType.append(Func(self.append_line, line));
-            textType.append(Wait(CHARACTER_DELAY))
-        for char in PROMPT:
-            textType.append(Func(self.append_char, char))
-            textType.append(Wait(CHARACTER_DELAY))
-        textType.append(Func(self.user_input))
-        textType.start()
+            textType.append(Func(self.user_input))
+            textType.start()
+        else:
+            for line in INTRO.splitlines():
+                for char in line:
+                    self.append_char(char)
+                self.append_line("")
+            for line in LOGO.splitlines():
+                self.append_line(line)
+            for char in PROMPT:
+                self.append_char(char)
+            self.user_input()
     
     def user_input(self):
         self.prompt = DirectLabel(text=">", frameSize=(-0.04,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
@@ -186,14 +194,7 @@ class Shell(object):
             g.client.send("start")
             return
         g = Game(ip,port_num,360,60.0,12.0,120)
-        print "game initialized"
-        for _ in range(4):
-            g.add_program(Rm)
-            g.add_program(Chmod)
-            g.add_program(DashR)
-            g.add_program(RAM)
-        print "programs added"
-        g.add_event_handler()
+
         #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
         
 
@@ -210,5 +211,5 @@ def print_data(c):
         print data
 
 if __name__ == '__main__':
-    Shell(True)
+    Shell(False)
     run()

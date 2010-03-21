@@ -23,15 +23,14 @@ USE_GLOW = True
 class Game(object):
 
     def __init__(self,ip,port_num,map_size=320,tile_size=16, tower_size=16, gameLength=180):
-        self.client = Client(ip,port_num)
-        taskMgr.add(self.handshakeTask, 'handshakeTask')
-        print "before"
-        while taskMgr.hasTaskNamed("handshakeTask"): pass
-        print "after"
-        base.cTrav = CollisionTraverser()
-        #wsbase.cTrav.showCollisions(render)
         self.players, self.programs,self.drones,self.walls = {},{},{},{}
         self.map_size,self.tile_size, self.tower_size = map_size,tile_size, tower_size
+        self.client = Client(ip,port_num)
+        taskMgr.add(self.handshakeTask, 'handshakeTask')
+    
+    def rest_of_init(self,gameLength=180):
+        base.cTrav = CollisionTraverser()
+        #wsbase.cTrav.showCollisions(render)
         base.disableMouse()
         self.load_env()
         self.timer = OnscreenText(text="Time:", pos=(0,0.9), scale=(0.08), fg=(0,0,1,0.8), bg=(1,1,1,0.8), mayChange=True)
@@ -42,6 +41,14 @@ class Game(object):
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.add_local_player()
+        print "game initialized"
+        for _ in range(4):
+            self.add_program(Rm)
+            self.add_program(Chmod)
+            self.add_program(DashR)
+            self.add_program(RAM)
+        print "programs added"
+        self.add_event_handler()
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
@@ -185,6 +192,7 @@ class Game(object):
                 print "added",ds[1]
             elif ds[0] == 'start':
                 print "starting"
+                self.rest_of_init()
                 return task.done # ends task
         return task.cont
     
