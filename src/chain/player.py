@@ -191,11 +191,13 @@ class LocalPlayer(Player):
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def click(self):
-        self.shooting = True
         self.shoot()
+        delay = self.rapid_fire()
+        taskMgr.doMethodLater(delay, self.updateShotTask, "updateShotTask")
         
     def clickRelease(self):
-        self.shooting = False
+        taskMgr.remove("updateShotTask")
+        
     
     def shoot(self):
         if not self.handleEvents: return
@@ -346,13 +348,11 @@ class LocalPlayer(Player):
         self.cameraRay.setOrigin(Point3(0, base.camera.getY(), 0))
         
     def setup_shooting(self):
-        self.shooting = False
         inputState.watch('shoot', 'mouse1', 'mouse1-up')
-        taskMgr.add(self.updateShotTask, "updateShotTask")
     
     def updateShotTask(self, task):
-        if self.shooting and self.rapid_fire() : self.shoot()
-        return Task.cont
+        self.shoot()
+        return task.again
         
     #Task to move the camera
     def updateCameraTask(self, task):

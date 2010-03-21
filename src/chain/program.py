@@ -205,6 +205,6 @@ class DashR(Achievement):
         super(DashR,self).__init__(game,'-r',self.DESC,BASE_SCALE,pos)
     
     def rapid_fire_mod(self,a):
-        return True # allow rapid-fire
+        return a/2 # half the shooting delay
     def get_description(self):
         return self.DESC

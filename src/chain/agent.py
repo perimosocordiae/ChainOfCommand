@@ -150,7 +150,7 @@ class Agent(object):
         return s
     
     def rapid_fire(self):
-        a = False; # no rapid-fire
+        a = 1.0
         for p in ifilter(lambda p: p != None, self.programs):
             a = p.rapid_fire_mod(a)
         return a
