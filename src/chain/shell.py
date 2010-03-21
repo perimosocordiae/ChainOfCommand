@@ -120,7 +120,10 @@ class Shell(object):
         if len(arglist) != 1:
             self.append_line("Usage: %s [port_num]"%cmd)
         else:
-            Server(int(arglist[0]))
+            port = int(arglist[0])
+            self.append_line("Starting server on port %d..."%port)
+            Server(port)
+            self.append_line("Server active, use 'join' to connect")
             
     def quit(self,cmd,arglist=[]):
         self.append_line("Bye!")
