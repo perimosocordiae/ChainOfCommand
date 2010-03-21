@@ -4,6 +4,8 @@ from direct.task.Task import Task
 from pandac.PandaModules import *
 from time import time
 
+# adapted from http://www.panda3d.org/phpbb2/viewtopic.php?t=4881
+
 class NetworkBase(object): # abstract base class for the client and server classes
     def __init__(self,port):
         self.port = port

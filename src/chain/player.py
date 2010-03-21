@@ -204,7 +204,7 @@ class LocalPlayer(Player):
             if d.is_dead():
                 print "killed it!"
                 self.killcount += 1
-                self.killHUD.setText("Frags: %d" % self.killcount)
+                self.killHUD.setText("Kills: %d" % self.killcount)
         elif objHit in self.game.programs:
             p = self.game.programs[objHit]
             p.hit(self.damage())
@@ -218,7 +218,7 @@ class LocalPlayer(Player):
             if p.is_dead():
                 print "you killed %s!"%objHit
                 self.killcount += 1
-                self.killHUD.setText("Frags: %d" % self.killcount)
+                self.killHUD.setText("Kills: %d" % self.killcount)
         #end if 
         self.fire_laser()
    
@@ -298,7 +298,7 @@ class LocalPlayer(Player):
         # health status
         self.healthHUD = OnscreenText(text="HP: %d" % self.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
         # kill counter
-        self.killHUD = OnscreenText(text="Frags: %d" % self.killcount, pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
+        self.killHUD = OnscreenText(text="Kills: %d" % self.killcount, pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
     
     def flash_red(self):
         if not self.redScreen:
