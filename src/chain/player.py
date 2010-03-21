@@ -15,7 +15,7 @@ from constants import *
 
 #Constants
 MOTION_MULTIPLIER = 100.0
-TURN_MULTIPLIER = 0.4
+TURN_MULTIPLIER = 0.3
 LOOK_MULTIPLIER = 0.2
 JUMP_SPEED = 100.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10

@@ -17,4 +17,4 @@ MODEL_PATH = "../../models"
 SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%MODEL_PATH
 
-SERVER_TICK = 0.03
+SERVER_TICK = 0.01
