@@ -110,7 +110,9 @@ class Shell(object):
             if len(arglist) == 2: 
                 self.append_line("Error: no IP provided")
                 return
-            else: 
+            elif len(arglist) == 4: 
+                self.main(int(arglist[1]),arglist[2],True)
+            else:
                 self.main(int(arglist[1]),arglist[2])
         self.hide_shell()
 
@@ -175,11 +177,9 @@ class Shell(object):
         self.input.setFocus()
     
     def start_server(self,port_num):
-        s = Server(port_num)
-        raw_input("press enter")
-        s.broadcast("start")
+        Server(port_num)
     
-    def main(self,port_num,ip = "127.0.0.1"):
+    def main(self,port_num,ip,last=False):
         print "starting up"
         g = Game(ip,port_num,360,60.0,12.0,120)
         print "game initialized"
@@ -192,14 +192,7 @@ class Shell(object):
         g.add_event_handler()
         #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
         
-        if False: #is_server:
-            print "sleeping now, you have 10 seconds"
-            for i in range(10):
-                print "time left:",10-i
-                Thread.sleep(1)
-            print g.players
-            for p in g.players:
-                g.client.send("player %s"%p)
+        if last:
             g.client.send("start")
 
 
