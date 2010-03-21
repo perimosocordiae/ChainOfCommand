@@ -200,7 +200,6 @@ class Player(Agent):
         self.fire_laser(objHit,spotHit)
    
     def fire_laser(self, objHit, spotHit):
-        self.sounds['laser'].play()
         startPos = self.tron.getPos()
         startPos.setZ(startPos.getZ() + 2)
         laser = Laser()
@@ -325,6 +324,10 @@ class LocalPlayer(Player):
         print "hit! health = %d" % self.health
         self.healthHUD.setText("HP: %d" % self.health)
     
+    def fire_laser(self, objHit, spotHit):
+        super(LocalPlayer, self).fire_laser(objHit, spotHit)
+        self.sounds['laser'].play()
+        
     def add_slot(self):
         currentCount = len(self.programs)
         if currentCount < 9:
