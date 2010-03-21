@@ -192,7 +192,8 @@ class Shell(object):
         print "starting up"
         g = Game(ip,port_num,360,60.0,12.0,120) 
         if last:
-            g.client.send("start")
+            g.loadSeq.append(Func(g.client.send, "start"))
+        g.loadSeq.start()
         
 
 # end Shell class

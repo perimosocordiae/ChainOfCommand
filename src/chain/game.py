@@ -11,7 +11,7 @@ from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4, Vec3, Point
 from direct.filter.CommonFilters import CommonFilters
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
-from direct.interval.IntervalGlobal import Parallel, Func
+from direct.interval.IntervalGlobal import Parallel, Func, Sequence
 from player import Player,LocalPlayer
 from drone import Drone
 from wall import Wall
@@ -30,7 +30,7 @@ class Game(object):
         self.client = Client(ip,port_num)
         taskMgr.add(self.handshakeTask, 'handshakeTask')
         self.loadModels()
-        self.client.send("player %s"%uname()[1])  # register w/ the server
+        
     
     def rest_of_init(self,gameLength=180):
         base.cTrav = CollisionTraverser()
@@ -58,18 +58,23 @@ class Game(object):
         #Sequence(Wait(2.0), Func(self.add_drone)).loop()
         
     def loadModels(self): # asynchronous
-        parallelSeq = Parallel()
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/blue_floor.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/green_floor.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/red_floor.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/yellow_floor.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_-r.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_chmod.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_rm.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/RAM.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/laser.egg"))
-        parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/tron_anim_updated.egg"))
-        parallelSeq.start()
+        self.parallelSeq = Parallel()
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/blue_floor.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/green_floor.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/red_floor.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/yellow_floor.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_-r.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_chmod.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_rm.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/RAM.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/laser.egg"))
+        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/tron_anim_updated.egg"))
+        #self.parallelSeq.start()
+        self.loadSeq = Sequence(self.parallelSeq,
+                 Func(self.registerWithServer))
+                 
+    def registerWithServer(self):
+        self.client.send("player %s"%uname()[1])
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
