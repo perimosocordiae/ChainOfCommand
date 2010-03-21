@@ -1,5 +1,6 @@
 import sys
 from time import sleep
+from thread import start_new_thread
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
@@ -177,7 +178,7 @@ class Shell(object):
     def main(self,port_num,ip):
         is_server = not ip
         if is_server:
-            Server(port_num)
+            start_new_thread(lambda p: Server(p),(port_num,))
             ip = "127.0.0.1"
           
         print "starting up"
@@ -193,8 +194,10 @@ class Shell(object):
         #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
         
         if is_server:
-            print "waiting for others to join"
-            sleep(10)
+            raw_input("press enter when everyone has joined")
+            print g.players
+            for p in g.players:
+                g.client.send("player %s"%p)
             g.client.send("start")
 
 

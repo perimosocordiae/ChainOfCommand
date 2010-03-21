@@ -23,8 +23,8 @@ USE_GLOW = False
 class Game(object):
 
     def __init__(self,ip,port_num,map_size=320,tile_size=16, tower_size=16, gameLength=180):
-        self.client = Client(ip,port_num)
         taskMgr.add(self.handshakeTask, 'handshakeTask')
+        self.client = Client(ip,port_num)
         base.cTrav = CollisionTraverser()
         #wsbase.cTrav.showCollisions(render)
         self.players, self.programs,self.drones,self.walls = {},{},{},{}
@@ -182,9 +182,11 @@ class Game(object):
         data = self.client.getData()
         if len(data) == 0: return
         for d in data:
-            name,vecstr = d.split(':')
-            vel = eval(vecstr)
-            self.players[name].move(vel)
+            try:
+                name,vecstr = d.split(':')
+                vel = eval(vecstr)
+                self.players[name].move(vel)
+            except: pass
     
     def make_column(self, parent,egg,x,y,h):
         for z in range(h):
