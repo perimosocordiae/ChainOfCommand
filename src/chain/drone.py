@@ -18,10 +18,10 @@ class Drone(Agent):
         self.speed = (random()+0.5)*6
     
     def damage(self):
-        return 10
+        return 5
      
     def repeat_damage(self):
-        return 1
+        return 0.1
 
     def die(self):
         #self.panda.stash()
@@ -92,6 +92,7 @@ class Drone(Agent):
         tron = self.game.players[self.game.players.keys()[-1]].tron
         self.panda.lookAt(tron)
         self.panda.setH(self.panda.getH() + 180)
+        self.panda.setP(0)
         #move one "unit" towards tron
         tronVec = tron.getPos() - self.panda.getPos()
         tronVec.setZ(0)
@@ -100,6 +101,6 @@ class Drone(Agent):
         self.handleGravity()
         self.velocity.setX(tronVec.getX())
         self.velocity.setY(tronVec.getY())
-        self.panda.setFluidPos(self.panda.getPos() + (self.velocity*self.speed* globalClock.getDt()))
+        self.panda.setFluidPos(self.panda.getPos() + (self.velocity*self.speed*SERVER_TICK))
         self.walking = False
         

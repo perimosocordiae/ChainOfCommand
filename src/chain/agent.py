@@ -26,7 +26,7 @@ class Agent(object):
     def setup_floor_collider(self):
         self.floorQueue = CollisionHandlerQueue()
         
-        self.lifterRay = CollisionRay(0, 0, 10-self.get_origin_height(), 0, 0, -1) #ray pointing down
+        self.lifterRay = CollisionRay(0, 0, (10.0 / self.get_model().getScale().getZ())-self.get_origin_height(), 0, 0, -1) #ray pointing down
         self.lifter = self.attach_collision_node("%s_floor" % self.name, self.lifterRay, FLOOR_COLLIDER_MASK)
         self.lifter.node().setIntoCollideMask(0)
         
@@ -53,15 +53,15 @@ class Agent(object):
         z_vel = self.velocity.getZ()
         if self.in_air() or z_vel > 0:
             self.velocity.setZ(max(z_vel + GRAVITATIONAL_CONSTANT, TERMINAL_VELOCITY)) # jump / fall
+            #self.velocity.setZ(0)
         else:
             #We hit (or stayed on) the ground...
             #how fast are we falling now? Use that to determine potential damage
             if z_vel < SAFE_FALL:
                 damage = (-z_vel + SAFE_FALL) * FALL_DAMAGE_MULTIPLIER
                 self.hit(damage)
-            else:
-                floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
-                self.get_model().setZ(floorZ + self.get_origin_height())
+            floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
+            self.get_model().setZ(floorZ + self.get_origin_height())
             self.velocity.setZ(0)
     
     def jump(self):
@@ -150,7 +150,7 @@ class Agent(object):
         return s
     
     def rapid_fire(self):
-        a = 1.0
+        a = 0.5
         for p in ifilter(lambda p: p != None, self.programs):
             a = p.rapid_fire_mod(a)
         return a

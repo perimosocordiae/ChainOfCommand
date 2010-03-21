@@ -18,7 +18,7 @@ from networking import Client
 from constants import *
 
 #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
-USE_GLOW = False
+USE_GLOW = True
 
 class Game(object):
 
@@ -41,7 +41,7 @@ class Game(object):
         self.add_local_player()
 
     def rand_point(self): # get a random point that's also a valid play location
-        return (randint(-self.map_size+1,self.map_size-2),randint(-self.map_size+1,self.map_size-2))
+        return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
 
     def add_event_handler(self):
         self.eventHandle = GameEventHandler(self)
@@ -92,64 +92,70 @@ class Game(object):
             self.filters = CommonFilters(base.win, base.cam)
             self.filters.setBloom(blend=(0,0,0,1), desat=-0.5, intensity=3.0, size=2)
             render.setShaderAuto()
-        
         eggs = map(lambda s:"%s/%s_floor.egg"%(MODEL_PATH,s),['yellow','blue','green','red'])
-        num_tiles = self.map_size/self.tile_size
-        environ = loader.loadModel(eggs[0])
-        environ.reparentTo(render)
-        environ.setScale(self.tile_size, self.tile_size, self.tile_size)
-        environ.setPos(0, 0, 0)
+        #num_tiles = self.map_size/self.tile_size
+        num_tiles = 2
+        self.tile_size = self.map_size / num_tiles
+        colscale = 0.01
+        scale = colscale * self.tile_size
+        #environ = loader.loadModel('%s/special_floor.egg'%MODEL_PATH)
+        self.environ = render.attachNewNode("Environment Scale")
+        self.environ.reparentTo(render)
+        self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
+        self.environ.setPos(0, 0, 0)
         
         center = num_tiles/2
-        wall_height = 10
+        #wall_height = 10
+        wall_height = num_tiles
+        
         #for i,j in iproduct(range(num_tiles),repeat=2):
         for i in range(num_tiles):
           for j in range(num_tiles):
             egg = eggs[egg_index(i,j,center)]
-            self.make_tile(environ,egg,(-2*(1+i-center),-2*(1+j-center), 2*wall_height), (0, 0, 180)) #ceiling
-            if i == center and j == center: continue #bottom center is already done
-            self.make_tile(environ,egg,(2*(i-center), 2*(j-center), 0),(0, 0, 0),True) #floor
+            self.make_tile(self.environ,egg,(-2*(i-center) - 1,-2*(j-center) - 1, 2*wall_height), (0, 0, 180), colscale) #ceiling
+            #if i == center and j == center: continue #bottom center is already done
+            self.make_tile(self.environ,egg,(2*(i-center) + 1, 2*(j-center) + 1, 0),(0, 0, 0), colscale) #floor
         
         #for i,j in iproduct(range(num_tiles),range(wall_height)):
         for i in range(num_tiles):
           for j in range(wall_height):
             egg = eggs[egg_index(i,j,center)]
-            self.make_tile(environ,egg,(-1-2*center,    2*(i-center),  2*(wall_height-j)-1),(0, 0, 90))  #wall 1
-            self.make_tile(environ,egg,(-2*(1+i-center), -1-2*center,  2*(wall_height-j)-1),(0,-90,0))   #wall 2
-            self.make_tile(environ,egg,( 2*center-1,     2*(i-center), 2*j+1),            (0, 0, -90)) #wall 3
-            self.make_tile(environ,egg,(-2*(1+i-center), 2*center-1,   2*j+1),            (0, 90,0))   #wall 4
+            self.make_tile(self.environ,egg,(-2*center,    -2*(i-center)-1,  2*(wall_height-j)-1),(0, 0, 90), colscale)  #wall 1
+            self.make_tile(self.environ,egg,(-2*(i-center)-1, -2*center,  2*(wall_height-j)-1),(0,-90,0), colscale)   #wall 2
+            self.make_tile(self.environ,egg,( 2*center,     2*(i-center) + 1, 2*j+1),            (0, 0, -90), colscale) #wall 3
+            self.make_tile(self.environ,egg,(-2*(i-center) - 1, 2*center,   2*j+1),            (0, 90,0), colscale)   #wall 4
         
         #add collision handlers for walls
-        self.add_wall("wall1", environ,
-                      Point3(-1 - 2*center, -1 - 2*center, 2*wall_height + 1),
-                      Point3(-1 - 2*center, -1 - 2*center, 0),
-                      Point3(-1 - 2*center, 2*center - 1, 0),
-                      Point3(-1 - 2*center, 2*center - 1, 2*wall_height + 1))
-        self.add_wall("wall2", environ,
-                      Point3(2*center - 1, 2*center - 1, 2*wall_height + 1),
-                      Point3(2*center - 1, 2*center - 1, 0),
-                      Point3(2*center - 1, -1 - 2*center, 0),
-                      Point3(2*center - 1, -1 - 2*center, 2*wall_height + 1))
-        self.add_wall("wall3", environ,
-                      Point3(-1 - 2*center, 2*center - 1, 2*wall_height + 1),
-                      Point3(-1 - 2*center, 2*center - 1, 0),
-                      Point3(2*center - 1, 2*center - 1, 0),
-                      Point3(2*center - 1, 2*center - 1, 2*wall_height + 1))
-        self.add_wall("wall4", environ,
-                      Point3(2*center - 1, -1 - 2*center, 2*wall_height + 1),
-                      Point3(2*center - 1, -1 - 2*center, 0),
-                      Point3(-1 - 2*center, -1 - 2*center, 0),
-                      Point3(-1 - 2*center, -1 - 2*center, 2*wall_height + 1))
+        self.add_wall("wall1", self.environ,
+                      Point3(-2*center, -2*center, 2*wall_height + 1),
+                      Point3(-2*center, -2*center, 0),
+                      Point3(-2*center, 2*center, 0),
+                      Point3(-2*center, 2*center, 2*wall_height + 1))
+        self.add_wall("wall2", self.environ,
+                      Point3(2*center, 2*center, 2*wall_height + 1),
+                      Point3(2*center, 2*center, 0),
+                      Point3(2*center, -2*center, 0),
+                      Point3(2*center, -2*center, 2*wall_height + 1))
+        self.add_wall("wall3", self.environ,
+                      Point3(-2*center, 2*center, 2*wall_height + 1),
+                      Point3(-2*center, 2*center, 0),
+                      Point3(2*center, 2*center, 0),
+                      Point3(2*center, 2*center, 2*wall_height + 1))
+        self.add_wall("wall4", self.environ,
+                      Point3(2*center, -2*center, 2*wall_height + 1),
+                      Point3(2*center, -2*center, 0),
+                      Point3(-2*center, -2*center, 0),
+                      Point3(-2*center, -2*center, 2*wall_height + 1))
         
         #The reason this is different is because walls have their own event collision
         #handler method... floors don't need one (so no need for a dictionary of them)
-        self.floor = Wall(self, "floor", environ, Point3(-2*center-1, -2*center-1, 0),
-                Point3(2*center+1, -2*center-1, 0), Point3(2*center+1, 2*center+1, 0),
-                Point3(-2*center-1, 2*center+1, 0), FLOOR_COLLIDER_MASK)
+        self.floor = Wall(self, "floor", self.environ, Point3(-2*center, -2*center, 0),
+                Point3(2*center, -2*center, 0), Point3(2*center, 2*center, 0),
+                Point3(-2*center, 2*center, 0), FLOOR_COLLIDER_MASK)
         
         # make some random bunkers
-        for _ in range(4):
-            self.make_column(environ, choice(eggs), randint(-num_tiles,num_tiles), randint(-num_tiles,num_tiles), randint(2,wall_height))
+        #for _ in range(4):
+        #    self.make_column(self.environ, choice(eggs), randint(-num_tiles,num_tiles), randint(-num_tiles,num_tiles), randint(2,wall_height), colscale)
     
     def timerTask(self, task):
         self.gameTime = self.endTime - time()
@@ -189,12 +195,12 @@ class Game(object):
                 self.players[name].move(vel)
             except: pass
     
-    def make_column(self, parent,egg,x,y,h):
+    def make_column(self, parent,egg,x,y,h, scale):
         for z in range(h):
-            self.make_tile(parent,egg,(x,   y,   (self.tower_size / self.tile_size) * (2*z + 1)),(0,  90,0), False, (self.tower_size / self.tile_size))
-            self.make_tile(parent,egg,(x,   (y+2*(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(180,90,0), False, (self.tower_size / self.tile_size))
-            self.make_tile(parent,egg,((x+(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(90, 90,0), False, (self.tower_size / self.tile_size))
-            self.make_tile(parent,egg,((x-(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(270,90,0), False, (self.tower_size / self.tile_size))
+            self.make_tile(parent,egg,(x,   y,   (self.tower_size / self.tile_size) * (2*z + 1)),(0,  90,0), scale * (self.tower_size / self.tile_size))
+            self.make_tile(parent,egg,(x,   (y+2*(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(180,90,0), scale * (self.tower_size / self.tile_size))
+            self.make_tile(parent,egg,((x+(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(90, 90,0), scale * (self.tower_size / self.tile_size))
+            self.make_tile(parent,egg,((x-(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(270,90,0), scale * (self.tower_size / self.tile_size))
         # add a pusher for the bottom of the tower - do INSIDE the loop if
         #Tron can jump... for now this is more esfficient
         towerCollider = parent.attachNewNode(CollisionNode("tower_base"))
@@ -202,7 +208,7 @@ class Game(object):
         towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
         
     # static functions, not in the game class
-    def make_tile(self, parent,fname,pos,hpr, addCollider=False, scale=1.0):
+    def make_tile(self, parent,fname,pos,hpr, scale=1.0):
         tile = loader.loadModel(fname)
         tile.reparentTo(parent)
         tile.setScale(scale, scale, scale)

@@ -14,9 +14,9 @@ from agent import Agent
 from constants import *
 
 #Constants
-MOTION_MULTIPLIER = 150.0
-TURN_MULTIPLIER = 0.5
-LOOK_MULTIPLIER = 0.3
+MOTION_MULTIPLIER = 100.0
+TURN_MULTIPLIER = 0.4
+LOOK_MULTIPLIER = 0.2
 JUMP_SPEED = 100.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
@@ -135,7 +135,7 @@ class Player(Agent):
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
     
     def move(self,vel):
-        self.tron.setFluidPos(self.tron.getPos() + (vel * globalClock.getDt()))
+        self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
 
 class LocalPlayer(Player):
     def __init__(self, game, name):
@@ -150,7 +150,7 @@ class LocalPlayer(Player):
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
-        base.camLens.setNearFar(10, 3000)
+        #base.camLens.setNearFar(10, 3000)
     
     def die(self):
         super(LocalPlayer,self).die()
