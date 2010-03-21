@@ -277,24 +277,6 @@ class LocalPlayer(Player):
             for txt in self.programHUD:
                 #they couldn't just make it simple and override getX() could they?
                 txt.setX(txt.getPos()[0] - 0.15)
-<<<<<<< .mine
-=======
-    
-    def load_model(self):
-        #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
-        self.tron = Actor.Actor("%s/tron" % MODEL_PATH, {"running":"%s/tron_anim_updated" % MODEL_PATH})
-        self.tron.reparentTo(render)
-        self.tron.setScale(0.4, 0.4, 0.4)
-        self.tron.setHpr(0, 0, 0)
-        self.tron.setPos(-4, 34, TRON_ORIGIN_HEIGHT)
-        self.tron.pose("running", 46)
-        self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame=46)
-
-        self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame=46)
-        self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
-        self.running = False
-        Laser() # pre-cache laser model
->>>>>>> .r89
         
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
