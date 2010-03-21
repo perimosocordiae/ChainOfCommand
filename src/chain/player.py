@@ -136,7 +136,7 @@ class Player(Agent):
     
     def move(self,vel,hpr):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
-        self.tron.setHpr(hpr)
+        self.tron.setH(hpr.getX())
 
 class LocalPlayer(Player):
     def __init__(self, game, name):
@@ -152,7 +152,9 @@ class LocalPlayer(Player):
     
     def move(self,vel,hpr):
         super(LocalPlayer,self).move(vel,hpr)
-        base.camera.setP(hpr.getP())
+        base.camera.setP(hpr.getY())
+        center = base.win.getXSize() / 2
+        base.win.movePointer(0, center, center)
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
@@ -378,7 +380,7 @@ class LocalPlayer(Player):
             else:                  self.StopMovingAnim()
         
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send("%s:%s:%s"%(self.name,self.velocity,self.tron.getHpr()))
+        self.game.client.send("%s:%s:%s"%(self.name,self.velocity,self.hpr))
         #print self.velocity * globalClock.getDt()
         return Task.cont
     
@@ -403,13 +405,12 @@ class LocalPlayer(Player):
         md = base.win.getPointer(0)
         x, y = md.getX(), md.getY()
         center = base.win.getXSize() / 2
-        if base.win.movePointer(0, center, center):
-            self.hpr.setX(self.tron.getH() - (TURN_MULTIPLIER * (x - center)))
-            newP = base.camera.getP() - (LOOK_MULTIPLIER * (y - center))
-            #keep within +- 90 degrees
-            newP = max(min(newP, 80), -80)
-            self.hpr.setY(newP)
-            #make sure lifter continues to point straight down
-            #angle = radians(self.tron.getP())
-            #self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
-        
+        self.hpr.setX(self.tron.getH() - (TURN_MULTIPLIER * (x - center)))
+        newP = base.camera.getP() - (LOOK_MULTIPLIER * (y - center))
+        #keep within +- 90 degrees
+        newP = max(min(newP, 80), -80)
+        self.hpr.setY(newP)
+        #make sure lifter continues to point straight down
+        #angle = radians(self.tron.getP())
+        #self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
+    
