@@ -4,7 +4,7 @@ from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import (Shader, CollisionNode, CollisionRay, CollisionSphere,
-    CollisionHandlerQueue, TransparencyAttrib, BitMask32, Vec2, Vec3, Point3, TextureStage)
+    CollisionHandlerQueue, TransparencyAttrib, BitMask32, Vec2, Vec3, Point3, VBase3, TextureStage)
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
@@ -141,6 +141,7 @@ class Player(Agent):
 class LocalPlayer(Player):
     def __init__(self, game, name):
         super(LocalPlayer, self).__init__(game, name)
+        self.hpr = VBase3(0,0,0)
         Sequence(Wait(0.03), Func(self.game.network_listen)).loop()
         self.setup_camera()
         self.setup_HUD()
@@ -148,6 +149,10 @@ class LocalPlayer(Player):
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
         self.add_background_music()
+    
+    def move(self,vel,hpr):
+        super(LocalPlayer,self).move(vel,hpr)
+        base.camera.setP(hpr.getP())
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
@@ -399,12 +404,11 @@ class LocalPlayer(Player):
         x, y = md.getX(), md.getY()
         center = base.win.getXSize() / 2
         if base.win.movePointer(0, center, center):
-            self.tron.setH(self.tron.getH() - (TURN_MULTIPLIER * (x - center)))
-            #self.tron.setP(self.tron.getP() + (TURN_MULTIPLIER * (y - center)))
+            self.hpr.setX(self.tron.getH() - (TURN_MULTIPLIER * (x - center)))
             newP = base.camera.getP() - (LOOK_MULTIPLIER * (y - center))
             #keep within +- 90 degrees
             newP = max(min(newP, 80), -80)
-            base.camera.setP(newP)
+            self.hpr.setY(newP)
             #make sure lifter continues to point straight down
             #angle = radians(self.tron.getP())
             #self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
