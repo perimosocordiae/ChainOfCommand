@@ -205,11 +205,11 @@ class Game(object):
         data = self.client.getData()
         if len(data) == 0: return
         for d in data:
-            name,vecstr,hprstr = d.split(':')
-            vel = eval(vecstr)
-            hpr = eval(hprstr)
+            ds = d.split(':')
+            name,strs = ds[0],ds[1:]
+            vel,hpr,anim = map(eval,strs)
             if name in self.players:
-                self.players[name].move(vel,hpr)
+                self.players[name].move(vel,hpr,anim)
     
     def make_column(self, parent,egg,x,y,h, scale):
         for z in range(h):

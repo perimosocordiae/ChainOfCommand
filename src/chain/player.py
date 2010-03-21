@@ -134,9 +134,11 @@ class Player(Agent):
         cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
     
-    def move(self,vel,hpr):
+    def move(self,vel,hpr,anim):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
+        if anim == 'start':  self.StartMovingAnim()
+        elif anim == 'stop': self.StopMovingAnim()
 
 class LocalPlayer(Player):
     def __init__(self, game, name):
@@ -150,8 +152,8 @@ class LocalPlayer(Player):
         self.setup_sounds()
         self.add_background_music()
     
-    def move(self,vel,hpr):
-        super(LocalPlayer,self).move(vel,hpr)
+    def move(self,vel,hpr,anim):
+        super(LocalPlayer,self).move(vel,hpr,anim)
         base.camera.setP(base.camera.getP() + hpr.getY())
         center = base.win.getXSize() / 2
         base.win.movePointer(0, center, center)
@@ -369,18 +371,17 @@ class LocalPlayer(Player):
         self.handleGravity()
         self.LookAtMouse()
         
+        anim = '"a"' # placeholder
         if not self.in_air(): # no mid-air corrections!
             cmds = [ c for c in ['forward', 'backward', 'moveleft', 'moveright'] if inputState.isSet(c)]
-            
             new_vel = self.get_xy_velocity(cmds)
             self.velocity.setX(new_vel.getX())
             self.velocity.setY(new_vel.getY())
-            
-            if not len(cmds) == 0: self.StartMovingAnim()
-            else:                  self.StopMovingAnim()
+            if not len(cmds)==0: anim = '"start"'
+            else:                anim = '"stop"'
         
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send("%s:%s:%s"%(self.name,self.velocity,self.hpr))
+        self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim]))
         #print self.velocity * globalClock.getDt()
         return Task.cont
     
