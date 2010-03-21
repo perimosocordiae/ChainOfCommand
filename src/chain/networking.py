@@ -37,6 +37,7 @@ class Server(NetworkBase):
         self.backlog = backlog
         self.cListener = QueuedConnectionListener(self.cManager, 0)
         self.activeConnections = []
+        self.player_list = set()
         self.rand_seed = int(time())
         self.__connect(self.port, self.backlog)
         self.__startPolling()
@@ -66,7 +67,14 @@ class Server(NetworkBase):
                 
         # republish messages
         for d in self.getData():
-            self.broadcast(d)
+            if d.split()[0] == 'player':
+                self.player_list.add(d)
+            elif d == 'start':
+                for p in self.player_list: self.broadcast(p)
+                self.player_list.clear()
+                self.broadcast(d)
+            else:
+                self.broadcast(d)
         #self.broadcast('time: %s'%time())
         return Task.cont
     

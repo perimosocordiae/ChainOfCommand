@@ -28,6 +28,7 @@ class Game(object):
         self.map_size,self.tile_size, self.tower_size = map_size,tile_size, tower_size
         self.client = Client(ip,port_num)
         taskMgr.add(self.handshakeTask, 'handshakeTask')
+        self.client.send("player %s"%uname()[1])  # register w/ the server
     
     def rest_of_init(self,gameLength=180):
         base.cTrav = CollisionTraverser()
@@ -41,6 +42,8 @@ class Game(object):
         self.add_event_handler()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
+        for pname in self.players:
+            self.add_player(pname)
         self.add_local_player()
         print "game initialized"
         for _ in range(4):
@@ -67,7 +70,7 @@ class Game(object):
         self.eventHandle.addPlayerHandler(self.players[name])
             
     def add_player(self,pname):
-        print "adding player: %s"%pname
+        print "making player: %s"%pname
         self.players[pname] = Player(self,pname)
         self.eventHandle.addPlayerHandler(self.players[pname])
         
@@ -189,7 +192,7 @@ class Game(object):
                 seed(self.rand_seed)
                 print "seed",self.rand_seed
             elif ds[0] == 'player' and ds[1] != uname()[1]: # don't add yourself
-                self.add_player(ds[1])
+                self.players[ds[1]] = None
                 print "added",ds[1]
             elif ds[0] == 'start':
                 print "starting"
