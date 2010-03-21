@@ -47,8 +47,10 @@ class Shell(object):
             'man' : self.manual,
             'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
             'rm': self.permission_error, 'sudo': self.permission_error,
-            'start': self.start_game, 'run': self.start_game
+            'host': self.start_server, 'server': self.start_server,
+            'start': self.start_game, 'run': self.start_game, 'join': self.start_game
         }
+        self.help_cmds = ['help','host','join','man','scores','quit']
         self.cmd_hist = [""]
 
     def intro(self,full):
@@ -108,22 +110,18 @@ class Shell(object):
             self.input.enterText(possibleCommand)
         
     def start_game(self,cmd,arglist=[]):
-        if len(arglist) < 2 or arglist[0] not in ['host','join']:
-            self.append_line("Usage: %s host [port_num]"%cmd)
-            self.append_line("       %s join [port_num] [host_ip] <last>"%cmd)
-            return
-        if arglist[0] == 'host':
-            self.start_server(int(arglist[1]))
+        if len(arglist) < 2:
+            self.append_line("Usage: %s [port_num] [host_ip] <last>"%cmd)
         else:
-            if len(arglist) == 2: 
-                self.append_line("Error: no IP provided")
-                return
-            elif len(arglist) == 4: 
-                self.main(int(arglist[1]),arglist[2],True)
-            else:
-                self.main(int(arglist[1]),arglist[2])
-        self.hide_shell()
-
+            self.main(int(arglist[0]),arglist[1],len(arglist) == 3)
+            self.hide_shell()
+    
+    def start_server(self,cmd,arglist=[]):
+        if len(arglist) != 1:
+            self.append_line("Usage: %s [port_num]"%cmd)
+        else:
+            Server(int(arglist[0]))
+            
     def quit(self,cmd,arglist=[]):
         self.append_line("Bye!")
         sleep(0.5)
@@ -133,16 +131,18 @@ class Shell(object):
         self.append_line("Error: permission denied")
         
     def help(self,cmd,arglist=[]):
-        self.append_line("Available Commands:")
-        for cmd in self.cmd_dict.keys():
+        self.append_line("Commands:")
+        for cmd in self.help_cmds:
             self.append_line("   " + cmd)
             
     def manual(self,cmd,arglist=[]):
         if len(arglist) == 0:
-            self.append_line("Usage: man [program]")
+            self.append_line("Usage: %s [program]"%cmd)
             self.append_line("Program listing: %s"%', '.join(PROGRAMS.keys()))
         elif arglist[0] in PROGRAMS:
             self.append_line("%s -- %s"%(arglist[0],PROGRAMS[arglist[0]]))
+        elif arglist[0] in self.cmd_dict:
+            self.append_line("Sorry, %s is only for in-game programs"%cmd)
         else:
             self.append_line("Error: no such program: %s"%arglist[0])
             
@@ -184,9 +184,6 @@ class Shell(object):
         self.cmd_pos = 0
         self.input.enterText("")
         self.input.setFocus()
-    
-    def start_server(self,port_num):
-        Server(port_num)
     
     def main(self,port_num,ip,last=False):
         print "starting up"

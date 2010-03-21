@@ -58,24 +58,14 @@ class Game(object):
         #Sequence(Wait(2.0), Func(self.add_drone)).loop()
         
     def loadModels(self): # asynchronous
-        self.parallelSeq = Parallel()
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/blue_floor.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/green_floor.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/red_floor.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/yellow_floor.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_-r.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_chmod.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/terminal_window_rm.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/RAM.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/laser.egg"))
-        self.parallelSeq.append(Func(loader.loadModel, MODEL_PATH + "/tron_anim_updated.egg"))
-        #self.parallelSeq.start()
-        self.loadSeq = Sequence(self.parallelSeq,
-                 Func(self.registerWithServer))
-                 
-    def registerWithServer(self):
-        self.client.send("player %s"%uname()[1])
-
+        parallelSeq = Parallel()
+        addload = lambda m: parallelSeq.append(Func(loader.loadModel, "%s%s"%(MODEL_PATH,m)))
+        models = ["/blue_floor.egg","/green_floor.egg","/red_floor.egg","/yellow_floor.egg",
+                  "/terminal_window_-r.egg","/terminal_window_chmod.egg","/terminal_window_rm.egg",
+                  "/RAM.egg","/laser.egg","/tron_anim_updated.egg"]
+        for m in models: addload(m)
+        self.loadSeq = Sequence(parallelSeq, Func(lambda: self.client.send("player %s"%uname()[1])))
+        
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
 
