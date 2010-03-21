@@ -22,9 +22,9 @@ LOGO = """\n\n\n
  \____/_/ /_/\__,_/_/_/ /_/   \____/_/     
                                           
     ______                                          __
-   / ____/___  ____ ___  ____ ___  ____ ____  ____/ /
+   / ____/___  ____ ___  ____ ___  ____  ____  ____/ /
   / /   / __ \/ __ `__ \/ __ `__ \/ __ `/ __ \/ __  / 
- / /___/ /_/ / / / / / / / / / / / /_/ / / / / /_/  /  
+ / /___/ /_/ / / / / / / / / / / / /_/ / / / / /_/ /  
  \____/\____/_/ /_/ /_/_/ /_/ /_/\__,_/_/ /_/\__,_/   
 \n\n\n\n\n
 """
@@ -195,17 +195,7 @@ class Shell(object):
             g.loadSeq.append(Func(g.client.send, "start"))
         g.loadSeq.start()
         
-
 # end Shell class
-
-def add_drone(g):
-    if len(g.drones) < 20:
-        g.add_drone()
-
-def print_data(c):
-    data = c.getData()
-    if len(data) > 0:
-        print data
 
 if __name__ == '__main__':
     Shell(False)
