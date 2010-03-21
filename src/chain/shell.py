@@ -1,5 +1,6 @@
 import sys
 from time import sleep
+from platform import uname
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
@@ -7,7 +8,6 @@ from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode, Thread
 from networking import Server
 from game import Game
-from program import DashR, Rm, Chmod, RAM
 from constants import MODEL_PATH
 
 CHARACTER_DELAY = 0.08
@@ -189,15 +189,11 @@ class Shell(object):
     
     def main(self,port_num,ip,last=False):
         print "starting up"
-        
+        g = Game(ip,port_num,360,60.0,12.0,120)
+        self.client.send("player %s"%uname()[1])   
         if last:
             g.client.send("start")
-            return
-        g = Game(ip,port_num,360,60.0,12.0,120)
-
-        #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
         
-
 
 # end Shell class
 

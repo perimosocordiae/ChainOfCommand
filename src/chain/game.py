@@ -15,6 +15,7 @@ from player import Player,LocalPlayer
 from drone import Drone
 from wall import Wall
 from networking import Client
+from program import DashR, Rm, Chmod, RAM
 from constants import *
 
 #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
@@ -49,6 +50,7 @@ class Game(object):
             self.add_program(RAM)
         print "programs added"
         self.add_event_handler()
+        #Sequence(Wait(2.0), Func(self.add_drone)).loop()
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
@@ -63,7 +65,6 @@ class Game(object):
         print "adding local player:",name
         self.players[name] = LocalPlayer(self,name)
         self.eventHandle.addPlayerHandler(self.players[name])
-        self.client.send("player %s"%name)
             
     def add_player(self,pname):
         print "adding player: %s"%pname
