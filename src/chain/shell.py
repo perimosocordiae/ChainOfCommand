@@ -190,7 +190,7 @@ class Shell(object):
     def main(self,port_num,ip,last=False):
         print "starting up"
         g = Game(ip,port_num,360,60.0,12.0,120)
-        self.client.send("player %s"%uname()[1])   
+        g.client.send("player %s"%uname()[1])   
         if last:
             g.client.send("start")
         
