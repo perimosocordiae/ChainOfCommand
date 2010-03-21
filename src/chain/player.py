@@ -18,7 +18,7 @@ MOTION_MULTIPLIER = 150.0
 TURN_MULTIPLIER = 0.5
 LOOK_MULTIPLIER = 0.3
 
-JUMP_SPEED = 150.0 #make sure this stays less than SAFE_FALL - he should
+JUMP_SPEED = 100.0 #make sure this stays less than SAFE_FALL - he should
                  #be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
@@ -198,7 +198,7 @@ class Player(Agent):
         self.tron.reparentTo(render)
         self.tron.setScale(0.4, 0.4, 0.4)
         self.tron.setHpr(0, 0, 0)
-        self.tron.setPos(-4, 34, 150)
+        self.tron.setPos(-4, 34, TRON_ORIGIN_HEIGHT)
         self.tron.pose("running", 46)
         self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame=46)
 
@@ -324,6 +324,7 @@ class Player(Agent):
 
         # actually move tron, based on the values in self.velocity
         self.tron.setFluidPos(self.tron.getPos() + (self.velocity * globalClock.getDt()))
+        #print self.velocity * globalClock.getDt()
         return Task.cont
     
     def get_xy_velocity(self, cmds):

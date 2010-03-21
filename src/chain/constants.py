@@ -8,15 +8,10 @@ DRONE_PUSHER_MASK = BitMask32.bit(2)
 PROGRAM_PUSHER_MASK = BitMask32.bit(8)
 
 #gravity-related
-#GRAVITATIONAL_CONSTANT = -0.15 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
-#SAFE_FALL = -5.0 #fall velocity after which damage is induced
-#FALL_DAMAGE_MULTIPLIER = 12.0 #How much to damage Tron per 1 over safe fall
-#TERMINAL_VELOCITY = -50.0
-
-GRAVITATIONAL_CONSTANT = -5 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
-SAFE_FALL = -5000.0 #fall velocity after which damage is induced
-FALL_DAMAGE_MULTIPLIER = 10.0 #How much to damage Tron per 1 over safe fall
-TERMINAL_VELOCITY = -5000000.0
+GRAVITATIONAL_CONSTANT = -2 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
+SAFE_FALL = -100.0 #fall velocity after which damage is induced
+FALL_DAMAGE_MULTIPLIER = 1.0 #How much to damage Tron per 1 over safe fall
+TERMINAL_VELOCITY = -500.0
 
 MODEL_PATH = "../../models"
 SOUND_PATH = "../../sounds"

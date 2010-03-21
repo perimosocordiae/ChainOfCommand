@@ -73,8 +73,8 @@ class Shell(object):
         textType.start()
     
     def user_input(self):
-        self.prompt = DirectLabel(text=">", frameSize=(-0.05,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font, )
-        self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=38, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
+        self.prompt = DirectLabel(text=">", frameSize=(-0.04,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
+        self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
         self.screen.accept('arrow_up',self.up_hist)
         self.screen.accept('arrow_down',self.down_hist)
         self.input.enterText("")
@@ -159,8 +159,8 @@ class Shell(object):
         c = Client(ip,port_num)
         Sequence(Wait(1.0), Func(lambda: c.send("Client: %s"%uname()[1]))).loop()
         Sequence(Wait(0.1), Func(lambda: print_data(c))).loop()
-        
-        if False:
+
+        if True:
             g = Game(360,60.0,12.0,120)
             g.add_player('player_1')
             for _ in range(4):
@@ -169,7 +169,7 @@ class Shell(object):
                 g.add_program(DashR)
                 g.add_program(RAM)
             g.add_event_handler()
-            Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+            Sequence(Wait(20.0), Func(lambda:add_drone(g))).loop()
         
         self.output.stash()
         self.prompt.stash()
