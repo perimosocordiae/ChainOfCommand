@@ -23,11 +23,8 @@ USE_GLOW = False
 class Game(object):
 
     def __init__(self,ip,port_num,map_size=320,tile_size=16, tower_size=16, gameLength=180):
-        client = Client(ip,port_num)
-        #d = client.getData()
-        #while len(d) == 0: sleep(0.1); d = client.getData() # wait for the server to send a seed
-        #self.rand_seed = int(d[0])
-        #seed(self.rand_seed)
+        self.client = Client(ip,port_num)
+        taskMgr.add(self.handshakeTask, 'handshakeTask')
         base.cTrav = CollisionTraverser()
         #wsbase.cTrav.showCollisions(render)
         self.players, self.programs,self.drones,self.walls = {},{},{},{}
@@ -41,7 +38,7 @@ class Game(object):
         self.add_event_handler()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
-        self.add_local_player(client)
+        self.add_local_player()
 
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size+1,self.map_size-2),randint(-self.map_size+1,self.map_size-2))
@@ -51,12 +48,15 @@ class Game(object):
         for player in self.players.itervalues():
             player.initialize_camera()
             
-    def add_local_player(self,client):
-        name = uname()[0]
-        self.players[name] = LocalPlayer(self,name,client)
+    def add_local_player(self):
+        name = uname()[1]
+        print "adding local player:",name
+        self.players[name] = LocalPlayer(self,name)
         self.eventHandle.addPlayerHandler(self.players[name])
+        self.client.send("player %s"%name)
             
     def add_player(self,pname):
+        print "adding player: %s"%pname
         self.players[pname] = Player(self,pname)
         self.eventHandle.addPlayerHandler(self.players[pname])
         
@@ -160,7 +160,32 @@ class Game(object):
             print "Game over"
             sys.exit()
         return task.again
-        
+    
+    def handshakeTask(self,task):
+        data = self.client.getData()
+        if len(data) == 0: return task.again
+        for d in data:
+            ds = d.split()
+            if ds[0] == 'seed':
+                self.rand_seed = int(ds[1])
+                seed(self.rand_seed)
+                print "seed",self.rand_seed
+            elif ds[0] == 'player' and ds[1] != uname()[1]: # don't add yourself
+                self.add_player(ds[1])
+                print "added",ds[1]
+            elif ds[0] == 'start':
+                print "starting"
+                return task.done # ends task
+        return task.again
+    
+    def network_listen(self):
+        data = self.client.getData()
+        if len(data) == 0: return
+        for d in data:
+            name,vecstr = d.split(':')
+            vel = eval(vecstr)
+            self.players[name].move(vel)
+    
     def make_column(self, parent,egg,x,y,h):
         for z in range(h):
             self.make_tile(parent,egg,(x,   y,   (self.tower_size / self.tile_size) * (2*z + 1)),(0,  90,0), False, (self.tower_size / self.tile_size))

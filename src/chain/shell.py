@@ -175,14 +175,14 @@ class Shell(object):
         self.input.setFocus()
     
     def main(self,port_num,ip):
-        if not ip: # means we need to start the server
+        is_server = not ip
+        if is_server:
             Server(port_num)
             ip = "127.0.0.1"
+          
         print "starting up"
         g = Game(ip,port_num,360,60.0,12.0,120)
-        print "game started"
-        g.add_player('shubho')
-        print "shubho added"
+        print "game initialized"
         for _ in range(4):
             g.add_program(Rm)
             g.add_program(Chmod)
@@ -191,6 +191,11 @@ class Shell(object):
         print "programs added"
         g.add_event_handler()
         #Sequence(Wait(2.0), Func(lambda:add_drone(g))).loop()
+        
+        if is_server:
+            print "waiting for others to join"
+            sleep(10)
+            g.client.send("start")
 
 
 # end Shell class

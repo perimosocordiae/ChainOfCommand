@@ -138,24 +138,15 @@ class Player(Agent):
         self.tron.setFluidPos(self.tron.getPos() + (vel * globalClock.getDt()))
 
 class LocalPlayer(Player):
-    def __init__(self, game, name, client):
+    def __init__(self, game, name):
         super(LocalPlayer, self).__init__(game, name)
-        self.client = client
-        Sequence(Wait(0.03), Func(self.network_listen)).loop()
+        Sequence(Wait(0.03), Func(self.game.network_listen)).loop()
         self.setup_camera()
         self.setup_HUD()
         self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
         self.add_background_music()
-    
-    def network_listen(self):
-        data = self.client.getData()
-        if len(data) == 0: return
-        for d in data:
-            name,vecstr = d.split(':')
-            vel = eval(vecstr)
-            self.game.players[name].move(vel)
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
@@ -381,7 +372,7 @@ class LocalPlayer(Player):
             else:                  self.StopMovingAnim()
         
         # send command to move tron, based on the values in self.velocity
-        self.client.send("%s:%s"%(self.name,self.velocity))
+        self.game.client.send("%s:%s"%(self.name,self.velocity))
         #print self.velocity * globalClock.getDt()
         return Task.cont
     

@@ -61,7 +61,8 @@ class Server(NetworkBase):
                 newConnection = newConnection.p()
                 self.activeConnections.append(newConnection) # Remember connection
                 self.cReader.addConnection(newConnection)     # Begin reading connection
-                #self.send(str(self.rand_seed),newConnection) # send the new client the random seed
+                self.send("seed %d"%self.rand_seed,newConnection) # send the new client the random seed
+                
         # republish messages
         for d in self.getData():
             self.broadcast(d)
