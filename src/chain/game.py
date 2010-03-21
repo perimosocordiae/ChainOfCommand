@@ -39,7 +39,6 @@ class Game(object):
         self.startTime = time()
         self.endTime = self.startTime + gameLength
         self.gameTime = self.endTime - time()
-        self.add_event_handler()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         for pname in self.players:
@@ -61,6 +60,7 @@ class Game(object):
     def add_event_handler(self):
         self.eventHandle = GameEventHandler(self)
         for player in self.players.itervalues():
+            self.eventHandle.addPlayerHandler(player)
             player.initialize_camera()
             
     def add_local_player(self):
@@ -72,7 +72,6 @@ class Game(object):
     def add_player(self,pname):
         print "making player: %s"%pname
         self.players[pname] = Player(self,pname)
-        self.eventHandle.addPlayerHandler(self.players[pname])
         
     def add_program(self,ptype):
         prog = ptype(self)
