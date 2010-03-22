@@ -33,6 +33,7 @@ class Player(Agent):
         self.handleEvents = True
         self.laserGlow = False
         self.camera = None
+        self.setup_camera()
         self.setup_collider()
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
@@ -137,7 +138,7 @@ class Player(Agent):
         # the camera follows tron
         self.get_camera().reparentTo(self.tron)
         self.get_camera().setPos(0, 40, TRON_ORIGIN_HEIGHT)
-        self.get_camera().setHpr(180, 0, 0)
+        self.get_camera().setHpr(180, -30, 0)
         
     def initialize_camera(self):
         cameraNode = CollisionNode('cameracnode_%s'%self.name)
@@ -238,8 +239,10 @@ class Player(Agent):
     def move(self,vel,hpr,anim,firing):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
-        self.get_camera().setP(self.get_camera().getP() + hpr.getY())
-        print self.get_camera().getP()
+        newP = self.get_camera().getP() + hpr.getY()
+        newP = max(min(newP, 80), -80)
+        self.get_camera().setP(newP)
+        #print hpr
         if anim == 'start':  self.StartMovingAnim()
         elif anim == 'stop': self.StopMovingAnim()
         if firing:
@@ -251,7 +254,6 @@ class LocalPlayer(Player):
         self.hpr = VBase3(0,0,0)
         Sequence(Wait(SERVER_TICK), Func(self.game.network_listen)).loop()
         self.shooting = False
-        self.setup_camera()
         self.setup_HUD()
         self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
