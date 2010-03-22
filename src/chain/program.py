@@ -36,11 +36,15 @@ class Program(Agent):
         self.disappear()
     
     def disappear(self):
-        self.desc.removeNode()
-        self.collider.removeNode()
-        self.pusher.removeNode()
-        #self.model.stash()
-        self.model.removeNode()
+        if self.desc:
+            self.desc.removeNode()
+        if self.collider:
+            self.collider.removeNode()
+        if self.pusher:
+            self.pusher.removeNode()
+        if self.model:
+            #self.model.stash()
+            self.model.removeNode()
         self.desc = None
         self.collider = None
         self.pusher = None

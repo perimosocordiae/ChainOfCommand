@@ -179,7 +179,7 @@ class Player(Agent):
         if objHit in self.game.drones:
             d = self.game.drones[objHit]
             d.hit(self.damage())
-            print "hit drone %s for %d damage" % (objHit, self.damage())
+            print "hit drone %s for %d damage" % (objHit, self.damage() / d.shield())
             if d.is_dead():
                 print "killed it!"
                 self.killcount += 1
@@ -187,13 +187,13 @@ class Player(Agent):
         elif objHit in self.game.programs:
             p = self.game.programs[objHit]
             p.hit(self.damage())
-            print "hit program %s for %d damage" % (objHit, self.damage())
+            print "hit program %s for %d damage" % (objHit, self.damage() / p.shield())
             if p.is_dead():
                 print "Oh no, you blew up a program!"
         elif objHit in self.game.players:
             p = self.game.players[objHit]
             p.hit(self.damage())
-            print "hit %s for %d damage" % (objHit, self.damage())
+            print "hit %s for %d damage" % (objHit, self.damage() / p.shield())
             if p.is_dead():
                 print "you killed %s!"%objHit
                 self.killcount += 1
