@@ -14,7 +14,7 @@ from agent import Agent
 from constants import *
 
 #Constants
-MOTION_MULTIPLIER = 100.0
+MOTION_MULTIPLIER = 150.0
 TURN_MULTIPLIER = 0.3
 LOOK_MULTIPLIER = 0.2
 JUMP_SPEED = 100.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
@@ -175,7 +175,7 @@ class Player(Agent):
         if not self.handleEvents: return
         #first get a ray coming from the camera and see what it first collides with
         objHit,spotHit = self.findCrosshairHit()
-        print objHit
+        #print objHit
         if objHit in self.game.drones:
             d = self.game.drones[objHit]
             d.hit(self.damage())
@@ -217,26 +217,7 @@ class Player(Agent):
         #the .005 is a fudge factor - it just makes things work better
         laser.fire(Vec3(sin(h) * pcos, -cos(h) * pcos, sin(p) + 0.005) * LASER_SPEED)
     
-    def collect(self):
-        #sound/message depends on status
-        i, prog = super(Player, self).collect()
-        if not prog:
-            if i >= 0: 
-                print "No empty slots!"
-            else:
-                print "No program to pick up!"
-        else:
-            self.sounds['yes'].play()
-            print "Program get: %s" % prog.name
-            if i >= 0:
-                self.programHUD[i].setText("|  %s  |" % prog.name)
-    
-    def drop(self, i):
-        if (super(Player, self).drop(i)):
-            print "Program dropped: %s" %self.programs[i]
-            self.programHUD[i].setText("|        |")
-    
-    def move(self,vel,hpr,anim,firing):
+    def move(self,vel,hpr,anim,firing,collecting):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
         newP = self.get_camera().getP() + hpr.getY()
@@ -245,6 +226,8 @@ class Player(Agent):
         #print hpr
         if anim == 'start':  self.StartMovingAnim()
         elif anim == 'stop': self.StopMovingAnim()
+        if collecting:
+            self.collect()
         if firing:
             self.shoot()
 
@@ -254,14 +237,15 @@ class LocalPlayer(Player):
         self.hpr = VBase3(0,0,0)
         Sequence(Wait(SERVER_TICK), Func(self.game.network_listen)).loop()
         self.shooting = False
+        self.collecting = False
         self.setup_HUD()
         self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
         self.add_background_music()
     
-    def move(self,vel,hpr,anim, firing):
-        super(LocalPlayer,self).move(vel,hpr,anim,firing)
+    def move(self,vel,hpr,anim,firing,collecting):
+        super(LocalPlayer,self).move(vel,hpr,anim,firing,collecting)
         self.shooting = False
         center = base.win.getXSize() / 2
         base.win.movePointer(0, center, center)
@@ -320,7 +304,13 @@ class LocalPlayer(Player):
     def clickRelease(self):
         self.shooting = False
         taskMgr.remove("updateShotTask")
+    
+    def collectOn(self):
+        self.collecting = True
         
+    def collectOff(self):
+        self.collecting = False
+    
     def hit(self, amt=0):
         super(Player, self).hit(amt)
         self.sounds['snarl'].play()
@@ -331,6 +321,25 @@ class LocalPlayer(Player):
     def fire_laser(self, objHit, spotHit):
         super(LocalPlayer, self).fire_laser(objHit, spotHit)
         self.sounds['laser'].play()
+    
+    def collect(self):
+        #sound/message depends on status
+        i, prog = super(Player, self).collect()
+        if not prog:
+            if i >= 0: 
+                print "No empty slots!"
+            else:
+                print "No program to pick up!"
+        else:
+            self.sounds['yes'].play()
+            print "Program get: %s" % prog.name
+            if i >= 0:
+                self.programHUD[i].setText("|  %s  |" % prog.name)
+    
+    def drop(self, i):
+        if (super(Player, self).drop(i)):
+            print "Program dropped: %s" %self.programs[i]
+            self.programHUD[i].setText("|        |")
         
     def add_slot(self):
         currentCount = len(self.programs)
@@ -388,10 +397,16 @@ class LocalPlayer(Player):
     def updateShotTask(self, task):
         #self.shoot()
         self.shooting = True
+        self.sendUpdate()
         return task.again
         
     #Task to move the camera
     def updateCameraTask(self, task):
+        #print self.velocity * globalClock.getDt()
+        self.sendUpdate()
+        return Task.cont
+    
+    def sendUpdate(self):
         self.target()
         if not self.handleEvents: return Task.cont
         self.handleGravity()
@@ -407,9 +422,7 @@ class LocalPlayer(Player):
             else:                anim = '"stop"'
         
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim,str(self.shooting)]))
-        #print self.velocity * globalClock.getDt()
-        return Task.cont
+        self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting)]))
     
     def get_xy_velocity(self, cmds):
         new_vel = Vec2(0, 0)

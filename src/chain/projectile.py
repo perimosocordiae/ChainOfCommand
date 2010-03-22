@@ -23,7 +23,7 @@ class Projectile(object):
         trajectory.normalize()
         self.model.setPos(self.model.getPos() + (trajectory * 18))
         if fullTrajec.length > 0.005: 
-            moveIt = self.model.posInterval(10.4, lookAt)
+            moveIt = self.model.posInterval(3.0, lookAt)
             Sequence(moveIt, Func(self.kill)).start()
     
     def kill(self):

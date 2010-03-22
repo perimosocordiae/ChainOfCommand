@@ -20,8 +20,9 @@ class PlayerEventHandler(DirectObject):
         # networked events
         self.accept('mouse1',playr.click)
         self.accept('mouse1-up',playr.clickRelease)
-        self.accept('space',playr.collect)
-        self.accept('space-repeat',playr.collect)
+        self.accept('space',playr.collectOn)
+        self.accept('space-repeat',playr.collectOn)
+        self.accept('space-up',playr.collectOff)
         
         #drop program i; if we go past 9 programs, we'll need another key system anyway
         for i in range(9):

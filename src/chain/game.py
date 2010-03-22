@@ -217,11 +217,11 @@ class Game(object):
         if len(data) == 0: return
         for d in data:
             ds = d.split(':')
-            if len(ds) != 5: continue
+            if len(ds) != 6: continue
             name,strs = ds[0],ds[1:]
-            vel,hpr,anim,firing = map(eval,strs)
+            vel,hpr,anim,firing,collecting = map(eval,strs)
             if name in self.players:
-                self.players[name].move(vel,hpr,anim,firing)
+                self.players[name].move(vel,hpr,anim,firing,collecting)
     
     def make_column(self, parent,egg,x,y,h, scale):
         for z in range(h):
