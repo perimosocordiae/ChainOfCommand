@@ -337,8 +337,6 @@ class LocalPlayer(Player):
         if not prog:
             if i >= 0: 
                 print "No empty slots!"
-            else:
-                print "No program to pick up!"
         else:
             self.sounds['yes'].play()
             print "Program get: %s" % prog.name

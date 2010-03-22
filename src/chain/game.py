@@ -11,7 +11,7 @@ from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4, Vec3, Point
 from direct.filter.CommonFilters import CommonFilters
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
-from direct.interval.IntervalGlobal import Parallel, Func, Sequence
+from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from player import Player,LocalPlayer
 from drone import Drone
 from wall import Wall
@@ -55,7 +55,7 @@ class Game(object):
             self.add_program(DashR)
             self.add_program(RAM)
         print "programs added"
-        #Sequence(Wait(2.0), Func(self.add_drone)).loop()
+        Sequence(Wait(5.0), Func(self.add_drone)).loop()
         
     def loadModels(self): # asynchronous
         parallelSeq = Parallel()

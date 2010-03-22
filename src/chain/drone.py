@@ -24,9 +24,6 @@ class Drone(Agent):
         return 0.1
 
     def die(self):
-        #self.panda.stash()
-        #self.collider.stash()
-        #self.pusher.stash()
         taskMgr.remove(self.walkTask)
         del self.game.drones[str(hash(self))]
         self.collider.removeNode()
@@ -89,7 +86,9 @@ class Drone(Agent):
         return Task.cont
     
     def follow_tron(self):
-        tron = self.game.players[self.game.players.keys()[-1]].tron
+        # get closest player
+        dist_to = lambda p: (p.tron.getPos()-self.panda.getPos()).lengthSquared()
+        tron = sorted(self.game.players.values(),key=dist_to)[0].tron
         self.panda.lookAt(tron)
         self.panda.setH(self.panda.getH() + 180)
         self.panda.setP(0)
