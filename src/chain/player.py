@@ -217,7 +217,7 @@ class Player(Agent):
         #the .005 is a fudge factor - it just makes things work better
         laser.fire(Vec3(sin(h) * pcos, -cos(h) * pcos, sin(p) + 0.005) * LASER_SPEED)
     
-    def move(self,vel,hpr,anim,firing,collecting):
+    def move(self,vel,hpr,anim,firing,collecting,dropping):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
         newP = self.get_camera().getP() + hpr.getY()
@@ -230,6 +230,8 @@ class Player(Agent):
             self.collect()
         if firing:
             self.shoot()
+        if dropping > -1:
+            self.drop(dropping)
 
 class LocalPlayer(Player):
     def __init__(self, game, name):
@@ -238,17 +240,21 @@ class LocalPlayer(Player):
         Sequence(Wait(SERVER_TICK), Func(self.game.network_listen)).loop()
         self.shooting = False
         self.collecting = False
+        self.dropping = -1
         self.setup_HUD()
         self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.setup_sounds()
         self.add_background_music()
     
-    def move(self,vel,hpr,anim,firing,collecting):
-        super(LocalPlayer,self).move(vel,hpr,anim,firing,collecting)
+    def move(self,vel,hpr,anim,firing,collecting,dropping):
+        super(LocalPlayer,self).move(vel,hpr,anim,firing,collecting,dropping)
         self.shooting = False
         center = base.win.getXSize() / 2
         base.win.movePointer(0, center, center)
+        if dropping > -1:
+            #we dropped it - now we're not dropping anything
+            self.dropping = -1
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
@@ -310,6 +316,9 @@ class LocalPlayer(Player):
         
     def collectOff(self):
         self.collecting = False
+        
+    def set_dropping(self, i):
+        self.dropping = i
     
     def hit(self, amt=0):
         super(Player, self).hit(amt)
@@ -422,7 +431,7 @@ class LocalPlayer(Player):
             else:                anim = '"stop"'
         
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting)]))
+        self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping)]))
     
     def get_xy_velocity(self, cmds):
         new_vel = Vec2(0, 0)

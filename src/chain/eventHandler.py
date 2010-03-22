@@ -26,7 +26,7 @@ class PlayerEventHandler(DirectObject):
         
         #drop program i; if we go past 9 programs, we'll need another key system anyway
         for i in range(9):
-            self.accept('%d'%(i+1),playr.drop,[i])
+            self.accept('%d'%(i+1),playr.set_dropping,[i])
         
         self.timeout = False
         
