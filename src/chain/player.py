@@ -14,10 +14,10 @@ from agent import Agent
 from constants import *
 
 #Constants
-MOTION_MULTIPLIER = 150.0
+MOTION_MULTIPLIER = 280.0
 TURN_MULTIPLIER = 0.3
 LOOK_MULTIPLIER = 0.2
-JUMP_SPEED = 100.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
+JUMP_SPEED = 260.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
