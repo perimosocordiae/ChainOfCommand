@@ -239,7 +239,6 @@ class LocalPlayer(Player):
         super(LocalPlayer, self).__init__(game, name)
         self.hpr = VBase3(0,0,0)
         Sequence(Wait(SERVER_TICK), Func(self.game.network_listen)).loop()
-        self.shooting = False
         self.collecting = False
         self.dropping = -1
         self.setup_HUD()
@@ -435,6 +434,7 @@ class LocalPlayer(Player):
         
         # send command to move tron, based on the values in self.velocity
         self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping)]))
+        self.shooting = False
     
     def get_xy_velocity(self, cmds):
         new_vel = Vec2(0, 0)

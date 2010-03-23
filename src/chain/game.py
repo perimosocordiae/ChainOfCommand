@@ -55,7 +55,7 @@ class Game(object):
             self.add_program(DashR)
             self.add_program(RAM)
         print "programs added"
-        Sequence(Wait(5.0), Func(self.add_drone)).loop()
+        #Sequence(Wait(5.0), Func(self.add_drone)).loop()
         
     def loadModels(self): # asynchronous
         parallelSeq = Parallel()
