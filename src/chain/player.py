@@ -182,7 +182,7 @@ class Player(Agent):
             print "hit drone %s for %d damage" % (objHit, self.damage() / d.shield())
             if d.is_dead():
                 print "killed it!"
-                self.add_kill(p)
+                self.add_kill(d)
         elif objHit in self.game.programs:
             p = self.game.programs[objHit]
             p.hit(self.damage())
@@ -362,7 +362,7 @@ class LocalPlayer(Player):
                 txt.setX(txt.getPos()[0] - 0.15)
     
     def add_kill(self, objKilled):
-        super(Player, self).add_kill(objKilled)
+        super(LocalPlayer, self).add_kill(objKilled)
         self.killHUD.setText("Kills: %d" % self.killcount)
     
     def setup_HUD(self):
