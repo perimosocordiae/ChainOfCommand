@@ -182,8 +182,7 @@ class Player(Agent):
             print "hit drone %s for %d damage" % (objHit, self.damage() / d.shield())
             if d.is_dead():
                 print "killed it!"
-                self.killcount += 1
-                self.killHUD.setText("Kills: %d" % self.killcount)
+                self.add_kill(p)
         elif objHit in self.game.programs:
             p = self.game.programs[objHit]
             p.hit(self.damage())
@@ -196,11 +195,13 @@ class Player(Agent):
             print "hit %s for %d damage" % (objHit, self.damage() / p.shield())
             if p.is_dead():
                 print "you killed %s!"%objHit
-                self.killcount += 1
-                self.killHUD.setText("Kills: %d" % self.killcount)
+                self.add_kill(p)
         #end if 
         self.fire_laser(objHit,spotHit)
-   
+    
+    def add_kill(self, objKilled):
+        self.killcount += 1
+    
     def fire_laser(self, objHit, spotHit):
         startPos = self.tron.getPos()
         startPos.setZ(startPos.getZ() + 2)
@@ -359,7 +360,11 @@ class LocalPlayer(Player):
             for txt in self.programHUD:
                 #they couldn't just make it simple and override getX() could they?
                 txt.setX(txt.getPos()[0] - 0.15)
-        
+    
+    def add_kill(self, objKilled):
+        super(Player, self).add_kill(objKilled)
+        self.killHUD.setText("Kills: %d" % self.killcount)
+    
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
         base.setFrameRateMeter(True)
