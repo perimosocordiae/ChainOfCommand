@@ -11,7 +11,7 @@ if __name__ == '__main__':
         assert 1000 <= port <= 99999
         Server(port)
         if getOS() == 'Windows': # epic hacks
-            ip = Popen('ipconfig',stdout=PIPE).stdout.readlines()[11].split()[-1]
+            ip = Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
         else:
             ip = Popen('ifconfig',stdout=PIPE).stdout.readlines()[1].split(':')[1].split()[0]
         OnscreenText(text="Server on port %d at IP: %s"%(port,ip))
