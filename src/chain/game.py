@@ -61,9 +61,11 @@ class Game(object):
         models = ["/blue_floor.egg","/green_floor.egg","/red_floor.egg","/yellow_floor.egg",
                   "/terminal_window_-r.egg","/terminal_window_chmod.egg","/terminal_window_rm.egg",
                   "/RAM.egg","/laser.egg","/tron_anim_updated.egg"]
+        print "loading models now"
         loader.loadModel(map(lambda p: MODEL_PATH + p, models), callback=self.load_callback)
     
     def load_callback(self, models):
+        print "models loaded, starting handshake"
         taskMgr.add(self.handshakeTask, 'handshakeTask')
         self.shell.load_finished()
         
@@ -103,16 +105,6 @@ class Game(object):
         #self.eventHandle.addWallHandler(self.walls[name])
 
     def load_env(self):
-        #add the lighting
-        #dlight = DirectionalLight('dlight')
-        #alight = AmbientLight('alight')
-        #dlnp = render.attachNewNode(dlight) 
-        #alnp = render.attachNewNode(alight)
-        #dlight.setColor(Vec4(0.6, 0.6, 0.6, 1))
-        #alight.setColor(Vec4(1.0, 1.0, 1.0, 1))
-        #dlnp.setHpr(0, -60, 0) 
-        #render.setLight(dlnp)
-        #render.setLight(alnp)
         #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
         if USE_GLOW:
             self.filters = CommonFilters(base.win, base.cam)
@@ -231,12 +223,11 @@ class Game(object):
             self.make_tile(parent,egg,((x+(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(90, 90,0), scale * (self.tower_size / self.tile_size))
             self.make_tile(parent,egg,((x-(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(270,90,0), scale * (self.tower_size / self.tile_size))
         # add a pusher for the bottom of the tower - do INSIDE the loop if
-        #Tron can jump... for now this is more esfficient
+        #Tron can jump... for now this is more efficient
         towerCollider = parent.attachNewNode(CollisionNode("tower_base"))
         towerCollider.node().addSolid(CollisionSphere(Point3(x, y, (self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*2.0))
         towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
         
-    # static functions, not in the game class
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):
         tile = loader.loadModel(fname)
         tile.reparentTo(parent)
@@ -244,22 +235,8 @@ class Game(object):
         tile.setPos(pos)
         tile.setHpr(*hpr)
     
-    def show_scores(self):
-        name = uname()[1]
-        self.players[name].crosshairs.destroy()
-        for programDisp in self.players[name].programHUD : programDisp.destroy()
-        self.players[name].healthHUD.destroy()
-        self.players[name].killHUD.destroy()
-        base.enableMusic(False)
-        base.enableSoundEffects(False)
-        base.setFrameRateMeter(False)
-        self.shell.screen.unstash()
-        self.shell.output.unstash()
-        scores = "\n\n\n"
-        for player in sorted(self.players, key=lambda playa: self.players[playa].killcount, reverse=True) :
-            scores += self.players[player].name + ":\t\t" + str(self.players[player].killcount) + "\n"
-        self.shell.output.setText("Kills: " + scores + "\n\nPress esc to exit")
-        self.eventHandle.accept('escape',sys.exit)
+    def local_player(self):
+        return self.players[uname()[1]]
 
 def egg_index(i,j,center):
     if i < center and j < center: return 1

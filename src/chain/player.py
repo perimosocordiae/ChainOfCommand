@@ -73,11 +73,13 @@ class Player(Agent):
         self.laserGlow = glow
     
     def die(self):
-        del self.game.players[self.name]
-        self.collider.removeNode()
-        self.pusher.removeNode()
-        self.tron.cleanup()
-        self.tron.removeNode()
+        #del self.game.players[self.name]
+        #self.collider.removeNode()
+        #self.pusher.removeNode()
+        self.tron.hide()
+        #self.tron.cleanup()
+        #self.tron.removeNode()
+        self.handleEvents = False
         print "%s died!"%self.name
     
     def get_base_damage(self):
@@ -119,14 +121,11 @@ class Player(Agent):
         self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame=46)
         self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
-        Laser() # pre-cache laser model
         
         self.ts = TextureStage('ts')
         self.ts.setMode(TextureStage.MGlow)
         self.glow = loader.loadTexture("%s/tron-glow_on.png"%MODEL_PATH)
         self.ts.setSort(9)
-        #self.no_glow = loader.loadTexture(NO_GLOW)
-        #self.tron.setTexture(self.ts, self.no_glow)
         self.set_glow(False)
     
     def get_camera(self):
@@ -264,8 +263,18 @@ class LocalPlayer(Player):
         return base.camera
     
     def die(self):
-        #super(LocalPlayer,self).die()
-        self.game.show_scores()
+        super(LocalPlayer,self).die()
+        self.show_scores()
+    
+    def show_scores(self):
+        self.crosshairs.hide()
+        players = reversed(sorted(self.game.players.values(), key=lambda p: p.killcount))
+        score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount) for p in players])
+        self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.5))
+    
+    def hide_scores(self):
+        self.crosshairs.show()
+        self.score_screen.destroy()
     
     @staticmethod
     def setup_sounds():

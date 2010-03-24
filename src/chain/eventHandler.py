@@ -11,11 +11,14 @@ class PlayerEventHandler(DirectObject):
         self.accept('f',playr.switchPerspective)
         self.accept('wheel_up',playr.zoomIn)
         self.accept('wheel_down',playr.zoomOut)
-        self.accept('escape',playr.die) # hack, for now
+        #self.accept('escape',playr.die) # hack, for now
+        self.accept('escape',sys.exit)
         self.accept('p',self.pause_menu)
         self.accept('m',playr.toggle_background_music)
         self.accept('n',playr.toggle_sound_effects)
         self.accept('e',playr.jump)
+        self.accept('tab',playr.show_scores)
+        self.accept('tab-up',playr.hide_scores)
         
         # networked events
         self.accept('mouse1',playr.click)

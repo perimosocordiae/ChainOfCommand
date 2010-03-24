@@ -29,7 +29,7 @@ LOGO = """\n\n\n
  \____/\____/_/ /_/ /_/_/ /_/ /_/\__,_/_/ /_/\__,_/   
 \n\n\n\n\n
 """
-LOADINGTEXT = """Loading...\n\n
+LOADINGTEXT = """\nLoading...\n\n
 Controls:
   Mouse       | look and turn
   Left click  | shoot
@@ -63,6 +63,7 @@ class Shell(object):
         }
         self.help_cmds = ['help','host','join','man','scores','quit']
         self.cmd_hist = [""]
+        self.cmd_pos = 0
 
     def intro(self,full):
         if full:
@@ -207,6 +208,7 @@ class Shell(object):
         self.input.setFocus()
     
     def load_finished(self):
+        print "loading finished"
         self.g.client.send("player %s"%uname()[1])
         if self.last :
             self.g.client.send("start")

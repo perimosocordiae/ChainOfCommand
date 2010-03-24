@@ -121,6 +121,7 @@ class Agent(object):
         return
     
     def hit(self,amt):
+        if self.is_dead(): return # semi-hack
         self.health -= amt/self.shield()
         if self.health <= 0:
             self.die()
