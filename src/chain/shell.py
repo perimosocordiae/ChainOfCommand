@@ -131,9 +131,10 @@ class Shell(object):
             self.loadingScreen = Sequence()
             for line in LOADINGTEXT.split("\n") :
                 self.loadingScreen.append(Func(self.append_line, line))
+                self.loadingScreen.append(Wait(0.05))
             for i in range(0, 25 - len(LOADINGTEXT.split("\n"))) :
                 self.loadingScreen.append(Func(self.append_line, ""))
-            self.loadingScreen.append(Wait(0.01))
+                self.loadingScreen.append(Wait(0.05))
             self.loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1],len(arglist) == 3))
             self.loadingScreen.start()
     
