@@ -32,7 +32,7 @@ LOGO = """\n\n\n
 LOADINGTEXT = """Loading...
 
 
-Commands:
+Controls:
   Use mouse to look
   Left click to shoot
   Spacebar to pick up programs
@@ -224,7 +224,8 @@ class Shell(object):
     def main(self,port_num,ip,last=False):
         print "starting up"
         self.last = last
-        self.g = Game(ip,port_num,self,360,60.0,12.0,120)
+        #self.g = Game(ip,port_num,self,360,60.0,12.0,120)
+        self.g = Game(ip,port_num,self,360,60.0,12.0,10)
         
 # end Shell class
 

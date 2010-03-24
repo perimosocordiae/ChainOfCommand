@@ -191,7 +191,7 @@ class Game(object):
             self.timer.setFg((1,0,0,0.8))
         elif self.gameTime <= 0:
             print "Game over"
-            sys.exit()
+            self.show_scores()
         return task.again
     
     def handshakeTask(self,task):
@@ -244,6 +244,23 @@ class Game(object):
         tile.setScale(scale, scale, scale)
         tile.setPos(pos)
         tile.setHpr(*hpr)
+    
+    def show_scores(self):
+        name = uname()[1]
+        self.players[name].crosshairs.destroy()
+        for programDisp in self.players[name].programHUD : programDisp.destroy()
+        self.players[name].healthHUD.destroy()
+        self.players[name].killHUD.destroy()
+        base.enableMusic(False)
+        base.enableSoundEffects(False)
+        base.setFrameRateMeter(False)
+        self.shell.screen.unstash()
+        self.shell.output.unstash()
+        scores = "\n\n\n"
+        for player in self.players :
+            scores += self.players[player].name + ":\t\t" + str(self.players[player].killcount) + "\n"
+        self.shell.output.setText("Kills: " + scores + "\n\nPress esc to exit")
+        self.eventHandle.accept('escape',sys.exit)
 
 def egg_index(i,j,center):
     if i < center and j < center: return 1

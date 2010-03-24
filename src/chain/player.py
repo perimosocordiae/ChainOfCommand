@@ -264,9 +264,8 @@ class LocalPlayer(Player):
         return base.camera
     
     def die(self):
-        super(LocalPlayer,self).die()
-        #TODO something better here!
-        sys.exit("GAME OVER, YOU DEAD") 
+        #super(LocalPlayer,self).die()
+        self.game.show_scores()
     
     @staticmethod
     def setup_sounds():
