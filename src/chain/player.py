@@ -240,6 +240,7 @@ class LocalPlayer(Player):
         self.hpr = VBase3(0,0,0)
         Sequence(Wait(SERVER_TICK), Func(self.game.network_listen)).loop()
         self.collecting = False
+        self.shooting = False
         self.dropping = -1
         self.setup_HUD()
         self.setup_shooting()
