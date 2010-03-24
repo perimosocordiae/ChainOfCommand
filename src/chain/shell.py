@@ -30,6 +30,8 @@ LOGO = """\n\n\n
 \n\n\n\n\n
 """
 LOADINGTEXT = """Loading...
+
+
 Commands:
   Use mouse to look
   Left click to shoot
@@ -128,13 +130,13 @@ class Shell(object):
         if len(arglist) < 2:
             self.append_line("Usage: %s [port_num] [host_ip] <last>"%cmd)
         else:
-            self.loadingScreen = Sequence()
+            self.loadingScreen = Sequence(Func(self.input.stash), Func(self.prompt.stash))
             for line in LOADINGTEXT.split("\n") :
                 self.loadingScreen.append(Func(self.append_line, line))
-                self.loadingScreen.append(Wait(0.02))
+                self.loadingScreen.append(Wait(0.05))
             for i in range(0, 25 - len(LOADINGTEXT.split("\n"))) :
                 self.loadingScreen.append(Func(self.append_line, ""))
-                self.loadingScreen.append(Wait(0.02))
+                self.loadingScreen.append(Wait(0.05))
             self.loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1],len(arglist) == 3))
             self.loadingScreen.start()
     
@@ -210,13 +212,19 @@ class Shell(object):
         self.input.enterText("")
         self.input.setFocus()
     
+    def load_finished(self):
+        self.g.client.send("player %s"%uname()[1])
+        if self.last :
+            self.g.client.send("start")
+        else :
+            lines = self.output.getText().split('\n')
+            lines[0] = "Waiting for other players..."
+            self.output.setText('\n'.join(lines))
+            
     def main(self,port_num,ip,last=False):
         print "starting up"
-        g = Game(ip,port_num,360,60.0,12.0,120)
-        if last:
-            g.loadSeq.append(Func(g.client.send, "start"))
-        g.loadSeq.start()
-        self.hide_shell()
+        self.last = last
+        self.g = Game(ip,port_num,self,360,60.0,12.0,120)
         
 # end Shell class
 

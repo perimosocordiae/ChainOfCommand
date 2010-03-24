@@ -245,7 +245,6 @@ class LocalPlayer(Player):
         self.setup_HUD()
         self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
-        self.setup_sounds()
         self.add_background_music()
     
     def move(self,vel,hpr,anim,firing,collecting,dropping):
@@ -268,26 +267,27 @@ class LocalPlayer(Player):
         super(LocalPlayer,self).die()
         #TODO something better here!
         sys.exit("GAME OVER, YOU DEAD") 
-        
-    def setup_sounds(self):
+    
+    @staticmethod
+    def setup_sounds():
         keys = ['laser', 'yes', 'snarl']
         fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Snarl.mp3"]
-        self.sounds = dict(zip(keys, [base.sfxManagerList[0].getSound(f % SOUND_PATH) for f in fnames]))
-        for s in self.sounds.itervalues():
+        LocalPlayer.sounds = dict(zip(keys, [base.sfxManagerList[0].getSound(f % SOUND_PATH) for f in fnames]))
+        for s in LocalPlayer.sounds.itervalues():
             s.setVolume(0.3)
+        LocalPlayer.backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
             
     def add_background_music(self):
         # from http://www.newgrounds.com/audio/listen/287442
-        self.backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
-        self.backgroundMusic.setVolume(0.3)
-        self.backgroundMusic.setTime(35)  # music automatically starts playing when this command is issued
+        LocalPlayer.backgroundMusic.setVolume(0.3)
+        LocalPlayer.backgroundMusic.setTime(35)  # music automatically starts playing when this command is issued
         print "Track: City in Flight in Neon Light" # attribution
         print "Author: Trevor Dericks"
     
     def toggle_background_music(self):
         base.enableMusic(not base.musicManager.getActive())
         if base.musicManager.getActive():
-            self.backgroundMusic.setTime(35)
+            LocalPlayer.backgroundMusic.setTime(35)
         
     def toggle_sound_effects(self):
         base.enableSoundEffects(not base.sfxManagerList[0].getActive())
@@ -323,14 +323,14 @@ class LocalPlayer(Player):
     
     def hit(self, amt=0):
         super(Player, self).hit(amt)
-        self.sounds['snarl'].play()
+        LocalPlayer.sounds['snarl'].play()
         self.flashRed.start() # flash the screen red
         print "hit! health = %d" % self.health
         self.healthHUD.setText("HP: %d" % self.health)
     
     def fire_laser(self, objHit, spotHit):
         super(LocalPlayer, self).fire_laser(objHit, spotHit)
-        self.sounds['laser'].play()
+        LocalPlayer.sounds['laser'].play()
     
     def collect(self):
         #sound/message depends on status
@@ -339,7 +339,7 @@ class LocalPlayer(Player):
             if i >= 0: 
                 print "No empty slots!"
         else:
-            self.sounds['yes'].play()
+            LocalPlayer.sounds['yes'].play()
             print "Program get: %s" % prog.name
             if i >= 0:
                 self.programHUD[i].setText("|  %s  |" % prog.name)

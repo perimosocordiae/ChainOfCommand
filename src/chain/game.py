@@ -24,13 +24,12 @@ USE_GLOW = True
 
 class Game(object):
 
-    def __init__(self,ip,port_num,map_size=320,tile_size=16, tower_size=16, gameLength=180):
+    def __init__(self,ip,port_num,shell,map_size=320,tile_size=16, tower_size=16, gameLength=180):
+        self.shell = shell
         self.players, self.programs,self.drones,self.walls = {},{},{},{}
         self.map_size,self.tile_size, self.tower_size = map_size,tile_size, tower_size
         self.client = Client(ip,port_num)
-        taskMgr.add(self.handshakeTask, 'handshakeTask')
-        self.loadModels()
-        
+        self.load_models()
     
     def rest_of_init(self,gameLength=180):
         base.cTrav = CollisionTraverser()
@@ -55,16 +54,19 @@ class Game(object):
             self.add_program(DashR)
             self.add_program(RAM)
         print "programs added"
+        self.shell.hide_shell()
         #Sequence(Wait(5.0), Func(self.add_drone)).loop()
         
-    def loadModels(self): # asynchronous
-        parallelSeq = Parallel()
-        addload = lambda m: parallelSeq.append(Func(loader.loadModel, "%s%s"%(MODEL_PATH,m)))
+    def load_models(self): # asynchronous
+        LocalPlayer.setup_sounds() # sound effects and background music
         models = ["/blue_floor.egg","/green_floor.egg","/red_floor.egg","/yellow_floor.egg",
                   "/terminal_window_-r.egg","/terminal_window_chmod.egg","/terminal_window_rm.egg",
                   "/RAM.egg","/laser.egg","/tron_anim_updated.egg"]
-        for m in models: addload(m)
-        self.loadSeq = Sequence(parallelSeq, Func(lambda: self.client.send("player %s"%uname()[1])))
+        loader.loadModel(map(lambda p: MODEL_PATH + p, models), callback=self.load_callback)
+    
+    def load_callback(self, models):
+        taskMgr.add(self.handshakeTask, 'handshakeTask')
+        self.shell.load_finished()
         
     def rand_point(self): # get a random point that's also a valid play location
         return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
