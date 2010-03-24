@@ -257,7 +257,7 @@ class Game(object):
         self.shell.screen.unstash()
         self.shell.output.unstash()
         scores = "\n\n\n"
-        for player in self.players :
+        for player in sorted(self.players, key=lambda playa: self.players[playa].killcount, reverse=True) :
             scores += self.players[player].name + ":\t\t" + str(self.players[player].killcount) + "\n"
         self.shell.output.setText("Kills: " + scores + "\n\nPress esc to exit")
         self.eventHandle.accept('escape',sys.exit)
