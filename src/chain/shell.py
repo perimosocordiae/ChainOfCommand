@@ -34,10 +34,12 @@ Controls:
   Mouse       | look and turn
   Left click  | shoot
   Spacebar    | pick up programs
+  #s 1-9      | drop program
   W/A/S/D     | move forward/left/back/right
   E           | jump
   F or scroll | change perspective
   M/N         | toggle music/sound fx
+  tab         | show leaderboard
 """
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',

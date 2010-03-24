@@ -73,14 +73,18 @@ class Player(Agent):
         self.laserGlow = glow
     
     def die(self):
-        #del self.game.players[self.name]
-        #self.collider.removeNode()
-        #self.pusher.removeNode()
         self.tron.hide()
-        #self.tron.cleanup()
-        #self.tron.removeNode()
         self.handleEvents = False
         print "%s died!"%self.name
+        self.respawn()
+        
+    def spawn(self):
+        self.tron.show()
+        self.handleEvents = True
+        #TODO: randomize tron's location
+
+    def respawn(self):
+        Sequence(Wait(5.0), Func(self.spawn)).start()
     
     def get_base_damage(self):
         return BASE_DAMAGE
@@ -267,13 +271,13 @@ class LocalPlayer(Player):
         self.show_scores()
     
     def show_scores(self):
-        self.crosshairs.hide()
+        #self.crosshairs.hide()
         players = reversed(sorted(self.game.players.values(), key=lambda p: p.killcount))
         score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount) for p in players])
-        self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.5))
+        self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.5),pos=(0,0.75))
     
     def hide_scores(self):
-        self.crosshairs.show()
+        #self.crosshairs.show()
         self.score_screen.destroy()
     
     @staticmethod
@@ -330,7 +334,7 @@ class LocalPlayer(Player):
         self.dropping = i
     
     def hit(self, amt=0):
-        super(Player, self).hit(amt)
+        if not super(Player, self).hit(amt): return
         LocalPlayer.sounds['snarl'].play()
         self.flashRed.start() # flash the screen red
         print "hit! health = %d" % self.health

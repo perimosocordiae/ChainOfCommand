@@ -94,22 +94,18 @@ class Agent(object):
             return -1, None
     
     def drop(self, i):
-        prog = self.programs[i]
-        if prog != None:
-            prog.reappear(self.tron.getPos())
-            noneLeft = True
-            for j,p in enumerate(self.programs):
-                if i != j and p != None and p.name == prog.name:
-                    noneLeft = False
-                    break
-            if noneLeft:
-                #have the program remove any of its visual effects
-                prog.remove_effect(self)
-                
-            self.programs[i] = None
-            return True
-        else:
-            return False
+        if i >= len(self.programs) or not self.programs[i]: return False
+        self.programs[i].reappear(self.tron.getPos())
+        noneLeft = True
+        for j,p in enumerate(self.programs):
+            if i != j and p != None and p.name == self.programs[i].name:
+                noneLeft = False
+                break
+        if noneLeft: #have the program remove any of its visual effects
+            prog.remove_effect(self)      
+        self.programs[i] = None
+        return True
+
     
     def add_slot(self):
         self.programs.append(None)
@@ -121,10 +117,11 @@ class Agent(object):
         return
     
     def hit(self,amt):
-        if self.is_dead(): return # semi-hack
+        if self.is_dead(): return False# semi-hack
         self.health -= amt/self.shield()
         if self.health <= 0:
             self.die()
+        return True
     
     def die(self):
         print "Agent is dead"
