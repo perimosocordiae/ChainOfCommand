@@ -29,21 +29,15 @@ LOGO = """\n\n\n
  \____/\____/_/ /_/ /_/_/ /_/ /_/\__,_/_/ /_/\__,_/   
 \n\n\n\n\n
 """
-LOADINGTEXT = """Loading...
-
-
+LOADINGTEXT = """Loading...\n\n
 Controls:
-  Use mouse to look
-  Left click to shoot
-  Spacebar to pick up programs
-  W to move forward
-  A to move left
-  S to move backwards
-  D to move right
-  E to jump
-  F to change perspective
-  M to toggle background music on/off
-  N to toggle sound effects on/off
+  Mouse       | look and turn
+  Left click  | shoot
+  Spacebar    | pick up programs
+  W/A/S/D     | move forward/left/back/right
+  E           | jump
+  F or scroll | change perspective
+  M/N         | toggle music/sound fx
 """
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',

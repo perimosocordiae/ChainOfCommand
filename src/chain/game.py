@@ -47,7 +47,6 @@ class Game(object):
         self.add_local_player()
         self.add_event_handler()
         print "game initialized"
-        self.add_event_handler()
         for _ in range(4):
             self.add_program(Rm)
             self.add_program(Chmod)
@@ -55,7 +54,7 @@ class Game(object):
             self.add_program(RAM)
         print "programs added"
         self.shell.hide_shell()
-        #Sequence(Wait(5.0), Func(self.add_drone)).loop()
+        Sequence(Wait(5.0), Func(self.add_drone)).loop()
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
