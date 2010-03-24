@@ -6,6 +6,7 @@ from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode, Thread
+from direct.interval.IntervalGlobal import Func, Sequence
 from networking import Server
 from game import Game
 from constants import MODEL_PATH
@@ -27,6 +28,20 @@ LOGO = """\n\n\n
  / /___/ /_/ / / / / / / / / / / / /_/ / / / / /_/ /  
  \____/\____/_/ /_/ /_/_/ /_/ /_/\__,_/_/ /_/\__,_/   
 \n\n\n\n\n
+"""
+LOADINGTEXT = """Loading...
+Commands:
+  Use mouse to look
+  Left click to shoot
+  Spacebar to pick up programs
+  W to move forward
+  A to move left
+  S to move backwards
+  D to move right
+  E to jump
+  F to change perspective
+  M to toggle background music on/off
+  N to toggle sound effects on/off
 """
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',
@@ -113,8 +128,14 @@ class Shell(object):
         if len(arglist) < 2:
             self.append_line("Usage: %s [port_num] [host_ip] <last>"%cmd)
         else:
-            self.main(int(arglist[0]),arglist[1],len(arglist) == 3)
-            self.hide_shell()
+            self.loadingScreen = Sequence()
+            for line in LOADINGTEXT.split("\n") :
+                self.loadingScreen.append(Func(self.append_line, line))
+            for i in range(0, 25 - len(LOADINGTEXT.split("\n"))) :
+                self.loadingScreen.append(Func(self.append_line, ""))
+            self.loadingScreen.append(Wait(0.01))
+            self.loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1],len(arglist) == 3))
+            self.loadingScreen.start()
     
     def start_server(self,cmd,arglist=[]):
         if len(arglist) != 1:
@@ -190,10 +211,11 @@ class Shell(object):
     
     def main(self,port_num,ip,last=False):
         print "starting up"
-        g = Game(ip,port_num,360,60.0,12.0,120) 
+        g = Game(ip,port_num,360,60.0,12.0,120)
         if last:
             g.loadSeq.append(Func(g.client.send, "start"))
         g.loadSeq.start()
+        self.hide_shell()
         
 # end Shell class
 
