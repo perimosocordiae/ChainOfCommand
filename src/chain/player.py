@@ -258,9 +258,11 @@ class Player(Agent):
         self.laserSound.play()
     
     def move_to(self,pos,rot,vel,hpr):
-        self.tron.setFluidPos(pos)
-        self.tron.setH(rot.getX())
-        self.get_camera().setP(rot.getY())
+        #self.tron.setFluidPos(pos)
+        #self.tron.setH(rot.getX())
+        #self.get_camera().setP(rot.getY())
+        self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
+        self.tron.setH(self.tron.getH() + hpr.getX())
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
         self.move_to(pos,rot,vel,hpr)
