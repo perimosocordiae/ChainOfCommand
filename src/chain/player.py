@@ -79,7 +79,7 @@ class Player(Agent):
         print "%s died!"%self.name
         self.respawn()
         
-    def spawn(self):
+    def spawn(self,_):
         if self.game.gameTime > 0 and not self.tron.isEmpty():
             self.tron.show()
             self.handleEvents = True
