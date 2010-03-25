@@ -33,6 +33,7 @@ class Game(object):
     
     def rest_of_init(self,gameLength=180):
         base.cTrav = CollisionTraverser()
+        base.cTrav.setRespectPrevTransform(True)
         #wsbase.cTrav.showCollisions(render)
         base.disableMouse()
         self.load_env()
@@ -174,7 +175,6 @@ class Game(object):
         # make some random bunkers
         for _ in range(4):
             pos = self.rand_point()
-            print pos[0], pos[1]
             self.make_column(render, pos[0], pos[1], randint(2,2*wall_height*self.tower_size), colscale)
     
     def timerTask(self, task):
@@ -226,13 +226,9 @@ class Game(object):
         #    self.make_tile(parent,egg,(x,   (y+2*(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(180,90,0), scale * (self.tower_size / self.tile_size))
         #    self.make_tile(parent,egg,((x+(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(90, 90,0), scale * (self.tower_size / self.tile_size))
         #    self.make_tile(parent,egg,((x-(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(270,90,0), scale * (self.tower_size / self.tile_size))
-        
-        # add a pusher for the bottom of the tower - do INSIDE the loop if
-        #Tron can jump... for now this is more efficient
         tower = loader.loadModel("%s/capacitor.egg"%MODEL_PATH)
         tower.reparentTo(parent)
         overall = scale * self.tile_size
-        print overall
         tower.setScale(h * overall / 4, h * overall / 4, h * overall)
         tower.setPos(Point3(x,y,0))
         tower.setHpr(0,0,0)
@@ -240,7 +236,6 @@ class Game(object):
         towerCollider.node().addSolid(CollisionTube(x, y, 0, x, y, h * overall * 0.8, h * overall / 4))
         towerCollider.node().setIntoCollideMask(WALL_COLLIDER_MASK)
         towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        towerCollider.show()
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):
         tile = loader.loadModel(fname)

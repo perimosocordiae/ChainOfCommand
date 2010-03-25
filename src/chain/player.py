@@ -15,8 +15,8 @@ from constants import *
 
 #Constants
 MOTION_MULTIPLIER = 1200.0
-TURN_MULTIPLIER = 0.3
-LOOK_MULTIPLIER = 0.2
+TURN_MULTIPLIER = 0.2
+LOOK_MULTIPLIER = 0.15
 JUMP_SPEED = 500.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000

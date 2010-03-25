@@ -69,9 +69,9 @@ class GameEventHandler(DirectObject):
         self.collisionHandler.addOutPattern('%fn-out-%in')
         for t in game.players.itervalues():
             base.cTrav.addCollider(t.collider,self.collisionHandler)
-            base.cTrav.addCollider(t.pusher,self.collisionHandler)
-            #base.cTrav.addCollider(t.pusher,self.pusherHandler)
-            #self.pusherHandler.addCollider(t.pusher, t.tron)
+            #base.cTrav.addCollider(t.pusher,self.collisionHandler)
+            base.cTrav.addCollider(t.pusher,self.pusherHandler)
+            self.pusherHandler.addCollider(t.pusher, t.tron)
         for d in game.drones.itervalues():
             base.cTrav.addCollider(d.pusher,self.pusherHandler)
             #base.cTrav.addCollider(d.collider,self.collisionHandler)
@@ -92,11 +92,11 @@ class GameEventHandler(DirectObject):
             for d in drones:
                 self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)
                 self.accept("%s-repeat-%s"%(t,d),self.tronRepeatsDrone)
-            for w in walls:
-                self.accept("%s_wall-into-%s"%(t,w),  self.tronHitsWall)
-                self.accept("%s_wall-repeat-%s"%(t,w),  self.tronHitsWall)
-            self.accept("%s_wall-into-%s"%(t,"tower_base"),  self.tronHitsWall)
-            self.accept("%s_wall-repeat-%s"%(t,"tower_base"),  self.tronHitsWall)
+            #for w in walls:
+            #    self.accept("%s_wall-into-%s"%(t,w),  self.tronHitsWall)
+            #    self.accept("%s_wall-repeat-%s"%(t,w),  self.tronHitsWall)
+            #self.accept("%s_wall-into-%s"%(t,"tower_base"),  self.tronHitsWall)
+            #self.accept("%s_wall-repeat-%s"%(t,"tower_base"),  self.tronHitsWall)
     
     def addProgramHandler(self, p):
         base.cTrav.addCollider(p.pusher, self.pusherHandler)
@@ -115,12 +115,12 @@ class GameEventHandler(DirectObject):
     
     def addPlayerHandler(self, t):
         base.cTrav.addCollider(t.collider,self.collisionHandler)
-        base.cTrav.addCollider(t.pusher,self.collisionHandler)
-        #base.cTrav.addCollider(t.pusher,self.pusherHandler)
-        #self.pusherHandler.addCollider(t.pusher, t.tron)
+        #base.cTrav.addCollider(t.pusher,self.collisionHandler)
+        base.cTrav.addCollider(t.pusher,self.pusherHandler)
+        self.pusherHandler.addCollider(t.pusher, t.tron)
         drones = self.game.drones.keys()
         progs  = self.game.programs.keys()
-        walls = self.game.walls.keys()
+        #walls = self.game.walls.keys()
         tName = t.name
         for p in progs:
             self.accept("%s-into-%s"%(tName,p),  self.tronHitsProg)
@@ -128,17 +128,18 @@ class GameEventHandler(DirectObject):
         for d in drones:
             self.accept("%s-into-%s"%(tName,d),  self.tronHitsDrone)
             self.accept("%s-repeat-%s"%(tName,d),self.tronRepeatsDrone)
-        for w in walls:
-            self.accept("%s_wall-into-%s"%(tName,w),  self.tronHitsWall)
-            self.accept("%s_wall-repeat-%s"%(tName,w),  self.tronHitsWall)
-        self.accept("%s_wall-into-%s"%(tName,"tower_base"),  self.tronHitsWall)
-        self.accept("%s_wall-repeat-%s"%(tName,"tower_base"),  self.tronHitsWall)
+        #for w in walls:
+        #    self.accept("%s_wall-into-%s"%(tName,w),  self.tronHitsWall)
+        #    self.accept("%s_wall-repeat-%s"%(tName,w),  self.tronHitsWall)
+        #self.accept("%s_wall-into-%s"%(tName,"tower_base"),  self.tronHitsWall)
+        #self.accept("%s_wall-repeat-%s"%(tName,"tower_base"),  self.tronHitsWall)
         t.initialize_camera()
     
     def addWallHandler(self, w):
-        for t in self.game.players.iterkeys():
-            self.accept("%s_wall-into-%s"%(t,w.name),  self.tronHitsWall)
-            self.accept("%s_wall-repeat-%s"%(t,w.name),  self.tronHitsWall)
+        print "NO THANKS!"
+        #for t in self.game.players.iterkeys():
+        #    self.accept("%s_wall-into-%s"%(t,w.name),  self.tronHitsWall)
+        #    self.accept("%s_wall-repeat-%s"%(t,w.name),  self.tronHitsWall)
     
     def tronHitsDrone(self,entry):
         tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
