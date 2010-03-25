@@ -1,5 +1,5 @@
-import sys
-from math import sin, cos, radians, sqrt, pi
+from math import sin, cos, radians,  pi
+from random import randint
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
@@ -28,16 +28,14 @@ HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 class Player(Agent):
     def __init__(self, game, name):
         super(Player, self).__init__(game, name)
-        self.programs = [None, None, None]
-        self.killcount = 0
-        self.handleEvents = True
+        self.stats = {'damage_taken': 0, 'deaths': 0, 'pickups':0, 'drops':0}
         self.laserGlow = False
-        self.camera = None
         self.setup_camera()
         self.setup_collider()
         self.laserSound = base.sfxManagerList[0].getSound(SOUND_PATH + "/hilas.mp3")
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
+        self.spawn()
     
     def setup_collider(self):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
@@ -76,6 +74,8 @@ class Player(Agent):
     def die(self):
         self.tron.hide()
         self.handleEvents = False
+        self.drop(randint(0,len(self.programs)-1)) # drop a random program
+        self.stats['deaths'] += 1
         print "%s died!"%self.name
         self.respawn()
         
@@ -83,6 +83,7 @@ class Player(Agent):
         self.tron.show()
         self.handleEvents = True
         self.health = STARTING_HEALTH
+        self.programs = [None, None, None]
         pt = self.game.rand_point()
         self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
 
@@ -142,6 +143,7 @@ class Player(Agent):
     
     def setup_camera(self):
         # the camera follows tron
+        self.camera = None
         self.get_camera().reparentTo(self.tron)
         self.get_camera().setPos(0, 40, TRON_ORIGIN_HEIGHT)
         self.get_camera().setHpr(180, -30, 0)
@@ -195,6 +197,7 @@ class Player(Agent):
             print "hit program %s for %d damage" % (objHit, self.damage() / p.shield())
             if p.is_dead():
                 print "Oh no, you blew up a program!"
+                self.add_kill(p)
         elif objHit in self.game.players:
             p = self.game.players[objHit]
             p.hit(self.damage())
@@ -206,8 +209,27 @@ class Player(Agent):
         self.fire_laser(objHit,spotHit)
     
     def add_kill(self, objKilled):
-        self.killcount += 1
+        key = objKilled.__class__.__name__+'_kill'
+        if not key in self.stats:
+            self.stats[key] = 1
+        else:
+            self.stats[key] += 1
     
+    def hit(self, amt=0):
+        succ=super(Player, self).hit(amt)
+        if succ: self.stats['damage_taken'] += amt
+        return succ
+    
+    def drop(self, i):
+        succ=super(Player, self).drop(i)
+        if succ: self.stats['drops'] += 1
+        return succ
+    
+    def collect(self):
+        succ=super(Player, self).collect()
+        if succ[1]: self.stats['pickups'] += 1
+        return succ
+        
     def fire_laser(self, objHit, spotHit):
         startPos = self.tron.getPos()
         startPos.setZ(startPos.getZ() + 2)
@@ -284,8 +306,8 @@ class LocalPlayer(Player):
 
     def show_scores(self):
         #self.crosshairs.hide()
-        players = reversed(sorted(self.game.players.values(), key=lambda p: p.killcount))
-        score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount) for p in players])
+        players = reversed(sorted(self.game.players.values(), key=lambda p: p.killcount()))
+        score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount()) for p in players])
         self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.5),pos=(0,0.75))
     
     def hide_scores(self):
@@ -346,7 +368,7 @@ class LocalPlayer(Player):
         self.dropping = i
     
     def hit(self, amt=0):
-        if not super(Player, self).hit(amt): return
+        if not super(LocalPlayer, self).hit(amt): return
         LocalPlayer.sounds['snarl'].play()
         self.flashRed.start() # flash the screen red
         print "hit! health = %d" % self.health
@@ -354,18 +376,15 @@ class LocalPlayer(Player):
     
     def collect(self):
         #sound/message depends on status
-        i, prog = super(Player, self).collect()
-        if not prog:
-            if i >= 0: 
-                print "No empty slots!"
-        else:
+        i, prog = super(LocalPlayer, self).collect()
+        if prog:
             LocalPlayer.sounds['yes'].play()
             print "Program get: %s" % prog.name
             if i >= 0:
                 self.programHUD[i].setText("|  %s  |" % prog.name)
     
     def drop(self, i):
-        if (super(Player, self).drop(i)):
+        if (super(LocalPlayer, self).drop(i)):
             print "Program dropped: %s" %self.programs[i]
             self.programHUD[i].setText("|        |")
         
@@ -381,9 +400,12 @@ class LocalPlayer(Player):
                 #they couldn't just make it simple and override getX() could they?
                 txt.setX(txt.getPos()[0] - 0.15)
     
+    def killcount(self):
+        return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
+        
     def add_kill(self, objKilled):
         super(LocalPlayer, self).add_kill(objKilled)
-        self.killHUD.setText("Kills: %d" % self.killcount)
+        self.killHUD.setText("Kills: %d" % self.killcount())
     
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
@@ -405,7 +427,7 @@ class LocalPlayer(Player):
         # health status
         self.healthHUD = OnscreenText(text="HP: %d" % self.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
         # kill counter
-        self.killHUD = OnscreenText(text="Kills: %d" % self.killcount, pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
+        self.killHUD = OnscreenText(text="Kills: %d" % self.killcount(), pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
     
     def flash_red(self):
         if not self.redScreen:
