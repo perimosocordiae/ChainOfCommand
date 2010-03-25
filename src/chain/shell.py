@@ -230,6 +230,7 @@ class Shell(object):
     def starting_output(self):
         self.append_line("Starting...")
         self.append_line("")
+        self.append_line("")
             
     def main(self,port_num,ip,last=False):
         print "starting up"
