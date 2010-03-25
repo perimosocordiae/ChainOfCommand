@@ -223,6 +223,10 @@ class Shell(object):
         else:
             self.append_line("Waiting for other players...")
             self.append_line("")
+    
+    def starting_output(self):
+        self.append_line("Starting...")
+        self.append_line("")
             
     def main(self,port_num,ip,last=False):
         print "starting up"

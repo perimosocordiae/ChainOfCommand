@@ -246,7 +246,7 @@ class Game(object):
                 print "added",ds[1]
             elif ds[0] == 'start':
                 print "starting"
-                self.rest_of_init()
+                Sequence(Func(self.shell.starting_output), Wait(0.05), Func(self.rest_of_init)).start()
                 return task.done # ends task
         return task.cont
     

@@ -32,11 +32,11 @@ class Tower(object):
         self.tower.setScale(h * overall / 4, h * overall / 4, h * overall)
         self.tower.setPos(Point3(x,y,0))
         self.tower.setHpr(0,0,0)
-        self.tc = parent.attachNewNode(CollisionNode("tower_base"))
-        self.tc.node().addSolid(CollisionTube(x, y, 0, x, y, h * overall * 0.8, h * overall / 4))
-        self.tc.node().setIntoCollideMask(WALL_COLLIDER_MASK)
-        self.tc.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.towerCollider = parent.attachNewNode(CollisionNode("tower_base"))
+        self.towerCollider.node().addSolid(CollisionTube(x, y, 0, x, y, h * overall * 0.8, h * overall / 4))
+        self.towerCollider.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        self.towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
     
     def destroy(self):
         self.tower.removeNode()
-        self.tc.removeNode()
+        self.towerCollider.removeNode()
