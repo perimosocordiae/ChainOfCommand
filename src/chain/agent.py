@@ -13,7 +13,6 @@ class Agent(object):
         self.canCollect = None
         self.health = STARTING_HEALTH
         self.velocity = Vec3(0, 0, 0)
-        print "self: %s" % type(self)
         if setup_mcs:
             self.load_model()
             self.setup_floor_collider()

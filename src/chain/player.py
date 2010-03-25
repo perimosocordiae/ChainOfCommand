@@ -336,9 +336,20 @@ class LocalPlayer(Player):
         base.enableMusic(not base.musicManager.getActive())
         if base.musicManager.getActive():
             LocalPlayer.backgroundMusic.setTime(35)
+            self.musicHUD.setImage("%s/music_on.png" % MODEL_PATH)
+            self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
+        else:
+            self.musicHUD.setImage("%s/music_off.png" % MODEL_PATH)
+            self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
         
     def toggle_sound_effects(self):
         base.enableSoundEffects(not base.sfxManagerList[0].getActive())
+        if base.sfxManagerList[0].getActive():
+            self.soundHUD.setImage("%s/speaker_on.png" % MODEL_PATH)
+            self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
+        else:
+            self.soundHUD.setImage("%s/speaker_off.png" % MODEL_PATH)
+            self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
 
     def target(self):
         objHit,spotHit = self.findCrosshairHit()
@@ -430,6 +441,12 @@ class LocalPlayer(Player):
         self.healthHUD = OnscreenText(text="HP: %d" % self.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
         # kill counter
         self.killHUD = OnscreenText(text="Kills: %d" % self.killcount(), pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
+        self.musicHUD = OnscreenImage(image="%s/music_off.png" % MODEL_PATH, pos=(-1.2,0,0.92), scale=0.05)
+        self.musicHUD.setImage(image="%s/music_on.png" % MODEL_PATH)
+        self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
+        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % MODEL_PATH, pos=(-1.2,0,0.82), scale=0.05)
+        self.soundHUD.setImage(image="%s/speaker_on.png" % MODEL_PATH)
+        self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
     
     def flash_red(self):
         if not self.redScreen:
