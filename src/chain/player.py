@@ -95,7 +95,7 @@ class Player(Agent):
     
     def toggle_god(self):
         self.invincible = not self.invincible
-        print "Toggling God-mode:",self.invincible
+        print "Toggling God-mode:"
     
     def get_base_damage(self):
         return BASE_DAMAGE
@@ -323,7 +323,7 @@ class LocalPlayer(Player):
     
     def spawn(self,update=True):
         super(LocalPlayer,self).spawn()
-        self.healthHUD.setText("HP: %d" % self.health)
+        if hasattr(self, "healthHUD") : self.healthHUD.setText("HP: %d" % self.health)
         if update:
             self.sendUpdate()
 
