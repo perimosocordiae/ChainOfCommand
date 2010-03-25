@@ -25,6 +25,7 @@ class Game(object):
         self.shell = shell
         self.players, self.programs,self.drones,self.walls,self.towers = {},{},{},{},[]
         self.map_size,self.tile_size, self.tower_size, self.gameLength = map_size,tile_size, tower_size, gameLength
+        self.end_sequence = None
         self.client = Client(ip,port_num)
         self.load_models()
     
@@ -192,10 +193,11 @@ class Game(object):
         p.tron.hide()
         p.handleEvents = False
         p.show_scores()
-        Sequence(Wait(5),
-                 Func(self.kill_everything),
-                 Func(self.shell.resume_shell,[(p.name,p.stats) for p in self.players.itervalues()])
-                ).start()
+        if not self.end_sequence:
+            self.end_sequence = Sequence(Wait(5),
+                     Func(self.kill_everything),
+                     Func(self.shell.resume_shell,[(p.name,p.stats) for p in self.players.itervalues()]))
+            self.end_sequence.start()
                 
     def kill_everything(self):
         base.enableMusic(False)

@@ -82,22 +82,25 @@ class Agent(object):
     def collect(self):
         if self.canCollect:
             prog = self.canCollect
+            if prog.unique_str() in self.game.programs:
             
-            #if basic, have it do its effect and return
-            if not prog.pick_up(self):
-                return -1, prog
-            
-            for i,p in enumerate(self.programs):
-                if not p: break
-            if p:
-                return i, False
-            
-            self.programs[i] = prog
-            prog.disappear()
-            del self.game.programs[prog.unique_str()]  
-            self.canCollect = None
-            prog.add_effect(self)
-            return i, prog
+                #if basic, have it do its effect and return
+                if not prog.pick_up(self):
+                    return -1, prog
+                
+                for i,p in enumerate(self.programs):
+                    if not p: break
+                if p:
+                    return i, False
+                
+                self.programs[i] = prog
+                prog.disappear()
+                del self.game.programs[prog.unique_str()]  
+                self.canCollect = None
+                prog.add_effect(self)
+                return i, prog
+            else:
+                return -1, None
         else:
             return -1, None
     

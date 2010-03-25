@@ -14,10 +14,10 @@ from agent import Agent
 from constants import *
 
 #Constants
-MOTION_MULTIPLIER = 1200.0
-TURN_MULTIPLIER = 0.2
-LOOK_MULTIPLIER = 0.15
-JUMP_SPEED = 500.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
+MOTION_MULTIPLIER = 300.0
+TURN_MULTIPLIER = 0.1
+LOOK_MULTIPLIER = 0.1
+JUMP_SPEED = 300.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
@@ -282,7 +282,7 @@ class LocalPlayer(Player):
         self.shooting = False
         self.dropping = -1
         self.setup_HUD()
-        self.setup_shooting()
+        #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.add_background_music()
         self.game.network_listener.loop()
@@ -493,10 +493,10 @@ class LocalPlayer(Player):
                              inputState.watch('backward', 's', 's-up'),
                              inputState.watch('moveleft', 'a', 'a-up'),
                              inputState.watch('moveright', 'd', 'd-up')]
-        #taskMgr.add(self.updateCameraTask, "updateCameraTask")
+        taskMgr.add(self.updateCameraTask, "updateCameraTask")
     
-    def setup_shooting(self):
-        inputState.watch('shoot', 'mouse1', 'mouse1-up')
+    #def setup_shooting(self):
+    #    inputState.watch('shoot', 'mouse1', 'mouse1-up')
     
     def updateShotTask(self, task):
         #self.shoot()
@@ -528,7 +528,7 @@ class LocalPlayer(Player):
         rot = Point3(self.tron.getH(), self.get_camera().getP(), 0)+self.hpr
         # send command to move tron, based on the values in self.velocity
         self.game.client.send(':'.join([self.name,str(pos),str(rot),str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping)]))
-        #self.shooting = False
+        self.shooting = False
     
     def get_xy_velocity(self, cmds):
         new_vel = Vec2(0, 0)

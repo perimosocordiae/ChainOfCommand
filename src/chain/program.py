@@ -123,6 +123,7 @@ class Basic(Program):
     def pick_up(self, player):
         self.do_effect(player)
         self.disappear()
+        del self.game.programs[self.unique_str()]
         return False
     
     def do_effect(self, player):

@@ -8,10 +8,10 @@ DRONE_PUSHER_MASK = BitMask32.bit(2)
 PROGRAM_PUSHER_MASK = BitMask32.bit(8)
 
 #gravity-related
-GRAVITATIONAL_CONSTANT = -35 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
-SAFE_FALL = -800.0 #fall velocity after which damage is induced
+GRAVITATIONAL_CONSTANT = -10 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
+SAFE_FALL = -400.0 #fall velocity after which damage is induced
 FALL_DAMAGE_MULTIPLIER = 1.0 #How much to damage Tron per 1 over safe fall
-TERMINAL_VELOCITY = -5000.0
+TERMINAL_VELOCITY = -500.0
 
 #agent-y things
 STARTING_HEALTH = 100
