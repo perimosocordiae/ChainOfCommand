@@ -35,6 +35,7 @@ class Player(Agent):
         self.laserSound = base.sfxManagerList[0].getSound(SOUND_PATH + "/hilas.mp3")
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
+        self.invincible = False
         self.spawn(False)
     
     def setup_collider(self):
@@ -89,7 +90,11 @@ class Player(Agent):
             self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
 
     def respawn(self):
-        Sequence(Wait(5.0), Func(self.spawn)).start()
+        Sequence(Func(self.toggle_god),Wait(5.0), Func(self.spawn),
+                 Func(self.toggle_god)).start()
+    
+    def toggle_god(self):
+        self.invincible = not self.invincible
     
     def get_base_damage(self):
         return BASE_DAMAGE
@@ -215,6 +220,7 @@ class Player(Agent):
         return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
     
     def hit(self, amt=0):
+        if self.invincible: return False
         succ=super(Player, self).hit(amt)
         if succ: self.stats['damage_taken'] += amt
         return succ
@@ -305,13 +311,14 @@ class LocalPlayer(Player):
     
     def get_camera(self):
         return base.camera
-    
+        
     def die(self):
         super(LocalPlayer,self).die()
         self.show_scores()
     
     def respawn(self):
-        Sequence(Wait(5.0), Func(self.spawn), Func(self.hide_scores)).start()
+        Sequence(Func(self.toggle_god),Wait(5.0), Func(self.spawn), 
+                 Func(self.hide_scores),Func(self.toggle_god)).start()
     
     def spawn(self,update=True):
         super(LocalPlayer,self).spawn()
