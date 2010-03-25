@@ -216,7 +216,7 @@ class Shell(object):
             self.g.client.send("start")
         else :
             lines = self.output.getText().split('\n')
-            lines[0] = "Waiting for other players..."
+            lines[1] = "Waiting for other players..."
             self.output.setText('\n'.join(lines))
             
     def main(self,port_num,ip,last=False):

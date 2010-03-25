@@ -35,6 +35,7 @@ class Player(Agent):
         self.camera = None
         self.setup_camera()
         self.setup_collider()
+        self.laserSound = base.sfxManagerList[0].getSound(SOUND_PATH + "/hilas.mp3")
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
     
@@ -222,6 +223,12 @@ class Player(Agent):
             laser.set_glow(True)
         #the .005 is a fudge factor - it just makes things work better
         laser.fire(Vec3(sin(h) * pcos, -cos(h) * pcos, sin(p) + 0.005) * LASER_SPEED)
+        distanceToCamera = ((startPos - self.game.local_player().tron.getPos()).length()-2)/180.0
+        if distanceToCamera <= 1 :
+            self.laserSound.setVolume(0.3)
+        else :
+            self.laserSound.setVolume(0.3/pow(distanceToCamera, 2))
+        self.laserSound.play()
     
     def move(self,vel,hpr,anim,firing,collecting,dropping):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
@@ -273,8 +280,8 @@ class LocalPlayer(Player):
         self.show_scores()
     
     def respawn(self):
-        Sequence(Wait(5.0), Func(self.spawn), Func(self.hide_scores).start()
-    
+        Sequence(Wait(5.0), Func(self.spawn), Func(self.hide_scores)).start()
+
     def show_scores(self):
         #self.crosshairs.hide()
         players = reversed(sorted(self.game.players.values(), key=lambda p: p.killcount))
@@ -344,10 +351,6 @@ class LocalPlayer(Player):
         self.flashRed.start() # flash the screen red
         print "hit! health = %d" % self.health
         self.healthHUD.setText("HP: %d" % self.health)
-    
-    def fire_laser(self, objHit, spotHit):
-        super(LocalPlayer, self).fire_laser(objHit, spotHit)
-        LocalPlayer.sounds['laser'].play()
     
     def collect(self):
         #sound/message depends on status
