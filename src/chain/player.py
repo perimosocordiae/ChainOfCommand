@@ -148,7 +148,7 @@ class Player(Agent):
         self.camera = None
         self.get_camera().reparentTo(self.tron)
         self.get_camera().setPos(0, 40, TRON_ORIGIN_HEIGHT)
-        self.get_camera().setHpr(180, -30, 0)
+        self.get_camera().setHpr(180, 0, 0)
         
     def initialize_camera(self):
         cameraNode = CollisionNode('cameracnode_%s'%self.name)

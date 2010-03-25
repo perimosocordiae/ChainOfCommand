@@ -22,7 +22,7 @@ class Agent(object):
         self.redTex = loader.loadTexture("%s/red_screen.png" % MODEL_PATH)
         self.texStg = TextureStage('redTexStg')
         self.flashSequence = Sequence(Func(NodePath(self.get_model()).setTexture, self.texStg, self.redTex), Wait(0.25), Func(NodePath(self.get_model()).clearTexture, self.texStg))    
-        self.flashSequence.start()
+        #self.flashSequence.start()
     
     def load_model(self):
         return

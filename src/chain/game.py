@@ -83,6 +83,7 @@ class Game(object):
         name = uname()[1]
         print "adding local player:",name
         self.players[name] = LocalPlayer(self,name,self.startPoints[name])
+        self.players[name].shoot()
             
     def add_player(self,pname):
         print "making player: %s"%pname
