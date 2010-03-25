@@ -55,7 +55,7 @@ class Game(object):
         print "programs added"
         self.shell.hide_shell()
         self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
-        #self.drone_adder.loop()
+        self.drone_adder.loop()
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
@@ -174,7 +174,7 @@ class Game(object):
         for _ in range(4):
             pos = self.rand_point()
             self.towers.append(Tower(render, pos[0], pos[1], 
-                                     randint(2,2*wall_height*self.tower_size), 
+                                     randint(10,2*wall_height*self.tower_size), 
                                      colscale,self.tile_size))
     
     def timerTask(self, task):

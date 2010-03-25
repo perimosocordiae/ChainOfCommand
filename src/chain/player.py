@@ -28,6 +28,7 @@ HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 class Player(Agent):
     def __init__(self, game, name):
         super(Player, self).__init__(game, name)
+        self.programs = [None, None, None]
         self.stats = {'damage_taken': 0, 'deaths': 0, 'pickups':0, 'drops':0}
         self.laserGlow = False
         self.setup_camera()
@@ -85,8 +86,7 @@ class Player(Agent):
             self.tron.show()
             self.handleEvents = True
             self.health = STARTING_HEALTH
-            self.programs = [None, None, None]
-            pt = self.game.rand_point()
+            pt = (0,0) #self.game.rand_point() #BUG: different init order makes us out of sync
             self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
 
     def respawn(self):
@@ -95,6 +95,7 @@ class Player(Agent):
     
     def toggle_god(self):
         self.invincible = not self.invincible
+        print "Toggling God-mode:",self.invincible
     
     def get_base_damage(self):
         return BASE_DAMAGE
@@ -552,10 +553,11 @@ class LocalPlayer(Player):
         x, y = md.getX(), md.getY()
         center = base.win.getXSize() / 2
         self.hpr.setX(-(TURN_MULTIPLIER * (x - center)))
-        newP = base.camera.getP()-(LOOK_MULTIPLIER * (y - center))
+        camP = base.camera.getP()
+        newP = camP-(LOOK_MULTIPLIER * (y - center))
         #keep within +- 90 degrees
         newP = max(min(newP, 80), -80)
-        self.hpr.setY(newP - base.camera.getP())
+        self.hpr.setY(newP - camP)
         #make sure lifter continues to point straight down
         #angle = radians(self.tron.getP())
         #self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))

@@ -52,9 +52,9 @@ class PlayerEventHandler(DirectObject):
             #start handling key/mouse events, etc.
             self.wp.setCursorHidden(True)
             self.wp.setMouseMode(WindowProperties.MRelative)
-            self.player.handleEvents = True
             base.win.requestProperties(self.wp)
             base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
+            self.player.handleEvents = True
             self.player.sendUpdate()
             print "Okay, okay... time in!"
 

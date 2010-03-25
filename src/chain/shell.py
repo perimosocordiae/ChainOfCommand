@@ -41,7 +41,10 @@ LOADINGTEXT = """\n\nControls:
   P           | pause
   M/N         | toggle music/sound fx
   tab         | show leaderboard
-  \nLoading...
+  \nGame Type: deathmatch
+  Kill each other and AI drones
+  Player with the highest combined killcount wins!
+  \nLoading game...
 """
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',
