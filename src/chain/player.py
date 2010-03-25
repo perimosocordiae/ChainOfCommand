@@ -14,10 +14,10 @@ from agent import Agent
 from constants import *
 
 #Constants
-MOTION_MULTIPLIER = 280.0
+MOTION_MULTIPLIER = 1200.0
 TURN_MULTIPLIER = 0.3
 LOOK_MULTIPLIER = 0.2
-JUMP_SPEED = 260.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
+JUMP_SPEED = 500.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
@@ -280,16 +280,17 @@ class LocalPlayer(Player):
         self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.add_background_music()
+        self.sendUpdate()
     
     def move(self,vel,hpr,anim,firing,collecting,dropping):
         super(LocalPlayer,self).move(vel,hpr,anim,firing,collecting,dropping)
+        self.sendUpdate()
         self.shooting = False
         center = base.win.getXSize() / 2
         base.win.movePointer(0, center, center)
         if dropping > -1:
             #we dropped it - now we're not dropping anything
             self.dropping = -1
-        self.sendUpdate()
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()

@@ -216,6 +216,7 @@ class Game(object):
             vel,hpr,anim,firing,collecting,dropping = map(eval,strs)
             if name in self.players:
                 self.players[name].move(vel,hpr,anim,firing,collecting,dropping)
+        base.cTrav.traverse(render)
     
     def make_column(self, parent,egg,x,y,h, scale):
         for z in range(h):
