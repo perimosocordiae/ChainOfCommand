@@ -194,6 +194,7 @@ class Game(object):
         p.tron.hide()
         p.handleEvents = False
         p.show_scores()
+        taskMgr.remove('timerTask')
         if not self.end_sequence:
             self.end_sequence = Sequence(Wait(5),
                      Func(self.kill_everything),
@@ -210,7 +211,6 @@ class Game(object):
         for t in self.local_player().input_tokens:
             t.release()
         self.local_player().get_camera().reparentTo(render)
-        taskMgr.remove('timerTask')
         self.local_player().destroy_HUD()
         self.timer.destroy()
         for d in self.drones.values():

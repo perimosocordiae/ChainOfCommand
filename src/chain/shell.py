@@ -193,11 +193,18 @@ class Shell(object):
     def resume_shell(self,stats_list):
         self.screen.unstash()
         self.output.unstash()
+        self.game_recap(stats_list)
+    
+    def game_recap(self,stats_list):
+        textType = Sequence(Func(self.append_line,"Game recap:"))
         for p in stats_list: # for now
-            print "Player %s's stats:"%p[0]
-            for k,s in p[1].iteritems():
-                print "  %s = %d"%(k,int(s))
-        self.intro(True)
+            textType.append(Wait(0.5))
+            textType.append(Func(self.append_line,"  Player %s"%p[0]))
+            for k,s in sorted(p[1].iteritems()):
+                textType.append(Func(self.append_line,"    %s = %d"%(k,int(s))))
+                textType.append(Wait(0.1))
+        textType.append(Func(self.user_input))
+        textType.start()
         
     def append_line(self,txt):
         lines = self.output.getText().split('\n')
