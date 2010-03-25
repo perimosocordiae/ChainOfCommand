@@ -181,7 +181,7 @@ class Player(Agent):
             self.get_camera().setY(self.get_camera().getY() + 2)
         self.cameraRay.setOrigin(Point3(0, self.get_camera().getY(), 0))
     
-    def shoot(self):
+    def shoot(self, playSound=True):
         if not self.handleEvents: return
         #first get a ray coming from the camera and see what it first collides with
         objHit,spotHit = self.findCrosshairHit()
@@ -208,7 +208,7 @@ class Player(Agent):
                 print "you killed %s!"%objHit
                 self.add_kill(p)
         #end if 
-        self.fire_laser(objHit,spotHit)
+        self.fire_laser(objHit,spotHit,playSound)
     
     def add_kill(self, objKilled):
         key = objKilled.__class__.__name__+'_kill'
@@ -236,7 +236,7 @@ class Player(Agent):
         if succ[1]: self.stats['pickups'] += 1
         return succ
         
-    def fire_laser(self, objHit, spotHit):
+    def fire_laser(self, objHit, spotHit, playSound):
         startPos = self.tron.getPos()
         startPos.setZ(startPos.getZ() + 2)
         laser = Laser()
@@ -252,11 +252,12 @@ class Player(Agent):
         #the .005 is a fudge factor - it just makes things work better
         laser.fire(Vec3(sin(h) * pcos, -cos(h) * pcos, sin(p) + 0.005) * LASER_SPEED)
         distanceToCamera = ((startPos - self.game.local_player().tron.getPos()).length()-2)/180.0
-        if distanceToCamera <= 1 :
-            self.laserSound.setVolume(0.3)
-        else :
-            self.laserSound.setVolume(0.3/pow(distanceToCamera, 2))
-        self.laserSound.play()
+        if playSound:
+            if distanceToCamera <= 1 :
+                self.laserSound.setVolume(0.3)
+            else :
+                self.laserSound.setVolume(0.3/pow(distanceToCamera, 2))
+            self.laserSound.play()
     
     def move_to(self,pos,rot,vel,hpr):
         self.tron.setFluidPos(pos)
