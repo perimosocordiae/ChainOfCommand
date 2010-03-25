@@ -7,7 +7,7 @@ import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionTube, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
-from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4, Vec3, Point3, VBase3
+from pandac.PandaModules import Vec4, Vec3, Point3, VBase3
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
 from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
@@ -18,8 +18,6 @@ from wall import Wall,Tower
 from networking import Client
 from program import DashR, Rm, Chmod, RAM
 from constants import *
-
-
 
 class Game(object):
 
@@ -184,16 +182,21 @@ class Game(object):
         if 0 < self.gameTime < 10:
             self.timer.setFg((1,0,0,0.8))
         elif self.gameTime <= 0:
-            print "Game over"
-            p = self.local_player()
-            p.tron.hide()
-            p.handleEvents = False
-            p.show_scores()
-            Sequence(Wait(5),Func(self.kill_everything),
-                     Func(self.shell.resume_shell)).start()
+            self.game_over()
             return task.done
         return task.again
-    
+
+    def game_over(self):
+        print "Game over"
+        p = self.local_player()
+        p.tron.hide()
+        p.handleEvents = False
+        p.show_scores()
+        Sequence(Wait(5),
+                 Func(self.kill_everything),
+                 Func(self.shell.resume_shell,[(p.name,p.stats) for p in self.players.itervalues()])
+                ).start()
+                
     def kill_everything(self):
         base.enableMusic(False)
         base.enableSoundEffects(False)
@@ -204,6 +207,7 @@ class Game(object):
         for t in self.local_player().input_tokens:
             t.release()
         self.local_player().get_camera().reparentTo(render)
+        taskMgr.remove('timerTask')
         self.local_player().destroy_HUD()
         self.timer.destroy()
         for d in self.drones.values():

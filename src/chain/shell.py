@@ -186,9 +186,10 @@ class Shell(object):
         self.output.stash()
         self.screen.stash()
         
-    def resume_shell(self):
+    def resume_shell(self,stats_list):
         self.screen.unstash()
         self.output.unstash()
+        print stats_list # for now
         self.intro(True)
         
     def append_line(self,txt):

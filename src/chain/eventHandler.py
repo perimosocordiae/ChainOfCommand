@@ -11,8 +11,8 @@ class PlayerEventHandler(DirectObject):
         self.accept('f',playr.switchPerspective)
         self.accept('wheel_up',playr.zoomIn)
         self.accept('wheel_down',playr.zoomOut)
-        #self.accept('escape',playr.die) # hack, for now
-        self.accept('escape',sys.exit)
+        self.accept('escape',playr.game.game_over)
+        #self.accept('escape',sys.exit)
         self.accept('p',self.pause_menu)
         self.accept('m',playr.toggle_background_music)
         self.accept('n',playr.toggle_sound_effects)
