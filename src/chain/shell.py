@@ -4,12 +4,13 @@ from platform import uname
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
+from direct.filter.CommonFilters import CommonFilters
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode, Thread
 from direct.interval.IntervalGlobal import Func, Sequence
 from networking import Server
 from game import Game
-from constants import MODEL_PATH
+from constants import MODEL_PATH,USE_GLOW
 
 CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
@@ -33,7 +34,7 @@ LOADINGTEXT = """\n\nControls:
   Mouse       | look and turn
   Left click  | shoot
   Spacebar    | pick up programs
-  #s 1-9      | drop program
+  1-9         | drop program
   W/A/S/D     | move forward/left/back/right
   E           | jump
   F or scroll | change perspective
@@ -64,8 +65,11 @@ class Shell(object):
             'start': self.start_game, 'run': self.start_game, 'join': self.start_game
         }
         self.help_cmds = ['help','host','join','man','scores','quit']
-        self.cmd_hist = [""]
+        self.cmd_hist = ["join 1337 localhost last"]
         self.cmd_pos = 0
+        if USE_GLOW:
+            CommonFilters(base.win, base.cam).setBloom(blend=(0,0,0,1), desat=-0.5, intensity=3.0, size=2)
+            render.setShaderAuto()
 
     def intro(self,full):
         if full:
@@ -101,7 +105,7 @@ class Shell(object):
         self.screen.accept('arrow_up',self.up_hist)
         self.screen.accept('arrow_down',self.down_hist)
         self.screen.accept('tab', self.tab_completion)
-        self.input.enterText("run 1234 localhost l")
+        self.input.enterText("")
     
     def up_hist(self):
         self.cmd_pos = max(self.cmd_pos-1,-len(self.cmd_hist)+1)
@@ -114,12 +118,11 @@ class Shell(object):
     def tab_completion(self):
         currentInput = self.input.get()
         possibleCommand = ""
-        for validCommand in self.cmd_dict :
-            if validCommand.startswith(currentInput) :
-                if possibleCommand == "" :
+        for validCommand in self.cmd_dict:
+            if validCommand.startswith(currentInput):
+                if possibleCommand == "":
                     possibleCommand = validCommand
-                else :
-                    return
+                else: return
         if possibleCommand != "":
             self.input.enterText(possibleCommand)
         
@@ -127,15 +130,15 @@ class Shell(object):
         if len(arglist) < 2:
             self.append_line("Usage: %s [port_num] [host_ip] <last>"%cmd)
         else:
-            self.loadingScreen = Sequence(Func(self.input.stash), Func(self.prompt.stash))
-            for line in LOADINGTEXT.split("\n") :
-                self.loadingScreen.append(Func(self.append_line, line))
-                self.loadingScreen.append(Wait(0.05))
-            for i in range(0, 25 - len(LOADINGTEXT.split("\n"))) :
-                self.loadingScreen.append(Func(self.append_line, ""))
-                self.loadingScreen.append(Wait(0.05))
-            self.loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1],len(arglist) == 3))
-            self.loadingScreen.start()
+            loadingScreen = Sequence(Func(self.hide_inputs))
+            for line in LOADINGTEXT.split("\n"):
+                loadingScreen.append(Func(self.append_line, line))
+                loadingScreen.append(Wait(0.05))
+            for i in range(25 - len(LOADINGTEXT.split("\n"))):
+                loadingScreen.append(Func(self.append_line, ""))
+                loadingScreen.append(Wait(0.05))
+            loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1],len(arglist) == 3))
+            loadingScreen.start()
     
     def start_server(self,cmd,arglist=[]):
         if len(arglist) != 1:
@@ -173,18 +176,20 @@ class Shell(object):
     def scores(self,cmd,arglist=[]):
         self.append_line("High Scores: ")
         self.append_line("   1. Dude - 42")
+    
+    def hide_inputs(self):
+        self.input.destroy()
+        self.prompt.destroy()
+        self.screen.ignoreAll()
         
     def hide_shell(self):
         self.output.stash()
-        self.prompt.stash()
-        self.input.stash()
         self.screen.stash()
         
     def resume_shell(self):
-        self.output.unstash()
-        self.prompt.unstash()
-        self.input.unstash()
         self.screen.unstash()
+        self.output.unstash()
+        self.intro(True)
         
     def append_line(self,txt):
         lines = self.output.getText().split('\n')
@@ -212,12 +217,10 @@ class Shell(object):
     def load_finished(self):
         print "loading finished"
         self.g.client.send("player %s"%uname()[1])
-        if self.last :
+        if self.last:
             self.g.client.send("start")
-        else :
-            lines = self.output.getText().split('\n')
-            lines[15] = "Waiting for other players..."
-            self.output.setText('\n'.join(lines))
+        else:
+            self.append_line("Waiting for other players...")
             self.append_line("")
             
     def main(self,port_num,ip,last=False):

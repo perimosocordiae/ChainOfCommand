@@ -34,6 +34,7 @@ class Program(Agent):
     def die(self):
         #maybe explode instead if killed?
         self.disappear()
+        #TODO: see if we should remove from list
     
     def disappear(self):
         if self.desc:
@@ -85,9 +86,14 @@ class Program(Agent):
     def load_desc(self, desc):
         text = TextNode(self.name + 'Desc')
         text.setText(desc)
-        text.setTextColor(1,1,1,1)
+        text.setTextColor(0,0,0,1)
         text.setFont(self.game.font)
         text.setAlign(TextNode.ACenter)
+        text.setFrameColor(0,0,0,1)
+        text.setFrameAsMargin(0,0,0,0)
+        text.setCardColor(1,1,1,1)
+        text.setCardAsMargin(0,0,0,0)
+        text.setCardDecal(True)
         self.desc = NodePath(text)
         self.desc.stashTo(self.model)
         self.desc.setScale(DESCRIPTION_SCALE)

@@ -39,7 +39,6 @@ class Drone(Agent):
         self.panda.setHpr(0,0,0)
         self.walk = self.panda.actorInterval("walk")
         self.walk.loop()
-        self.walking = False
         self.walkTask = taskMgr.add(self.WalkTask, "WalkTask")
     
     def get_model(self):
@@ -81,9 +80,7 @@ class Drone(Agent):
         return self.pusher
     
     def WalkTask(self, task):
-        if not self.walking:
-            self.walking = True
-            self.follow_tron()
+        self.follow_tron()
         return Task.cont
     
     def follow_tron(self):
@@ -102,5 +99,4 @@ class Drone(Agent):
         self.velocity.setX(tronVec.getX())
         self.velocity.setY(tronVec.getY())
         self.panda.setFluidPos(self.panda.getPos() + (self.velocity*self.speed*SERVER_TICK))
-        self.walking = False
         

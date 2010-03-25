@@ -71,6 +71,7 @@ class Server(NetworkBase):
             elif d == 'start':
                 for p in self.player_list: self.broadcast(p)
                 self.player_list.clear()
+                self.rand_seed = int(time())
                 self.broadcast(d)
             else:
                 self.broadcast(d)
@@ -134,3 +135,6 @@ class Client(NetworkBase):
         
     def is_connected(self):
         return self.server_conn != None
+    
+    def close_connection(self):
+        self.cManager.closeConnection(self.server_conn)

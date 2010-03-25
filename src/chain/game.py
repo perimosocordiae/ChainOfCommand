@@ -8,30 +8,29 @@ from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionTube, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
 from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4, Vec3, Point3, VBase3
-from direct.filter.CommonFilters import CommonFilters
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
 from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
+from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
-from wall import Wall
+from wall import Wall,Tower
 from networking import Client
 from program import DashR, Rm, Chmod, RAM
 from constants import *
 
-#Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
-USE_GLOW = True
+
 
 class Game(object):
 
     def __init__(self,ip,port_num,shell,map_size=320,tile_size=16, tower_size=16, gameLength=180):
         self.shell = shell
-        self.players, self.programs,self.drones,self.walls = {},{},{},{}
-        self.map_size,self.tile_size, self.tower_size = map_size,tile_size, tower_size
+        self.players, self.programs,self.drones,self.walls,self.towers = {},{},{},{},[]
+        self.map_size,self.tile_size, self.tower_size, self.gameLength = map_size,tile_size, tower_size, gameLength
         self.client = Client(ip,port_num)
         self.load_models()
     
-    def rest_of_init(self,gameLength=180):
+    def rest_of_init(self):
         base.cTrav = CollisionTraverser()
         base.cTrav.setRespectPrevTransform(True)
         #wsbase.cTrav.showCollisions(render)
@@ -39,12 +38,13 @@ class Game(object):
         self.load_env()
         self.timer = OnscreenText(text="Time:", pos=(0,0.9), scale=(0.08), fg=(0,0,1,0.8), bg=(1,1,1,0.8), mayChange=True)
         self.startTime = time()
-        self.endTime = self.startTime + gameLength
+        self.endTime = self.startTime + self.gameLength
         self.gameTime = self.endTime - time()
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         for pname in self.players:
             self.add_player(pname)
+        self.network_listener = Sequence(Wait(SERVER_TICK), Func(self.network_listen))
         self.add_local_player()
         self.add_event_handler()
         print "game initialized"
@@ -55,7 +55,8 @@ class Game(object):
             self.add_program(RAM)
         print "programs added"
         self.shell.hide_shell()
-        Sequence(Wait(5.0), Func(self.add_drone)).loop()
+        self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
+        self.drone_adder.loop()
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
@@ -107,16 +108,12 @@ class Game(object):
 
     def load_env(self):
         #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
-        if USE_GLOW:
-            self.filters = CommonFilters(base.win, base.cam)
-            self.filters.setBloom(blend=(0,0,0,1), desat=-0.5, intensity=3.0, size=2)
-            render.setShaderAuto()
         eggs = map(lambda s:"%s/%s_floor.egg"%(MODEL_PATH,s),['yellow','blue','green','red'])
         #num_tiles = self.map_size/self.tile_size
         num_tiles = 2
         self.tile_size = self.map_size / num_tiles
         colscale = 0.01
-        scale = colscale * self.tile_size
+        #scale = colscale * self.tile_size
         #environ = loader.loadModel('%s/special_floor.egg'%MODEL_PATH)
         self.environ = render.attachNewNode("Environment Scale")
         self.environ.reparentTo(render)
@@ -139,6 +136,7 @@ class Game(object):
         for i in range(num_tiles):
           for j in range(wall_height):
             egg = eggs[egg_index(i,j,center)]
+            #TODO: try removing these in kill_everything
             self.make_tile(self.environ,egg,(-2*center,    -2*(i-center)-1,  2*(wall_height-j)-1),(0, 0, 90), colscale)  #wall 1
             self.make_tile(self.environ,egg,(-2*(i-center)-1, -2*center,  2*(wall_height-j)-1),(0,-90,0), colscale)   #wall 2
             self.make_tile(self.environ,egg,( 2*center,     2*(i-center) + 1, 2*j+1),            (0, 0, -90), colscale) #wall 3
@@ -173,9 +171,12 @@ class Game(object):
                 Point3(-2*center, 2*center, 0), FLOOR_COLLIDER_MASK)
         
         # make some random bunkers
+        
         for _ in range(4):
             pos = self.rand_point()
-            self.make_column(render, pos[0], pos[1], randint(2,2*wall_height*self.tower_size), colscale)
+            self.towers.append(Tower(render, pos[0], pos[1], 
+                                     randint(2,2*wall_height*self.tower_size), 
+                                     colscale,self.tile_size))
     
     def timerTask(self, task):
         self.gameTime = self.endTime - time()
@@ -184,9 +185,47 @@ class Game(object):
             self.timer.setFg((1,0,0,0.8))
         elif self.gameTime <= 0:
             print "Game over"
-            self.local_player().show_scores()
+            p = self.local_player()
+            p.tron.hide()
+            p.handleEvents = False
+            p.show_scores()
+            Sequence(Wait(5),Func(self.kill_everything),
+                     Func(self.shell.resume_shell)).start()
             return task.done
         return task.again
+    
+    def kill_everything(self):
+        base.enableMusic(False)
+        base.enableSoundEffects(False)
+        self.network_listener.finish()
+        self.drone_adder.finish()
+        self.eventHandle.ignoreAll()
+        self.local_player().eventHandle.ignoreAll()
+        for t in self.local_player().input_tokens:
+            t.release()
+        self.local_player().get_camera().reparentTo(render)
+        self.local_player().destroy_HUD()
+        self.timer.destroy()
+        for d in self.drones.values():
+            taskMgr.remove(d.walkTask)
+            d.walk.finish()
+            d.die()
+        for k in self.players.keys():
+            self.players[k].tron.cleanup()
+            self.players[k].tron.removeNode()
+            del self.players[k]
+        for k in self.programs.keys():
+            self.programs[k].die()
+            del self.programs[k]
+        for t in self.towers:
+            t.destroy()
+        for w in self.walls.itervalues():
+            w.destroy()
+        self.floor.destroy()
+            
+        self.client.close_connection()
+        base.enableMouse()
+        base.cTrav = None
     
     def handshakeTask(self,task):
         data = self.client.getData()
@@ -219,23 +258,6 @@ class Game(object):
             if name in self.players:
                 self.players[name].move(vel,hpr,anim,firing,collecting,dropping)
         base.cTrav.traverse(render)
-    
-    def make_column(self, parent,x,y,h, scale):
-        #for z in range(h):
-        #    self.make_tile(parent,egg,(x,   y,   (self.tower_size / self.tile_size) * (2*z + 1)),(0,  90,0), scale * (self.tower_size / self.tile_size))
-        #    self.make_tile(parent,egg,(x,   (y+2*(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(180,90,0), scale * (self.tower_size / self.tile_size))
-        #    self.make_tile(parent,egg,((x+(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(90, 90,0), scale * (self.tower_size / self.tile_size))
-        #    self.make_tile(parent,egg,((x-(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(270,90,0), scale * (self.tower_size / self.tile_size))
-        tower = loader.loadModel("%s/capacitor.egg"%MODEL_PATH)
-        tower.reparentTo(parent)
-        overall = scale * self.tile_size
-        tower.setScale(h * overall / 4, h * overall / 4, h * overall)
-        tower.setPos(Point3(x,y,0))
-        tower.setHpr(0,0,0)
-        towerCollider = parent.attachNewNode(CollisionNode("tower_base"))
-        towerCollider.node().addSolid(CollisionTube(x, y, 0, x, y, h * overall * 0.8, h * overall / 4))
-        towerCollider.node().setIntoCollideMask(WALL_COLLIDER_MASK)
-        towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):
         tile = loader.loadModel(fname)

@@ -19,5 +19,6 @@ STARTING_HEALTH = 100
 MODEL_PATH = "../../models"
 SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%MODEL_PATH
+USE_GLOW = True
 
 SERVER_TICK = 0.01

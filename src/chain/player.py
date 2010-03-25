@@ -35,7 +35,7 @@ class Player(Agent):
         self.laserSound = base.sfxManagerList[0].getSound(SOUND_PATH + "/hilas.mp3")
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
-        self.spawn()
+        self.spawn(False)
     
     def setup_collider(self):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
@@ -80,12 +80,13 @@ class Player(Agent):
         self.respawn()
         
     def spawn(self):
-        self.tron.show()
-        self.handleEvents = True
-        self.health = STARTING_HEALTH
-        self.programs = [None, None, None]
-        pt = self.game.rand_point()
-        self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
+        if self.game.gameTime > 0 and not self.tron.isEmpty():
+            self.tron.show()
+            self.handleEvents = True
+            self.health = STARTING_HEALTH
+            self.programs = [None, None, None]
+            pt = self.game.rand_point()
+            self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
 
     def respawn(self):
         Sequence(Wait(5.0), Func(self.spawn)).start()
@@ -111,9 +112,7 @@ class Player(Agent):
         if not self.running: return
         self.tron.stop()
         if self.shortRun.isPlaying():
-            run = self.shortRun
-            t = run.getT()
-            run.start(startT=t)
+            self.shortRun.start(startT=self.shortRun.getT())
         self.running = False
         
     def load_model(self):
@@ -124,10 +123,7 @@ class Player(Agent):
         self.tron.setHpr(0, 0, 0)
         self.tron.setPos(-4, 34, TRON_ORIGIN_HEIGHT)
         self.tron.pose("running", 46)
-        self.runInterval = self.tron.actorInterval("running", startFrame=0, endFrame=46)
-
         self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame=46)
-        self.runLoop = Sequence(self.runInterval, Func(lambda i: i.loop(), self.shortRun))
         self.running = False
         
         self.ts = TextureStage('ts')
@@ -272,14 +268,14 @@ class LocalPlayer(Player):
     def __init__(self, game, name):
         super(LocalPlayer, self).__init__(game, name)
         self.hpr = VBase3(0,0,0)
-        Sequence(Wait(SERVER_TICK), Func(self.game.network_listen)).loop()
         self.collecting = False
         self.shooting = False
         self.dropping = -1
         self.setup_HUD()
-        self.setup_shooting()
+        #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.add_background_music()
+        self.game.network_listener.loop()
         self.sendUpdate()
     
     def move(self,vel,hpr,anim,firing,collecting,dropping):
@@ -305,12 +301,19 @@ class LocalPlayer(Player):
     
     def respawn(self):
         Sequence(Wait(5.0), Func(self.spawn), Func(self.hide_scores)).start()
+    
+    def spawn(self,update=True):
+        super(LocalPlayer,self).spawn()
+        if update:
+            self.sendUpdate()
 
     def show_scores(self):
         #self.crosshairs.hide()
+        try: self.score_screen.destroy()
+        except: pass
         players = reversed(sorted(self.game.players.values(), key=lambda p: p.killcount()))
         score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount()) for p in players])
-        self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.5),pos=(0,0.75))
+        self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.8),pos=(0,0.75))
     
     def hide_scores(self):
         #self.crosshairs.show()
@@ -324,6 +327,8 @@ class LocalPlayer(Player):
         for s in LocalPlayer.sounds.itervalues():
             s.setVolume(0.3)
         LocalPlayer.backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
+        base.enableMusic(True)
+        base.enableSoundEffects(True)
             
     def add_background_music(self):
         # from http://www.newgrounds.com/audio/listen/287442
@@ -448,6 +453,16 @@ class LocalPlayer(Player):
         self.soundHUD.setImage(image="%s/speaker_on.png" % MODEL_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
     
+    def destroy_HUD(self):
+        self.crosshairs.destroy() 
+        for programDisp in self.programHUD : programDisp.destroy() 
+        self.healthHUD.destroy() 
+        self.killHUD.destroy() 
+        self.musicHUD.destroy()
+        self.soundHUD.destroy()
+        self.hide_scores()
+        base.setFrameRateMeter(False) 
+    
     def flash_red(self):
         if not self.redScreen:
             self.redScreen = OnscreenImage(image="%s/red_screen.png" % MODEL_PATH, pos=(0, 0, 0), scale=(2, 1, 1))
@@ -458,14 +473,14 @@ class LocalPlayer(Player):
 
     def setup_camera(self):
         super(LocalPlayer,self).setup_camera()
-        inputState.watch('forward', 'w', 'w-up') 
-        inputState.watch('backward', 's', 's-up')
-        inputState.watch('moveleft', 'a', 'a-up')
-        inputState.watch('moveright', 'd', 'd-up')
+        self.input_tokens = [inputState.watch('forward', 'w', 'w-up'),
+                             inputState.watch('backward', 's', 's-up'),
+                             inputState.watch('moveleft', 'a', 'a-up'),
+                             inputState.watch('moveright', 'd', 'd-up')]
         #taskMgr.add(self.updateCameraTask, "updateCameraTask")
     
-    def setup_shooting(self):
-        inputState.watch('shoot', 'mouse1', 'mouse1-up')
+    #def setup_shooting(self):
+    #    inputState.watch('shoot', 'mouse1', 'mouse1-up')
     
     def updateShotTask(self, task):
         #self.shoot()
@@ -480,8 +495,8 @@ class LocalPlayer(Player):
     #    return Task.cont
     
     def sendUpdate(self):
-        self.target()
         if not self.handleEvents: return Task.cont
+        self.target()
         self.handleGravity()
         self.LookAtMouse()
         
