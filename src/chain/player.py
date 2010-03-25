@@ -210,9 +210,6 @@ class Player(Agent):
             self.stats[key] = 1
         else:
             self.stats[key] += 1
-            
-    def killcount(self):
-        return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
     
     def hit(self, amt=0):
         succ=super(Player, self).hit(amt)
@@ -251,12 +248,13 @@ class Player(Agent):
             self.laserSound.setVolume(0.3/pow(distanceToCamera, 2))
         self.laserSound.play()
     
-    def move(self,vel,hpr,anim,firing,collecting,dropping):
-        self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
-        self.tron.setH(self.tron.getH() + hpr.getX())
-        newP = self.get_camera().getP() + hpr.getY()
-        newP = max(min(newP, 80), -80)
-        self.get_camera().setP(newP)
+    def move_to(self,pos,rot,vel,hpr):
+        self.tron.setFluidPos(pos)
+        self.tron.setH(rot.getX())
+        self.get_camera().setP(rot.getY())
+    
+    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
+        self.move_to(pos,rot,vel,hpr)
         #print hpr
         if anim == 'start':  self.StartMovingAnim()
         elif anim == 'stop': self.StopMovingAnim()
@@ -281,8 +279,11 @@ class LocalPlayer(Player):
         self.game.network_listener.loop()
         self.sendUpdate()
     
-    def move(self,vel,hpr,anim,firing,collecting,dropping):
-        super(LocalPlayer,self).move(vel,hpr,anim,firing,collecting,dropping)
+    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
+        super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
+        newP = self.get_camera().getP() + hpr.getY()
+        newP = max(min(newP, 80), -80)
+        self.get_camera().setP(newP)
         self.sendUpdate()
         self.shooting = False
         center = base.win.getXSize() / 2
@@ -290,6 +291,10 @@ class LocalPlayer(Player):
         if dropping > -1:
             #we dropped it - now we're not dropping anything
             self.dropping = -1
+    
+    def move_to(self,pos,rot,vel,hpr):
+        self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
+        self.tron.setH(self.tron.getH() + hpr.getX())
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
@@ -420,6 +425,9 @@ class LocalPlayer(Player):
             for txt in self.programHUD:
                 #they couldn't just make it simple and override getX() could they?
                 txt.setX(txt.getPos()[0] - 0.15)
+    
+    def killcount(self):
+        return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
         
     def add_kill(self, objKilled):
         super(LocalPlayer, self).add_kill(objKilled)
@@ -508,9 +516,10 @@ class LocalPlayer(Player):
             self.velocity.setY(new_vel.getY())
             if not len(cmds)==0: anim = '"start"'
             else:                anim = '"stop"'
-        
+        pos = self.tron.getPos() + (self.velocity * SERVER_TICK)
+        rot = Point3(self.tron.getH(), self.get_camera().getP(), 0)+self.hpr
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping)]))
+        self.game.client.send(':'.join([self.name,str(pos),str(rot),str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping)]))
         #self.shooting = False
     
     def get_xy_velocity(self, cmds):

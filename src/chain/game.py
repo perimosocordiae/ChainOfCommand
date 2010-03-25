@@ -256,11 +256,11 @@ class Game(object):
         if len(data) == 0: return
         for d in data:
             ds = d.split(':')
-            if len(ds) != 7: continue
+            if len(ds) != 9: continue
             name,strs = ds[0],ds[1:]
-            vel,hpr,anim,firing,collecting,dropping = map(eval,strs)
+            pos,rot,vel,hpr,anim,firing,collecting,dropping = map(eval,strs)
             if name in self.players:
-                self.players[name].move(vel,hpr,anim,firing,collecting,dropping)
+                self.players[name].move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
         base.cTrav.traverse(render)
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):

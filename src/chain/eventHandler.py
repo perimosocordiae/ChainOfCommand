@@ -55,6 +55,7 @@ class PlayerEventHandler(DirectObject):
             self.player.handleEvents = True
             base.win.requestProperties(self.wp)
             base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
+            self.player.sendUpdate()
             print "Okay, okay... time in!"
 
 class GameEventHandler(DirectObject):
