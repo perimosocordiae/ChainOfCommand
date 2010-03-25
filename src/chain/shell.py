@@ -38,6 +38,7 @@ LOADINGTEXT = """\n\nControls:
   W/A/S/D     | move forward/left/back/right
   E           | jump
   F or scroll | change perspective
+  P           | pause
   M/N         | toggle music/sound fx
   tab         | show leaderboard
   \nLoading...
