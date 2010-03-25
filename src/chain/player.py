@@ -26,7 +26,7 @@ HUD_PROG_SCALE = 0.08
 HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 
 class Player(Agent):
-    def __init__(self, game, name):
+    def __init__(self, game, name, startPos):
         super(Player, self).__init__(game, name)
         self.programs = [None, None, None]
         self.stats = {'damage_taken': 0, 'deaths': 0, 'pickups':0, 'drops':0}
@@ -37,7 +37,7 @@ class Player(Agent):
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
         self.invincible = False
-        self.spawn(False)
+        self.spawn(startPos, False)
     
     def setup_collider(self):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
@@ -81,12 +81,12 @@ class Player(Agent):
         print "%s died!"%self.name
         self.respawn()
         
-    def spawn(self,_=None):
+    def spawn(self,pt=None,_=None):
         if self.game.gameTime > 0 and not self.tron.isEmpty():
             self.tron.show()
             self.handleEvents = True
             self.health = STARTING_HEALTH
-            pt = (0,0) #self.game.rand_point() #BUG: different init order makes us out of sync
+            if pt == None : pt = self.game.rand_point()
             self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
 
     def respawn(self):
@@ -276,8 +276,8 @@ class Player(Agent):
             self.drop(dropping)
 
 class LocalPlayer(Player):
-    def __init__(self, game, name):
-        super(LocalPlayer, self).__init__(game, name)
+    def __init__(self, game, name, startPos):
+        super(LocalPlayer, self).__init__(game, name, startPos)
         self.hpr = VBase3(0,0,0)
         self.collecting = False
         self.shooting = False
@@ -321,8 +321,8 @@ class LocalPlayer(Player):
         Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn), Wait(1.0),
                  Func(self.hide_scores),Func(self.toggle_god)).start()
     
-    def spawn(self,update=True):
-        super(LocalPlayer,self).spawn()
+    def spawn(self,startPos=None,update=True):
+        super(LocalPlayer,self).spawn(startPos)
         if hasattr(self, "healthHUD") : self.healthHUD.setText("HP: %d" % self.health)
         if update:
             self.sendUpdate()

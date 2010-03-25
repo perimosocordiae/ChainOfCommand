@@ -23,7 +23,7 @@ class Game(object):
 
     def __init__(self,ip,port_num,shell,map_size=320,tile_size=16, tower_size=16, gameLength=180):
         self.shell = shell
-        self.players, self.programs,self.drones,self.walls,self.towers = {},{},{},{},[]
+        self.players, self.programs,self.drones,self.walls,self.towers,self.startPoints = {},{},{},{},[],{}
         self.map_size,self.tile_size, self.tower_size, self.gameLength = map_size,tile_size, tower_size, gameLength
         self.end_sequence = None
         self.client = Client(ip,port_num)
@@ -82,11 +82,11 @@ class Game(object):
     def add_local_player(self):
         name = uname()[1]
         print "adding local player:",name
-        self.players[name] = LocalPlayer(self,name)
+        self.players[name] = LocalPlayer(self,name,self.startPoints[name])
             
     def add_player(self,pname):
         print "making player: %s"%pname
-        self.players[pname] = Player(self,pname)
+        self.players[pname] = Player(self,pname,self.startPoints[pname])
         
     def add_program(self,ptype):
         prog = ptype(self)
@@ -243,9 +243,11 @@ class Game(object):
                 self.rand_seed = int(ds[1])
                 seed(self.rand_seed)
                 print "seed",self.rand_seed
-            elif ds[0] == 'player' and ds[1] != uname()[1]: # don't add yourself
-                self.players[ds[1]] = None
-                print "added",ds[1]
+            elif ds[0] == 'player':
+                self.startPoints[ds[1]] = self.rand_point() # generate starting points
+                if ds[1] != uname()[1] : # don't add yourself
+                    self.players[ds[1]] = None
+                    print "added",ds[1]
             elif ds[0] == 'start':
                 print "starting"
                 Sequence(Func(self.shell.starting_output), Wait(0.05), Func(self.rest_of_init)).start()
