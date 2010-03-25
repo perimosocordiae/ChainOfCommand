@@ -95,7 +95,7 @@ class Player(Agent):
     
     def toggle_god(self):
         self.invincible = not self.invincible
-        print "Toggling God-mode:"
+        print "Toggling God-mode"
     
     def get_base_damage(self):
         return BASE_DAMAGE
@@ -296,8 +296,7 @@ class LocalPlayer(Player):
         self.get_camera().setP(newP)
         #self.sendUpdate()
         #self.shooting = False
-        center = base.win.getXSize() / 2
-        base.win.movePointer(0, center, center)
+        base.win.movePointer(0, base.win.getXSize() / 2, base.win.getYSize() / 2)
         if dropping > -1:
             #we dropped it - now we're not dropping anything
             self.dropping = -1
@@ -552,10 +551,11 @@ class LocalPlayer(Player):
     def LookAtMouse(self):
         md = base.win.getPointer(0)
         x, y = md.getX(), md.getY()
-        center = base.win.getXSize() / 2
-        self.hpr.setX(-(TURN_MULTIPLIER * (x - center)))
+        centerX = base.win.getXSize() / 2
+        centerY = base.win.getYSize() / 2
+        self.hpr.setX(-(TURN_MULTIPLIER * (x - centerX)))
         camP = base.camera.getP()
-        newP = camP-(LOOK_MULTIPLIER * (y - center))
+        newP = camP-(LOOK_MULTIPLIER * (y - centerY))
         #keep within +- 90 degrees
         newP = max(min(newP, 80), -80)
         self.hpr.setY(newP - camP)
