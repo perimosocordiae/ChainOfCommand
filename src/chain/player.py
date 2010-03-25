@@ -289,6 +289,7 @@ class LocalPlayer(Player):
         if dropping > -1:
             #we dropped it - now we're not dropping anything
             self.dropping = -1
+        self.sendUpdate()
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
@@ -443,7 +444,7 @@ class LocalPlayer(Player):
         inputState.watch('backward', 's', 's-up')
         inputState.watch('moveleft', 'a', 'a-up')
         inputState.watch('moveright', 'd', 'd-up')
-        taskMgr.add(self.updateCameraTask, "updateCameraTask")
+        #taskMgr.add(self.updateCameraTask, "updateCameraTask")
     
     def setup_shooting(self):
         inputState.watch('shoot', 'mouse1', 'mouse1-up')
@@ -451,14 +452,14 @@ class LocalPlayer(Player):
     def updateShotTask(self, task):
         #self.shoot()
         self.shooting = True
-        self.sendUpdate()
+        #self.sendUpdate()
         return task.again
         
     #Task to move the camera
-    def updateCameraTask(self, task):
-        #print self.velocity * globalClock.getDt()
-        self.sendUpdate()
-        return Task.cont
+    #def updateCameraTask(self, task):
+    #    #print self.velocity * globalClock.getDt()
+    #    self.sendUpdate()
+    #    return Task.cont
     
     def sendUpdate(self):
         self.target()
@@ -477,7 +478,7 @@ class LocalPlayer(Player):
         
         # send command to move tron, based on the values in self.velocity
         self.game.client.send(':'.join([self.name,str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping)]))
-        self.shooting = False
+        #self.shooting = False
     
     def get_xy_velocity(self, cmds):
         new_vel = Vec2(0, 0)
