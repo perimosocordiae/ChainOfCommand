@@ -1,10 +1,11 @@
-from pandac.PandaModules import CollisionHandlerQueue, CollisionNode, CollisionRay, Vec3
+from pandac.PandaModules import CollisionHandlerQueue, CollisionNode, CollisionRay, Vec3, TextureStage, NodePath
+from direct.interval.IntervalGlobal import *
 from itertools import ifilter
 from constants import *
 
 class Agent(object):
 
-    def __init__(self,game,name,setup_mc=True):
+    def __init__(self,game,name,setup_mcs=True):
         self.game = game
         self.name = name
         #basic agent only gets 1 program
@@ -12,9 +13,17 @@ class Agent(object):
         self.canCollect = None
         self.health = STARTING_HEALTH
         self.velocity = Vec3(0, 0, 0)
-        if setup_mc:
+        print "self: %s" % type(self)
+        if setup_mcs:
             self.load_model()
             self.setup_floor_collider()
+            self.initialize_flash_sequence()
+    
+    def initialize_flash_sequence(self):
+        self.redTex = loader.loadTexture("%s/red_screen.png" % MODEL_PATH)
+        self.texStg = TextureStage('redTexStg')
+        self.flashSequence = Sequence(Func(NodePath(self.get_model()).setTexture, self.texStg, self.redTex), Wait(0.25), Func(NodePath(self.get_model()).clearTexture, self.texStg))    
+        self.flashSequence.start()
     
     def load_model(self):
         return
@@ -118,6 +127,7 @@ class Agent(object):
     def hit(self,amt):
         if self.is_dead(): return False# semi-hack
         self.health -= amt/self.shield()
+        self.flashSequence.start()        
         if self.health <= 0:
             self.die()
         return True

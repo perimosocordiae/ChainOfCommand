@@ -1,6 +1,7 @@
 from direct.task import Task
 from direct.actor import Actor
-from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32
+from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32, NodePath
+from direct.interval.IntervalGlobal import *
 from agent import Agent
 from random import random
 from constants import *

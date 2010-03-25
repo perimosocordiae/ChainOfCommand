@@ -29,8 +29,7 @@ LOGO = """\n\n\n
  \____/\____/_/ /_/ /_/_/ /_/ /_/\__,_/_/ /_/\__,_/   
 \n\n\n\n\n
 """
-LOADINGTEXT = """\nLoading...\n\n
-Controls:
+LOADINGTEXT = """\n\nControls:
   Mouse       | look and turn
   Left click  | shoot
   Spacebar    | pick up programs
@@ -40,6 +39,7 @@ Controls:
   F or scroll | change perspective
   M/N         | toggle music/sound fx
   tab         | show leaderboard
+  \nLoading...
 """
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',
@@ -101,7 +101,7 @@ class Shell(object):
         self.screen.accept('arrow_up',self.up_hist)
         self.screen.accept('arrow_down',self.down_hist)
         self.screen.accept('tab', self.tab_completion)
-        self.input.enterText("")
+        self.input.enterText("run 1234 localhost l")
     
     def up_hist(self):
         self.cmd_pos = max(self.cmd_pos-1,-len(self.cmd_hist)+1)
@@ -216,8 +216,9 @@ class Shell(object):
             self.g.client.send("start")
         else :
             lines = self.output.getText().split('\n')
-            lines[1] = "Waiting for other players..."
+            lines[15] = "Waiting for other players..."
             self.output.setText('\n'.join(lines))
+            self.append_line("")
             
     def main(self,port_num,ip,last=False):
         print "starting up"

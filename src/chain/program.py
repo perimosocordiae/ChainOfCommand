@@ -3,9 +3,8 @@ MODEL_PATH = "../../models"
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Point3,Filename,Buffer,Shader, CollisionNode, CollisionSphere, BitMask32
+from pandac.PandaModules import Point3, Filename, Buffer, Shader, CollisionNode, CollisionSphere, BitMask32, TextNode, NodePath
 from agent import Agent
-from pandac.PandaModules import TextNode, NodePath
 from constants import *
 
 BASE_SCALE = 2
@@ -24,6 +23,7 @@ class Program(Agent):
         self.scale = scale
         self.pos = pos
         self.load_model()
+        self.initialize_flash_sequence()
         self.load_desc(desc)
         self.setup_interval()
         self.setup_collider()
@@ -57,6 +57,9 @@ class Program(Agent):
         self.model.setScale(self.scale)
         self.model.setPos(self.pos[0], self.pos[1], 10)
         self.model.reparentTo(render)
+        
+    def get_model(self):
+        return self.model
     
     def setup_interval(self):
         #Create the intervals needed to spin and expand/contract
