@@ -10,7 +10,7 @@ class Agent(object):
         #basic agent only gets 1 program
         self.programs = [None]
         self.canCollect = None
-        self.health = 100
+        self.health = STARTING_HEALTH
         self.velocity = Vec3(0, 0, 0)
         if setup_mc:
             self.load_model()

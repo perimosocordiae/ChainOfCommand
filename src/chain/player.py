@@ -81,7 +81,9 @@ class Player(Agent):
     def spawn(self):
         self.tron.show()
         self.handleEvents = True
-        #TODO: randomize tron's location
+        self.health = STARTING_HEALTH
+        pt = self.game.rand_point()
+        self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
 
     def respawn(self):
         Sequence(Wait(5.0), Func(self.spawn)).start()
@@ -269,6 +271,9 @@ class LocalPlayer(Player):
     def die(self):
         super(LocalPlayer,self).die()
         self.show_scores()
+    
+    def respawn(self):
+        Sequence(Wait(5.0), Func(self.spawn), Func(self.hide_scores).start()
     
     def show_scores(self):
         #self.crosshairs.hide()

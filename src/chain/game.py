@@ -182,7 +182,8 @@ class Game(object):
             self.timer.setFg((1,0,0,0.8))
         elif self.gameTime <= 0:
             print "Game over"
-            self.show_scores()
+            self.local_player().show_scores()
+            return task.done
         return task.again
     
     def handshakeTask(self,task):

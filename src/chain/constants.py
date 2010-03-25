@@ -13,6 +13,9 @@ SAFE_FALL = -400.0 #fall velocity after which damage is induced
 FALL_DAMAGE_MULTIPLIER = 1.0 #How much to damage Tron per 1 over safe fall
 TERMINAL_VELOCITY = -500.0
 
+#agent-y things
+STARTING_HEALTH = 100
+
 MODEL_PATH = "../../models"
 SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%MODEL_PATH
