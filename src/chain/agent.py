@@ -102,10 +102,9 @@ class Agent(object):
                 noneLeft = False
                 break
         if noneLeft: #have the program remove any of its visual effects
-            prog.remove_effect(self)      
+            self.programs[i].remove_effect(self)      
         self.programs[i] = None
         return True
-
     
     def add_slot(self):
         self.programs.append(None)
