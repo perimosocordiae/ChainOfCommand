@@ -5,7 +5,7 @@ from random import randint, choice, seed
 #from itertools import product as iproduct
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
-from pandac.PandaModules import CollisionTraverser, CollisionSphere, BitMask32
+from pandac.PandaModules import CollisionTraverser, CollisionTube, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
 from pandac.PandaModules import AmbientLight,DirectionalLight, Vec4, Vec3, Point3, VBase3
 from direct.filter.CommonFilters import CommonFilters
@@ -60,7 +60,7 @@ class Game(object):
         LocalPlayer.setup_sounds() # sound effects and background music
         models = ["/blue_floor.egg","/green_floor.egg","/red_floor.egg","/yellow_floor.egg",
                   "/terminal_window_-r.egg","/terminal_window_chmod.egg","/terminal_window_rm.egg",
-                  "/RAM.egg","/laser.egg","/tron_anim_updated.egg"]
+                  "/RAM.egg","/laser.egg","/tron_anim_updated.egg","/capacitor.egg"]
         print "loading models now"
         loader.loadModel(map(lambda p: MODEL_PATH + p, models), callback=self.load_callback)
     
@@ -172,8 +172,10 @@ class Game(object):
                 Point3(-2*center, 2*center, 0), FLOOR_COLLIDER_MASK)
         
         # make some random bunkers
-        #for _ in range(4):
-        #    self.make_column(self.environ, choice(eggs), randint(-num_tiles,num_tiles), randint(-num_tiles,num_tiles), randint(2,wall_height), colscale)
+        for _ in range(4):
+            pos = self.rand_point()
+            print pos[0], pos[1]
+            self.make_column(render, pos[0], pos[1], randint(2,2*wall_height*self.tower_size), colscale)
     
     def timerTask(self, task):
         self.gameTime = self.endTime - time()
@@ -218,17 +220,27 @@ class Game(object):
                 self.players[name].move(vel,hpr,anim,firing,collecting,dropping)
         base.cTrav.traverse(render)
     
-    def make_column(self, parent,egg,x,y,h, scale):
-        for z in range(h):
-            self.make_tile(parent,egg,(x,   y,   (self.tower_size / self.tile_size) * (2*z + 1)),(0,  90,0), scale * (self.tower_size / self.tile_size))
-            self.make_tile(parent,egg,(x,   (y+2*(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(180,90,0), scale * (self.tower_size / self.tile_size))
-            self.make_tile(parent,egg,((x+(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(90, 90,0), scale * (self.tower_size / self.tile_size))
-            self.make_tile(parent,egg,((x-(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(270,90,0), scale * (self.tower_size / self.tile_size))
+    def make_column(self, parent,x,y,h, scale):
+        #for z in range(h):
+        #    self.make_tile(parent,egg,(x,   y,   (self.tower_size / self.tile_size) * (2*z + 1)),(0,  90,0), scale * (self.tower_size / self.tile_size))
+        #    self.make_tile(parent,egg,(x,   (y+2*(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(180,90,0), scale * (self.tower_size / self.tile_size))
+        #    self.make_tile(parent,egg,((x+(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(90, 90,0), scale * (self.tower_size / self.tile_size))
+        #    self.make_tile(parent,egg,((x-(self.tower_size / self.tile_size)), (y+(self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*(2*z+1)),(270,90,0), scale * (self.tower_size / self.tile_size))
+        
         # add a pusher for the bottom of the tower - do INSIDE the loop if
         #Tron can jump... for now this is more efficient
+        tower = loader.loadModel("%s/capacitor.egg"%MODEL_PATH)
+        tower.reparentTo(parent)
+        overall = scale * self.tile_size
+        print overall
+        tower.setScale(h * overall / 4, h * overall / 4, h * overall)
+        tower.setPos(Point3(x,y,0))
+        tower.setHpr(0,0,0)
         towerCollider = parent.attachNewNode(CollisionNode("tower_base"))
-        towerCollider.node().addSolid(CollisionSphere(Point3(x, y, (self.tower_size / self.tile_size)), (self.tower_size / self.tile_size)*2.0))
+        towerCollider.node().addSolid(CollisionTube(x, y, 0, x, y, h * overall * 0.8, h * overall / 4))
+        towerCollider.node().setIntoCollideMask(WALL_COLLIDER_MASK)
         towerCollider.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        towerCollider.show()
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):
         tile = loader.loadModel(fname)
