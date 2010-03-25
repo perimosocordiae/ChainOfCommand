@@ -131,6 +131,7 @@ class Agent(object):
         self.health -= amt/self.shield()
         self.flashSequence.start()        
         if self.health <= 0:
+            self.health = 0 # hax
             self.die()
         return True
     

@@ -90,7 +90,7 @@ class Player(Agent):
             self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
 
     def respawn(self):
-        Sequence(Func(self.toggle_god),Wait(5.0), Func(self.spawn),
+        Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn),Wait(1.0),
                  Func(self.toggle_god)).start()
     
     def toggle_god(self):
@@ -318,11 +318,12 @@ class LocalPlayer(Player):
         self.show_scores()
     
     def respawn(self):
-        Sequence(Func(self.toggle_god),Wait(5.0), Func(self.spawn), 
+        Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn), Wait(1.0),
                  Func(self.hide_scores),Func(self.toggle_god)).start()
     
     def spawn(self,update=True):
         super(LocalPlayer,self).spawn()
+        self.healthHUD.setText("HP: %d" % self.health)
         if update:
             self.sendUpdate()
 
