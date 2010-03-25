@@ -189,7 +189,10 @@ class Shell(object):
     def resume_shell(self,stats_list):
         self.screen.unstash()
         self.output.unstash()
-        print stats_list # for now
+        for p in stats_list: # for now
+            print "Player %s's stats:"%p[0]
+            for k,s in p[1].iteritems():
+                print "  %s = %d"%(k,int(s))
         self.intro(True)
         
     def append_line(self,txt):
