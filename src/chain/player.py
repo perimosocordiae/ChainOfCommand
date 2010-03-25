@@ -276,19 +276,19 @@ class LocalPlayer(Player):
         self.shooting = False
         self.dropping = -1
         self.setup_HUD()
-        #self.setup_shooting()
+        self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.add_background_music()
         self.game.network_listener.loop()
-        self.sendUpdate()
+        #self.sendUpdate()
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
         super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
         newP = self.get_camera().getP() + hpr.getY()
         newP = max(min(newP, 80), -80)
         self.get_camera().setP(newP)
-        self.sendUpdate()
-        self.shooting = False
+        #self.sendUpdate()
+        #self.shooting = False
         center = base.win.getXSize() / 2
         base.win.movePointer(0, center, center)
         if dropping > -1:
@@ -328,7 +328,8 @@ class LocalPlayer(Player):
     
     def hide_scores(self):
         #self.crosshairs.show()
-        self.score_screen.destroy()
+        try: self.score_screen.destroy()
+        except: pass
     
     @staticmethod
     def setup_sounds():
@@ -487,20 +488,20 @@ class LocalPlayer(Player):
                              inputState.watch('moveright', 'd', 'd-up')]
         #taskMgr.add(self.updateCameraTask, "updateCameraTask")
     
-    #def setup_shooting(self):
-    #    inputState.watch('shoot', 'mouse1', 'mouse1-up')
+    def setup_shooting(self):
+        inputState.watch('shoot', 'mouse1', 'mouse1-up')
     
     def updateShotTask(self, task):
         #self.shoot()
         self.shooting = True
-        #self.sendUpdate()
+        self.sendUpdate()
         return task.again
         
     #Task to move the camera
-    #def updateCameraTask(self, task):
-    #    #print self.velocity * globalClock.getDt()
-    #    self.sendUpdate()
-    #    return Task.cont
+    def updateCameraTask(self, task):
+        #print self.velocity * globalClock.getDt()
+        self.sendUpdate()
+        return Task.cont
     
     def sendUpdate(self):
         if not self.handleEvents: return Task.cont
