@@ -210,6 +210,9 @@ class Player(Agent):
             self.stats[key] = 1
         else:
             self.stats[key] += 1
+            
+    def killcount(self):
+        return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
     
     def hit(self, amt=0):
         succ=super(Player, self).hit(amt)
@@ -417,9 +420,6 @@ class LocalPlayer(Player):
             for txt in self.programHUD:
                 #they couldn't just make it simple and override getX() could they?
                 txt.setX(txt.getPos()[0] - 0.15)
-    
-    def killcount(self):
-        return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
         
     def add_kill(self, objKilled):
         super(LocalPlayer, self).add_kill(objKilled)
