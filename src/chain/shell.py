@@ -49,7 +49,8 @@ LOADINGTEXT = """\n\nControls:
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',
             '-r' : 'Increases shoot speed',
-            'RAM' : 'Provides an additional program slot' 
+            'RAM' : 'Provides an additional program slot',
+            'gdb' : 'Debugger restores health over time'
            }
 
 
