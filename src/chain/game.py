@@ -16,7 +16,7 @@ from player import Player,LocalPlayer
 from drone import Drone
 from wall import Wall,Tower
 from networking import Client
-from program import DashR, Rm, Chmod, RAM
+from program import DashR, Rm, Chmod, RAM, Gdb
 from constants import *
 
 class Game(object):
@@ -52,6 +52,7 @@ class Game(object):
             self.add_program(Chmod)
             self.add_program(DashR)
             self.add_program(RAM)
+            self.add_program(Gdb)
         print "programs added"
         self.shell.hide_shell()
         self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))

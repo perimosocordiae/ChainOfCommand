@@ -18,6 +18,9 @@ class Drone(Agent):
         self.setup_collider()
         self.speed = (random()+0.5)*6
     
+    def get_text_pos(self):
+        return (0,0,5)
+    
     def damage(self):
         return 5
      

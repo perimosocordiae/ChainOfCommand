@@ -44,6 +44,12 @@ class Player(Agent):
         self.pusher = self.attach_collision_node("%s_wall" % self.name, CollisionSphere(0, 0, 0, 12), WALL_COLLIDER_MASK)
         #self.pusher.show()
     
+    def get_text_pos(self):
+        return (0,0,12)
+    
+    def get_text_scale(self):
+        return 1.5
+    
     def set_glow(self, glow):
         if glow:
             self.tron.setTexture(self.ts, self.glow)
@@ -275,6 +281,7 @@ class Player(Agent):
             self.shoot()
         if dropping > -1:
             self.drop(dropping)
+        self.do_debug()
 
 class LocalPlayer(Player):
     def __init__(self, game, name, startPos):
@@ -323,7 +330,7 @@ class LocalPlayer(Player):
     
     def spawn(self,startPos=None,update=True):
         super(LocalPlayer,self).spawn(startPos)
-        if hasattr(self, "healthHUD") : self.healthHUD.setText("HP: %d" % self.health)
+        if hasattr(self, "healthHUD") and self.healthHUD : self.healthHUD.setText("HP: %d" % self.health)
         if update:
             self.sendUpdate()
 
@@ -412,6 +419,11 @@ class LocalPlayer(Player):
         self.flashRed.start() # flash the screen red
         print "hit! health = %d" % self.health
         self.healthHUD.setText("HP: %d" % self.health)
+    
+    def heal(self, amt=0):
+        super(LocalPlayer, self).heal(amt)
+        self.healthHUD.setText("HP: %d" % self.health)
+        #print "Healed %d"%amt 
     
     def collect(self):
         #sound/message depends on status

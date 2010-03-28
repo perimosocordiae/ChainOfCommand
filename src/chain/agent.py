@@ -1,4 +1,5 @@
-from pandac.PandaModules import CollisionHandlerQueue, CollisionNode, CollisionRay, Vec3, TextureStage, NodePath
+from pandac.PandaModules import CollisionHandlerQueue, CollisionNode, CollisionRay
+from pandac.PandaModules import TextNode, Vec3, TextureStage, NodePath
 from direct.interval.IntervalGlobal import *
 from itertools import ifilter
 from constants import *
@@ -10,6 +11,7 @@ class Agent(object):
         self.name = name
         #basic agent only gets 1 program
         self.programs = [None]
+        self.debuggers = {}
         self.canCollect = None
         self.health = STARTING_HEALTH
         self.velocity = Vec3(0, 0, 0)
@@ -17,6 +19,7 @@ class Agent(object):
             self.load_model()
             self.setup_floor_collider()
             self.initialize_flash_sequence()
+            self.initialize_debug_text()
     
     def initialize_flash_sequence(self):
         self.redTex = loader.loadTexture("%s/red_screen.png" % MODEL_PATH)
@@ -26,6 +29,29 @@ class Agent(object):
     
     def load_model(self):
         return
+    
+    def initialize_debug_text(self):
+        text = TextNode(self.name + '_debugging')
+        text.setText('Debugging...')
+        text.setTextColor(0,0,0,0.6)
+        text.setFont(self.game.font)
+        text.setAlign(TextNode.ACenter)
+        text.setFrameColor(0,0,0,0.6)
+        text.setFrameAsMargin(0,0,0,0)
+        text.setCardColor(1,1,1,0.6)
+        text.setCardAsMargin(0,0,0,0)
+        text.setCardDecal(True)
+        self.debugText = NodePath(text)
+        self.debugText.stashTo(self.get_model())
+        self.debugText.setScale(self.get_text_scale())
+        self.debugText.setPos(self.get_text_pos())
+        self.debugText.setBillboardPointEye()
+    
+    def get_text_pos(self):
+        return (0,0,1)
+    
+    def get_text_scale(self):
+        return 1.0
     
     def get_shield_sphere(self):
         #override to show some kind of shield
@@ -78,6 +104,28 @@ class Agent(object):
     
     def get_model(self):
         return None
+    
+    #Per is the amount to heal per tick... times is the number of ticks to heal for
+    def debug(self, name, per, times):
+        self.debuggers[name] = (per, times)
+        self.debugText.unstash()
+        print "Debugging %s: (%d, %d)"%(name, per, times)
+    
+    def do_debug(self):
+        origSize = len(self.debuggers)
+        if origSize > 0:
+            #delete OUTSIDE of iteration... keep a list of to_delete
+            toDelete = []
+            for name, debugger in self.debuggers.iteritems():
+                self.heal(debugger[0])
+                if debugger[1] <= 1:
+                    toDelete.append(name)
+                else:
+                    self.debuggers[name] = (debugger[0], debugger[1] - 1)
+            for name in toDelete:
+                del self.debuggers[name]
+            if len(self.debuggers) == 0:
+                self.debugText.stash()
     
     def collect(self):
         if self.canCollect:
@@ -142,7 +190,10 @@ class Agent(object):
         return self.health <= 0
 
     def heal(self,amt):
-        self.health += amt
+        self.health = min(self.health + amt, self.get_max_health())
+        
+    def get_max_health(self):
+        return 100
         
     def get_base_damage(self):
         return 10

@@ -24,6 +24,7 @@ class Program(Agent):
         self.pos = pos
         self.load_model()
         self.initialize_flash_sequence()
+        self.initialize_debug_text()
         self.load_desc(desc)
         self.setup_interval()
         self.setup_collider()
@@ -116,8 +117,8 @@ class Program(Agent):
 #Programs that have an immediate effect and then disappear
 class Basic(Program):
     
-    def __init__(self,game,name,desc,scale,pos):
-        super(Basic, self).__init__(game, name, '', desc, scale, pos)
+    def __init__(self,game,name,desc,scale,pos,prefix=''):
+        super(Basic, self).__init__(game, name, prefix, desc, scale, pos)
     
     #do effect and make it disappear; return false so player doesn't add it to a slot
     def pick_up(self, player):
@@ -142,6 +143,26 @@ class RAM(Basic):
     
     def do_effect(self, agent):
         agent.add_slot()
+
+class Debug(Basic):
+    #Per is the amount to heal per tick... times is the number of ticks to heal for
+    def __init__(self,game,name,desc,scale,pos,prefix='', per=0.2, times=500):
+        super(Debug, self).__init__(game, name, desc, scale, pos, prefix)
+        self.per = per
+        self.times = times
+        self.description = desc
+    
+    def get_description(self):
+        return self.description
+    
+    def do_effect(self, agent):
+        agent.debug(self.unique_str(), self.per, self.times)
+
+class Gdb(Debug):
+    DESC = "Restore Health"
+    
+    def __init__(self,game,pos=None):
+        super(Gdb, self).__init__(game, 'gdb', self.DESC, BASE_SCALE, pos, 'terminal_window_')
 
 #***************************** ACHIEVEMENT PROGRAMS *****************************
 
