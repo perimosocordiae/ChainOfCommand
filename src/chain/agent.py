@@ -118,7 +118,7 @@ class Agent(object):
             toDelete = []
             for name, debugger in self.debuggers.iteritems():
                 self.heal(debugger[0])
-                if debugger[1] <= 1:
+                if debugger[1] <= 1 or self.health == self.get_max_health():
                     toDelete.append(name)
                 else:
                     self.debuggers[name] = (debugger[0], debugger[1] - 1)
@@ -133,7 +133,7 @@ class Agent(object):
             if prog.unique_str() in self.game.programs:
             
                 #if basic, have it do its effect and return
-                if not prog.pick_up(self):
+                if not prog.pick_up(self): # fails for non-effectful gdb
                     return -1, prog
                 
                 for i,p in enumerate(self.programs):

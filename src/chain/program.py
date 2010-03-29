@@ -127,19 +127,17 @@ class Basic(Program):
         del self.game.programs[self.unique_str()]
         return False
     
+    def get_description(self):
+        return self.description
+
     def do_effect(self, player):
         return
     
 class RAM(Basic):
-    DESC = "Add Program Slot"
-    
     def __init__(self,game,pos=None):
-        super(RAM, self).__init__(game, 'RAM', self.DESC, 4, pos)
+        super(RAM, self).__init__(game, 'RAM', "Add Program Slot", 4, pos)
         self.desc.setZ(0.5)
         self.desc.setScale(0.1)
-    
-    def get_description(self):
-        return self.DESC
     
     def do_effect(self, agent):
         agent.add_slot()
@@ -150,19 +148,20 @@ class Debug(Basic):
         super(Debug, self).__init__(game, name, desc, scale, pos, prefix)
         self.per = per
         self.times = times
-        self.description = desc
     
-    def get_description(self):
-        return self.description
-    
+    def pick_up(self,player):
+        if player.health < player.get_max_health(): # no effect if full health
+            super(Debug,self).pick_up(player)
+        else:
+            print "Already at full health"
+        return False
+
     def do_effect(self, agent):
         agent.debug(self.unique_str(), self.per, self.times)
 
 class Gdb(Debug):
-    DESC = "Restore Health"
-    
     def __init__(self,game,pos=None):
-        super(Gdb, self).__init__(game, 'gdb', self.DESC, BASE_SCALE, pos, 'terminal_window_')
+        super(Gdb, self).__init__(game, 'gdb',"Restore Health", BASE_SCALE, pos, 'terminal_window_')
 
 #***************************** ACHIEVEMENT PROGRAMS *****************************
 
@@ -171,10 +170,11 @@ class Achievement(Program):
     
     def __init__(self,game,name,desc,scale,pos):
          super(Achievement, self).__init__(game, name, 'terminal_window_', desc, scale, pos)
+         self.description = desc
         
     def reappear(self, pos):
         self.load_model()
-        self.load_desc(self.get_description())
+        self.load_desc(self.description)
         #self.model.unstash()
         #self.collider.unstash()
         #self.pusher.unstash()
@@ -200,15 +200,11 @@ class Achievement(Program):
         return
     
 class Rm(Achievement):
-    DESC = "Damage x 2"
     def __init__(self,game,pos=None):
-        super(Rm,self).__init__(game,'rm',self.DESC,BASE_SCALE,pos)
+        super(Rm,self).__init__(game,'rm',"Damage x 2",BASE_SCALE,pos)
     
     def damage_mod(self,d):
         return d*2 # double the player's damage
-    
-    def get_description(self):
-        return self.DESC
     
     def add_effect(self, agent):
         agent.set_laser_glow(True)
@@ -219,15 +215,11 @@ class Rm(Achievement):
         agent.set_glow(False)
 
 class Chmod(Achievement):
-    DESC = "Shield x 2"
     def __init__(self,game,pos=None):
-        super(Chmod,self).__init__(game,'chmod',self.DESC,BASE_SCALE,pos)
+        super(Chmod,self).__init__(game,'chmod',"Shield x 2",BASE_SCALE,pos)
     
     def shield_mod(self,s):
-        return s*2.0 # double the player's shield strength
-    
-    def get_description(self):
-        return self.DESC
+        return s*2 # double the player's shield strength
     
     def add_effect(self, agent):
         agent.get_shield_sphere().show()
@@ -235,11 +227,8 @@ class Chmod(Achievement):
         player.get_shield_sphere().hide()
 
 class DashR(Achievement):
-    DESC = "Rapid Fire"
     def __init__(self,game,pos=None):
-        super(DashR,self).__init__(game,'-r',self.DESC,BASE_SCALE,pos)
+        super(DashR,self).__init__(game,'-r',"Fire Speed x 2",BASE_SCALE,pos)
     
     def rapid_fire_mod(self,a):
         return a/2 # half the shooting delay
-    def get_description(self):
-        return self.DESC
