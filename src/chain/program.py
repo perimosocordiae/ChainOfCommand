@@ -3,7 +3,8 @@ MODEL_PATH = "../../models"
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Point3, Filename, Buffer, Shader, CollisionNode, CollisionSphere, BitMask32, TextNode, NodePath
+from pandac.PandaModules import Point3, Filename, Buffer, Shader, CollisionNode, CollisionTube
+from pandac.PandaModules import CollisionSphere, BitMask32, TextNode, NodePath
 from agent import Agent
 from constants import *
 
@@ -38,6 +39,8 @@ class Program(Agent):
         #TODO: see if we should remove from list
     
     def disappear(self):
+        if hasattr(self, "seq") and self.seq:
+            self.seq.finish()
         if self.desc:
             self.desc.removeNode()
         if self.collider:
@@ -71,16 +74,20 @@ class Program(Agent):
         scale2 = self.model.scaleInterval(1.5, self.scale, startScale=self.scale*2, blendType='easeInOut')
         
         #Create and play the sequence that coordinates the intervals  
-        Sequence(Parallel(scale1, hpr1), Parallel(scale2, hpr2)).loop()
+        self.seq = Sequence(Parallel(scale1, hpr1), Parallel(scale2, hpr2))
+        self.seq.loop()
     
     def setup_collider(self):
+        self.setup_collider_solid(CollisionSphere(0, 0, 0, 2), CollisionSphere(0, 0, 0, 2))
+    
+    def setup_collider_solid(self, solid, pusherSolid):
         self.collider = self.model.attachNewNode(CollisionNode(self.unique_str()))
-        self.collider.node().addSolid(CollisionSphere(0, 0, 0, 2))
+        self.collider.node().addSolid(solid)
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         #self.collider.show()
         
         self.pusher = self.model.attachNewNode(CollisionNode(self.unique_str() + "_pusher"))
-        self.pusher.node().addSolid(CollisionSphere(0, 0, 0, 2))
+        self.pusher.node().addSolid(pusherSolid)
         self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
         self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
         
@@ -134,13 +141,22 @@ class Basic(Program):
         return
     
 class RAM(Basic):
-    def __init__(self,game,pos=None):
-        super(RAM, self).__init__(game, 'RAM', "Add Program Slot", 4, pos)
+    def __init__(self,game,pos=None,scale=4.0):
+        super(RAM, self).__init__(game, 'RAM', "Add Program Slot", scale, pos)
         self.desc.setZ(0.5)
         self.desc.setScale(0.1)
     
     def do_effect(self, agent):
         agent.add_slot()
+        
+    def setup_interval(self):
+        #do nothing - the interval doesn't exist for RAM
+        pass
+    
+    #RAM is in slots - it collides differently
+    def setup_collider(self):
+        self.setup_collider_solid(CollisionTube(-1, 0, 0, 1, 0, 0, 0.6),
+                                  CollisionTube(-1, 0, 0, 1, 0, 0, 0.6))
 
 class Debug(Basic):
     #Per is the amount to heal per tick... times is the number of ticks to heal for

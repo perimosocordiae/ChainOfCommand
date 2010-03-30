@@ -17,6 +17,8 @@ from constants import *
 MOTION_MULTIPLIER = 300.0
 TURN_MULTIPLIER = 0.1
 LOOK_MULTIPLIER = 0.1
+MAX_TURN = 2.0
+MAX_LOOK = 2.0
 JUMP_SPEED = 300.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
@@ -299,7 +301,7 @@ class LocalPlayer(Player):
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
         super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
-        newP = self.get_camera().getP() + hpr.getY()
+        newP = self.get_camera().getP() + max(-MAX_LOOK, min(hpr.getY(),MAX_LOOK))
         newP = max(min(newP, 80), -80)
         self.get_camera().setP(newP)
         #self.sendUpdate()
@@ -311,7 +313,7 @@ class LocalPlayer(Player):
     
     def move_to(self,pos,rot,vel,hpr):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
-        self.tron.setH(self.tron.getH() + hpr.getX())
+        self.tron.setH(self.tron.getH() + max(-MAX_TURN, min(hpr.getX(), MAX_TURN)))
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
@@ -486,10 +488,14 @@ class LocalPlayer(Player):
     def destroy_HUD(self):
         self.crosshairs.destroy() 
         for programDisp in self.programHUD : programDisp.destroy() 
-        self.healthHUD.destroy() 
+        self.healthHUD.destroy()
+        self.healthHUD = None
         self.killHUD.destroy() 
+        self.killHUD = None
         self.musicHUD.destroy()
+        self.musicHUD = None
         self.soundHUD.destroy()
+        self.soundHUD = None
         self.hide_scores()
         base.setFrameRateMeter(False) 
     

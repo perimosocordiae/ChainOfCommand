@@ -14,7 +14,7 @@ from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
-from wall import Wall,Tower
+from obstacle import Wall, Tower, RAMSlot
 from networking import Client
 from program import DashR, Rm, Chmod, RAM, Gdb
 from constants import *
@@ -23,7 +23,7 @@ class Game(object):
 
     def __init__(self,ip,port_num,shell,map_size=320,tile_size=16, tower_size=16, gameLength=180):
         self.shell = shell
-        self.players, self.programs,self.drones,self.walls,self.towers,self.startPoints = {},{},{},{},[],{}
+        self.players, self.programs,self.drones,self.obstacles,self.startPoints = {},{},{},{},{}
         self.map_size,self.tile_size, self.tower_size, self.gameLength = map_size,tile_size, tower_size, gameLength
         self.end_sequence = None
         self.client = Client(ip,port_num)
@@ -34,7 +34,6 @@ class Game(object):
         base.cTrav.setRespectPrevTransform(True)
         #wsbase.cTrav.showCollisions(render)
         base.disableMouse()
-        self.load_env()
         self.timer = OnscreenText(text="Time:", pos=(0,0.9), scale=(0.08), fg=(0,0,1,0.8), bg=(1,1,1,0.8), mayChange=True)
         self.startTime = time()
         self.endTime = self.startTime + self.gameLength
@@ -46,12 +45,13 @@ class Game(object):
         self.network_listener = Sequence(Wait(SERVER_TICK), Func(self.network_listen))
         self.add_local_player()
         self.add_event_handler()
+        self.load_env()
         print "game initialized"
         for _ in range(4):
             self.add_program(Rm)
             self.add_program(Chmod)
             self.add_program(DashR)
-            self.add_program(RAM)
+            #self.add_program(RAM)
             self.add_program(Gdb)
         print "programs added"
         self.shell.hide_shell()
@@ -104,9 +104,14 @@ class Game(object):
         self.eventHandle.addDroneHandler(d)
     
     def add_wall(self, name, parent, p1, p2, p3, p4):
-        self.walls[name] = Wall(self, name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
-        #self.eventHandle.addWallHandler(self.walls[name])
-
+        self.obstacles[name] = Wall(self, name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
+        #self.eventHandle.addWallHandler(self.obstacles[name])
+    
+    def add_ram(self, name, pos, scale, hpr):
+        self.obstacles[name] = RAMSlot(self, name, render, pos, scale, hpr)
+        ram = RAM(self, pos, scale * 7.0)
+        self.readd_program(ram)
+    
     def load_env(self):
         #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
         eggs = map(lambda s:"%s/%s_floor.egg"%(MODEL_PATH,s),['yellow','blue','green','red'])
@@ -170,14 +175,23 @@ class Game(object):
         self.floor = Wall(self, "floor", self.environ, Point3(-2*center, -2*center, 0),
                 Point3(2*center, -2*center, 0), Point3(2*center, 2*center, 0),
                 Point3(-2*center, 2*center, 0), FLOOR_COLLIDER_MASK)
+        #Note: if it makes sense, this can be added as an obstacle and destroyed like the others
         
-        # make some random bunkers
-        
-        for _ in range(4):
+        # make some random towers
+        for tower in range(4):
             pos = self.rand_point()
-            self.towers.append(Tower(render, pos[0], pos[1], 
+            name = "tower_%d"%tower
+            self.obstacles[name] = Tower(render, pos[0], pos[1], 
                                      randint(10,2*wall_height*self.tower_size), 
-                                     colscale,self.tile_size))
+                                     colscale,self.tile_size)
+        
+        # make some random RAM slots
+        for slot in range(5):
+            pos = self.rand_point()
+            name = "RAM_slot_%d"%slot
+            scale = randint(5,10)
+            self.add_ram(name, Point3(pos[0], pos[1], 0), scale, Point3(0, 0, 0))
+    
     
     def timerTask(self, task):
         self.gameTime = self.endTime - time()
@@ -225,10 +239,8 @@ class Game(object):
         for k in self.programs.keys():
             self.programs[k].die()
             del self.programs[k]
-        for t in self.towers:
-            t.destroy()
-        for w in self.walls.itervalues():
-            w.destroy()
+        for o in self.obstacles.itervalues():
+            o.destroy()
         self.floor.destroy()
             
         self.client.close_connection()

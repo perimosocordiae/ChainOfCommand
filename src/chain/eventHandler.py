@@ -83,7 +83,7 @@ class GameEventHandler(DirectObject):
         
         drones = game.drones.keys()
         progs  = game.programs.keys()
-        walls = game.walls.keys()
+        #walls = game.walls.keys()
             
         for t in game.players.iterkeys():
             for p in progs:
@@ -171,11 +171,11 @@ class GameEventHandler(DirectObject):
             tron.canCollect = None
             prog.hide_desc()
     
-    def tronHitsWall(self, entry):
-        tn = entry.getFromNodePath().getName()
-        tn = tn.replace("_wall", "")
-        tron = self.game.players[tn]
-        penetration = entry.getSurfacePoint(render) - entry.getInteriorPoint(render)
-        newPos = tron.tron.getPos() + penetration
-        #newPos.setZ(tron.tron.getZ())
-        tron.tron.setFluidPos(newPos)
+    #def tronHitsWall(self, entry):
+    #    tn = entry.getFromNodePath().getName()
+    #    tn = tn.replace("_wall", "")
+    #    tron = self.game.players[tn]
+    #    penetration = entry.getSurfacePoint(render) - entry.getInteriorPoint(render)
+    #    newPos = tron.tron.getPos() + penetration
+    #    #newPos.setZ(tron.tron.getZ())
+    #    tron.tron.setFluidPos(newPos)
