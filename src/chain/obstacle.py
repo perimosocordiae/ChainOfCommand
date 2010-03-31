@@ -1,4 +1,4 @@
-from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionTube, Point3
+from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionTube, Point3, TextureStage
 from constants import MODEL_PATH, WALL_COLLIDER_MASK, FLOOR_COLLIDER_MASK
 
 #Basically an abstract base class that provides "destroy"
@@ -92,4 +92,20 @@ class RAMSlot(Obstacle):
     def destroy(self):
         self.colliderBox.destroy()
         self.slot.removeNode()
+
+class CopperWire(Obstacle):
+    def __init__(self, name, parent, pos, hpr, scale):
+        self.wire = loader.loadModel("%s/copper_wire.egg"%MODEL_PATH)
+        self.name = name
+        ts = TextureStage('ts')
+        ts.setMode(TextureStage.MGlow)
+        glow = loader.loadTexture("%s/all_glow.jpg"%MODEL_PATH)
+        self.wire.setTexture(ts, glow)
+        self.wire.reparentTo(parent)
+        #it's a plane - z scale is erroneous
+        self.wire.setScale(scale[0], scale[1], 1.0)
+        self.wire.setPos(pos)
+        self.wire.setHpr(hpr)
         
+    def destroy(self):
+        self.wire.removeNode()

@@ -14,7 +14,7 @@ from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
-from obstacle import Wall, Tower, RAMSlot
+from obstacle import Wall, Tower, RAMSlot, CopperWire
 from networking import Client
 from program import DashR, Rm, Chmod, RAM, Gdb
 from constants import *
@@ -147,7 +147,7 @@ class Game(object):
             self.make_tile(self.environ,egg,(-2*(i-center)-1, -2*center,  2*(wall_height-j)-1),(0,-90,0), colscale)   #wall 2
             self.make_tile(self.environ,egg,( 2*center,     2*(i-center) + 1, 2*j+1),            (0, 0, -90), colscale) #wall 3
             self.make_tile(self.environ,egg,(-2*(i-center) - 1, 2*center,   2*j+1),            (0, 90,0), colscale)   #wall 4
-        
+        CopperWire("wire", self.environ, (0,0,0.001), (0,0,0), (colscale / 20, colscale * 2))
         #add collision handlers for walls
         self.add_wall("wall1", self.environ,
                       Point3(-2*center, -2*center, 2*wall_height + 1),
