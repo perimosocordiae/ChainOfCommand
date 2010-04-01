@@ -1,8 +1,8 @@
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
-from pandac.PandaModules import Point3, Filename, Buffer, Shader, CollisionNode, CollisionTube
-from pandac.PandaModules import CollisionSphere, BitMask32, TextNode, NodePath
+from pandac.PandaModules import (Point3, Filename, Buffer, Shader, CollisionNode,
+        CollisionTube, CollisionSphere, BitMask32, TextNode, NodePath, CollisionPolygon)
 from agent import Agent
 from constants import *
 
@@ -84,7 +84,7 @@ class Program(Agent):
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         #self.collider.show()
         
-        self.pusher = self.model.attachNewNode(CollisionNode(self.unique_str() + "_pusher"))
+        self.pusher = self.model.attachNewNode(CollisionNode(self.unique_str() + "_pusher_donthitthis"))
         self.pusher.node().addSolid(pusherSolid)
         self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
         self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
@@ -151,10 +151,25 @@ class RAM(Basic):
         #do nothing - the interval doesn't exist for RAM
         pass
     
+    def die(self):
+        if self.hitter:
+            self.hitter.removeNode()
+        self.hitter = None
+        super(RAM, self).die()
+    
     #RAM is in slots - it collides differently
     def setup_collider(self):
         self.setup_collider_solid(CollisionTube(-1, 0, 0, 1, 0, 0, 0.6),
                                   CollisionTube(-1, 0, 0, 1, 0, 0, 0.6))
+        self.pusher.node().setFromCollideMask(0)
+        self.collider.setName(self.collider.getName() + "_donthitthis")
+        
+        solid = CollisionPolygon(Point3(-1,0,-0.25), Point3(1,0,-0.25),
+                                 Point3(1,0,0.25), Point3(-1,0,0.25))
+        self.hitter = self.model.attachNewNode(CollisionNode(self.unique_str()))
+        self.hitter.node().addSolid(solid)
+        self.hitter.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
+        self.hitter.node().setFromCollideMask(0)
 
 class Debug(Basic):
     #Per is the amount to heal per tick... times is the number of ticks to heal for

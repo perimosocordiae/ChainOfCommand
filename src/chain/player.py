@@ -75,7 +75,9 @@ class Player(Agent):
             pickedSpot = self.collisionQueue.getEntry(i).getSurfacePoint(render)
             if 'donthitthis' in pickedObj: continue
             if '_wall' in pickedObj: continue
+            if '_pusher' in pickedObj: continue
             if not (self.name in pickedObj): break
+        print pickedObj 
         return pickedObj, pickedSpot
     
     def set_laser_glow(self, glow):
