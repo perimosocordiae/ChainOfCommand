@@ -77,7 +77,6 @@ class Player(Agent):
             if '_wall' in pickedObj: continue
             if '_pusher' in pickedObj: continue
             if not (self.name in pickedObj): break
-        print pickedObj 
         return pickedObj, pickedSpot
     
     def set_laser_glow(self, glow):
@@ -303,7 +302,7 @@ class LocalPlayer(Player):
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
         super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
-        newP = self.get_camera().getP() + max(-MAX_LOOK, min(hpr.getY(),MAX_LOOK))
+        newP = self.get_camera().getP() + hpr.getY() 
         newP = max(min(newP, 80), -80)
         self.get_camera().setP(newP)
         #self.sendUpdate()
@@ -315,7 +314,7 @@ class LocalPlayer(Player):
     
     def move_to(self,pos,rot,vel,hpr):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
-        self.tron.setH(self.tron.getH() + max(-MAX_TURN, min(hpr.getX(), MAX_TURN)))
+        self.tron.setH(self.tron.getH() + hpr.getX())
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()
