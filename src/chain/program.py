@@ -82,7 +82,7 @@ class Program(Agent):
         self.collider = self.model.attachNewNode(CollisionNode(self.unique_str()))
         self.collider.node().addSolid(solid)
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
-        #self.collider.show()
+        self.collider.show()
         
         self.pusher = self.model.attachNewNode(CollisionNode(self.unique_str() + "_pusher_donthitthis"))
         self.pusher.node().addSolid(pusherSolid)
@@ -161,8 +161,9 @@ class RAM(Basic):
     def setup_collider(self):
         self.setup_collider_solid(CollisionTube(-1, 0, 0, 1, 0, 0, 0.6),
                                   CollisionTube(-1, 0, 0, 1, 0, 0, 0.6))
-        self.pusher.node().setFromCollideMask(0)
+        #self.pusher.node().setFromCollideMask(0)
         self.collider.setName(self.collider.getName() + "_donthitthis")
+        print self.collider.getName()
         
         solid = CollisionPolygon(Point3(-1,0,-0.25), Point3(1,0,-0.25),
                                  Point3(1,0,0.25), Point3(-1,0,0.25))

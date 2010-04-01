@@ -88,8 +88,9 @@ class GameEventHandler(DirectObject):
         for t in game.players.iterkeys():
             for p in progs:
                 self.accept("%s-into-%s"%(t,p),  self.tronHitsProg)
-                self.accept("%s-repeat-%s"%(t,p),  self.tronHitsProg)
                 self.accept("%s-out-%s"%(t,p), self.tronOutProg)
+                self.accept("%s-into-%s_donthitthis"%(t,p),  self.tronHitsProg)
+                self.accept("%s-out-%s_donthitthis"%(t,p), self.tronOutProg)
             for d in drones:
                 self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)
                 self.accept("%s-repeat-%s"%(t,d),self.tronRepeatsDrone)
@@ -105,6 +106,8 @@ class GameEventHandler(DirectObject):
         for t in self.game.players.iterkeys():
             self.accept("%s-into-%s"%(t,p.unique_str()),  self.tronHitsProg)
             self.accept("%s-out-%s"%(t,p.unique_str()), self.tronOutProg)
+            self.accept("%s-into-%s_donthitthis"%(t,p.unique_str()),  self.tronHitsProg)
+            self.accept("%s-out-%s_donthitthis"%(t,p.unique_str()), self.tronOutProg)
     
     def addDroneHandler(self, d):
         base.cTrav.addCollider(d.pusher,self.pusherHandler)
@@ -126,6 +129,8 @@ class GameEventHandler(DirectObject):
         for p in progs:
             self.accept("%s-into-%s"%(tName,p),  self.tronHitsProg)
             self.accept("%s-out-%s"%(tName,p), self.tronOutProg)
+            self.accept("%s-into-%s_donthitthis"%(tName,p),  self.tronHitsProg)
+            self.accept("%s-out-%s_donthitthis"%(tName,p), self.tronOutProg)
         for d in drones:
             self.accept("%s-into-%s"%(tName,d),  self.tronHitsDrone)
             self.accept("%s-repeat-%s"%(tName,d),self.tronRepeatsDrone)
@@ -158,6 +163,7 @@ class GameEventHandler(DirectObject):
         
     def tronHitsProg(self,entry):
         tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+        pn = pn.rstrip("_donthitthis")
         if pn in self.game.programs.keys():
             tron,prog = self.game.players[tn], self.game.programs[pn]
             #tron.collect(prog)
@@ -166,6 +172,7 @@ class GameEventHandler(DirectObject):
             
     def tronOutProg(self,entry):
         tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+        pn = pn.rstrip("_donthitthis")
         if pn in self.game.programs.keys():
             tron,prog = self.game.players[tn], self.game.programs[pn]
             tron.canCollect = None
