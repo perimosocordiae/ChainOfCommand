@@ -142,7 +142,7 @@ class Player(Agent):
         
         self.ts = TextureStage('ts')
         self.ts.setMode(TextureStage.MGlow)
-        self.glow = loader.loadTexture("%s/tron-glow_on.png"%MODEL_PATH)
+        self.glow = loader.loadTexture("%s/tron-glow_on.png"%TEXTURE_PATH)
         self.ts.setSort(9)
         self.set_glow(False)
     
@@ -371,29 +371,29 @@ class LocalPlayer(Player):
         base.enableMusic(not base.musicManager.getActive())
         if base.musicManager.getActive():
             LocalPlayer.backgroundMusic.setTime(35)
-            self.musicHUD.setImage("%s/music_on.png" % MODEL_PATH)
+            self.musicHUD.setImage("%s/music_on.png" % TEXTURE_PATH)
             self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
         else:
-            self.musicHUD.setImage("%s/music_off.png" % MODEL_PATH)
+            self.musicHUD.setImage("%s/music_off.png" % TEXTURE_PATH)
             self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
         
     def toggle_sound_effects(self):
         base.enableSoundEffects(not base.sfxManagerList[0].getActive())
         if base.sfxManagerList[0].getActive():
-            self.soundHUD.setImage("%s/speaker_on.png" % MODEL_PATH)
+            self.soundHUD.setImage("%s/speaker_on.png" % TEXTURE_PATH)
             self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
         else:
-            self.soundHUD.setImage("%s/speaker_off.png" % MODEL_PATH)
+            self.soundHUD.setImage("%s/speaker_off.png" % TEXTURE_PATH)
             self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
 
     def target(self):
         objHit,spotHit = self.findCrosshairHit()
         if objHit in self.game.drones or objHit in self.game.players: #turn the crosshairs red
-            self.crosshairs.setImage("%s/crosshairs_locked.tif" % MODEL_PATH)
+            self.crosshairs.setImage("%s/crosshairs_locked.tif" % TEXTURE_PATH)
         elif objHit in self.game.programs:
-            self.crosshairs.setImage("%s/crosshairs_program.tif" % MODEL_PATH)
+            self.crosshairs.setImage("%s/crosshairs_program.tif" % TEXTURE_PATH)
         else:
-            self.crosshairs.setImage("%s/crosshairs.tif" % MODEL_PATH)
+            self.crosshairs.setImage("%s/crosshairs.tif" % TEXTURE_PATH)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def click(self):
@@ -460,7 +460,7 @@ class LocalPlayer(Player):
     def setup_HUD(self):
         #show health, programs, crosshairs, etc. (some to come, some done now)
         base.setFrameRateMeter(True)
-        self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % MODEL_PATH, pos=(-0.025, 0, 0), scale=0.05)
+        self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(-0.025, 0, 0), scale=0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
         
         self.programHUD = [
@@ -478,11 +478,11 @@ class LocalPlayer(Player):
         self.healthHUD = OnscreenText(text="HP: %d" % self.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
         # kill counter
         self.killHUD = OnscreenText(text="Kills: %d" % self.killcount(), pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
-        self.musicHUD = OnscreenImage(image="%s/music_off.png" % MODEL_PATH, pos=(-1.2,0,0.92), scale=0.05)
-        self.musicHUD.setImage(image="%s/music_on.png" % MODEL_PATH)
+        self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.92), scale=0.05)
+        self.musicHUD.setImage(image="%s/music_on.png" % TEXTURE_PATH)
         self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % MODEL_PATH, pos=(-1.2,0,0.82), scale=0.05)
-        self.soundHUD.setImage(image="%s/speaker_on.png" % MODEL_PATH)
+        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.82), scale=0.05)
+        self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
     
     def destroy_HUD(self):
@@ -501,7 +501,7 @@ class LocalPlayer(Player):
     
     def flash_red(self):
         if not self.redScreen:
-            self.redScreen = OnscreenImage(image="%s/red_screen.png" % MODEL_PATH, pos=(0, 0, 0), scale=(2, 1, 1))
+            self.redScreen = OnscreenImage(image="%s/red_screen.png" % TEXTURE_PATH, pos=(0, 0, 0), scale=(2, 1, 1))
             self.redScreen.setTransparency(TransparencyAttrib.MAlpha)
         else:
             self.redScreen.destroy()

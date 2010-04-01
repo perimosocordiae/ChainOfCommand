@@ -12,7 +12,7 @@
   <Scalar> shininess {12.5}
 }
 <Texture> DDR2_slot_Cube.tga {
-  "../models/DDR2_slot_Cube.tga"
+  "../../textures/DDR2_slot_Cube.tga"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR }

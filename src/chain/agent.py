@@ -22,7 +22,7 @@ class Agent(object):
             self.initialize_debug_text()
     
     def initialize_flash_sequence(self):
-        self.redTex = loader.loadTexture("%s/red_screen.png" % MODEL_PATH)
+        self.redTex = loader.loadTexture("%s/red_screen.png" % TEXTURE_PATH)
         self.texStg = TextureStage('redTexStg')
         self.flashSequence = Sequence(Func(NodePath(self.get_model()).setTexture, self.texStg, self.redTex), Wait(0.25), Func(NodePath(self.get_model()).clearTexture, self.texStg))    
         #self.flashSequence.start()

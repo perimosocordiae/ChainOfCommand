@@ -1,5 +1,5 @@
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionTube, Point3, TextureStage
-from constants import MODEL_PATH, WALL_COLLIDER_MASK, FLOOR_COLLIDER_MASK
+from constants import *
 
 #Basically an abstract base class that provides "destroy"
 class Obstacle(object):
@@ -99,7 +99,7 @@ class CopperWire(Obstacle):
         self.name = name
         ts = TextureStage('ts')
         ts.setMode(TextureStage.MGlow)
-        glow = loader.loadTexture("%s/all_glow.jpg"%MODEL_PATH)
+        glow = loader.loadTexture("%s/all_glow.jpg"%TEXTURE_PATH)
         self.wire.setTexture(ts, glow)
         self.wire.reparentTo(parent)
         #it's a plane - z scale is erroneous

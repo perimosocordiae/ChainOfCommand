@@ -12,7 +12,7 @@
   <Scalar> shininess {12.5}
 }
 <Texture> terminal_window_Cube. {
-  "./terminal_window_Cube_dashr.tga"
+  "../../textures/terminal_window_Cube_dashr.tga"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR }

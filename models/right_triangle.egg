@@ -1,0 +1,58 @@
+<CoordinateSystem> { Z-up }
+
+<Comment> { "Egg laid by Chicken for Blender, version R85" }
+
+<Material> Material.001 {
+  <Scalar> diffr {0.800000011921}
+  <Scalar> diffg {0.800000011921}
+  <Scalar> diffb {0.800000011921}
+  <Scalar> specr {0.25}
+  <Scalar> specg {0.25}
+  <Scalar> specb {0.25}
+  <Scalar> shininess {12.5}
+}
+<Texture> right_triangle_P {
+  "../../textures/right_triangle_Plane.tga"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Group> Plane {
+  <VertexPool> Plane {
+    <Vertex> 0 {
+      1.99999976158 -1.78813934326e-07 0.0
+      <UV>  {
+        1.005215 0.002971
+        <Tangent> { -1.000000 0.000000 -0.000000 }
+        <Binormal> { 0.000000 1.000000 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+    <Vertex> 1 {
+      1.78813934326e-07 2.00000023842 0.0
+      <UV>  {
+        0.006483 1.001703
+        <Tangent> { -1.000000 0.000000 -0.000000 }
+        <Binormal> { 0.000000 1.000000 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+    <Vertex> 2 {
+      -2.98023223877e-07 0.0 0.0
+      <UV>  {
+        0.006483 0.002971
+        <Tangent> { -1.000000 0.000000 -0.000000 }
+        <Binormal> { 0.000000 1.000000 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+  }
+  <Polygon> {
+    <TRef> { right_triangle_P }
+    <MRef> { Material.001 }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 0 1 2 <Ref> { Plane } }
+  }
+}

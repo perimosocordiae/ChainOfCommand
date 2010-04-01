@@ -1,5 +1,3 @@
-MODEL_PATH = "../../models"
-
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *

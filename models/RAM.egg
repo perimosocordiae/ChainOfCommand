@@ -12,7 +12,7 @@
   <Scalar> shininess {12.5}
 }
 <Texture> RAM_Cube.tga {
-  "../../models/RAM_Cube.tga"
+  "../../textures/RAM_Cube.tga"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR }

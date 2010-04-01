@@ -12,7 +12,7 @@
   <Scalar> shininess {12.5}
 }
 <Texture> capacitor_Circle.tga {
-  "../../models/capacitor_Circle.tga"
+  "../../textures/capacitor_Circle.tga"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR }

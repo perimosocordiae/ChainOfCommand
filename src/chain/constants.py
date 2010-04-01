@@ -17,8 +17,10 @@ TERMINAL_VELOCITY = -500.0
 STARTING_HEALTH = 100
 
 MODEL_PATH = "../../models"
+TEXTURE_PATH = "../../textures"
+COLOR_PATH = "%s/colors"%TEXTURE_PATH
 SOUND_PATH = "../../sounds"
-NO_GLOW = "%s/no_glow.jpg"%MODEL_PATH
-USE_GLOW = True
+NO_GLOW = "%s/no_glow.jpg"%TEXTURE_PATH
+USE_GLOW = False
 
 SERVER_TICK = 0.01

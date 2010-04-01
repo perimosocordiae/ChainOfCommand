@@ -7,7 +7,7 @@ import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionTube, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
-from pandac.PandaModules import Vec4, Vec3, Point3, VBase3
+from pandac.PandaModules import Vec4, Vec3, Point3, VBase3, TextureStage
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
 from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
@@ -60,9 +60,8 @@ class Game(object):
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
-        models = ["/blue_floor.egg","/green_floor.egg","/red_floor.egg","/yellow_floor.egg",
-                  "/terminal_window_-r.egg","/terminal_window_chmod.egg","/terminal_window_rm.egg",
-                  "/RAM.egg","/laser.egg","/tron_anim_updated.egg","/capacitor.egg"]
+        models = ["/white_floor.egg","/terminal_window_-r.egg","/terminal_window_chmod.egg",
+                  "/terminal_window_rm.egg","/RAM.egg","/laser.egg","/tron_anim_updated.egg","/capacitor.egg"]
         print "loading models now"
         loader.loadModel(map(lambda p: MODEL_PATH + p, models), callback=self.load_callback)
     
@@ -114,7 +113,7 @@ class Game(object):
     
     def load_env(self):
         #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
-        eggs = map(lambda s:"%s/%s_floor.egg"%(MODEL_PATH,s),['yellow','blue','green','red'])
+        eggs = map(lambda s:"%s/%s1040.jpg"%(COLOR_PATH,s),['yellow','blue','green','red'])
         #num_tiles = self.map_size/self.tile_size
         num_tiles = 2
         self.tile_size = self.map_size / num_tiles
@@ -282,11 +281,15 @@ class Game(object):
         base.cTrav.traverse(render)
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):
-        tile = loader.loadModel(fname)
+        tile = loader.loadModel("%s/white_floor.egg"%MODEL_PATH)
         tile.reparentTo(parent)
         tile.setScale(scale, scale, scale)
         tile.setPos(pos)
         tile.setHpr(*hpr)
+        ts = TextureStage('ts')
+        tex = loader.loadTexture(fname)
+        ts.setMode(TextureStage.MModulate)
+        tile.setTexture(ts, tex)
     
     def local_player(self):
         return self.players[uname()[1]]

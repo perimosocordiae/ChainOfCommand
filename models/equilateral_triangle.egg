@@ -1,0 +1,58 @@
+<CoordinateSystem> { Z-up }
+
+<Comment> { "Egg laid by Chicken for Blender, version R85" }
+
+<Material> Material.001 {
+  <Scalar> diffr {0.800000011921}
+  <Scalar> diffg {0.800000011921}
+  <Scalar> diffb {0.800000011921}
+  <Scalar> specr {0.25}
+  <Scalar> specg {0.25}
+  <Scalar> specb {0.25}
+  <Scalar> shininess {12.5}
+}
+<Texture> equilateral_triangle_ {
+  "../../textures/equilateral_triangle_Plane.tga"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Group> Plane {
+  <VertexPool> Plane {
+    <Vertex> 0 {
+      -0.999996542931 -1.73208725452 0.0
+      <UV>  {
+        0.000007 0.000006
+        <Tangent> { -0.499977 0.866039 0.000000 }
+        <Binormal> { 0.866039 0.499977 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+    <Vertex> 1 {
+      0.999962687492 -1.73208761215 0.0
+      <UV>  {
+        1.000005 0.999999
+        <Tangent> { -0.499977 0.866039 0.000000 }
+        <Binormal> { 0.866039 0.499977 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+    <Vertex> 2 {
+      1.0221554021e-06 1.99521946342e-06 0.0
+      <UV>  {
+        0.000008 0.999998
+        <Tangent> { -0.499977 0.866039 0.000000 }
+        <Binormal> { 0.866039 0.499977 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+  }
+  <Polygon> {
+    <TRef> { equilateral_triangle_ }
+    <MRef> { Material.001 }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 0 1 2 <Ref> { Plane } }
+  }
+}
