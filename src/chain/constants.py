@@ -21,6 +21,6 @@ TEXTURE_PATH = "../../textures"
 COLOR_PATH = "%s/colors"%TEXTURE_PATH
 SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%TEXTURE_PATH
-USE_GLOW = False
+USE_GLOW = True
 
 SERVER_TICK = 0.01
