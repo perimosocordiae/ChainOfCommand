@@ -87,8 +87,6 @@ class GameEventHandler(DirectObject):
             
         for t in game.players.iterkeys():
             for p in progs:
-                self.accept("%s-into-%s"%(t,p),  self.tronHitsProg)
-                self.accept("%s-out-%s"%(t,p), self.tronOutProg)
                 self.accept("%s-into-%s_donthitthis"%(t,p),  self.tronHitsProg)
                 self.accept("%s-out-%s_donthitthis"%(t,p), self.tronOutProg)
             for d in drones:
@@ -104,8 +102,6 @@ class GameEventHandler(DirectObject):
         base.cTrav.addCollider(p.pusher, self.pusherHandler)
         self.pusherHandler.addCollider(p.pusher, p.model)
         for t in self.game.players.iterkeys():
-            self.accept("%s-into-%s"%(t,p.unique_str()),  self.tronHitsProg)
-            self.accept("%s-out-%s"%(t,p.unique_str()), self.tronOutProg)
             self.accept("%s-into-%s_donthitthis"%(t,p.unique_str()),  self.tronHitsProg)
             self.accept("%s-out-%s_donthitthis"%(t,p.unique_str()), self.tronOutProg)
     
@@ -127,8 +123,6 @@ class GameEventHandler(DirectObject):
         #walls = self.game.walls.keys()
         tName = t.name
         for p in progs:
-            self.accept("%s-into-%s"%(tName,p),  self.tronHitsProg)
-            self.accept("%s-out-%s"%(tName,p), self.tronOutProg)
             self.accept("%s-into-%s_donthitthis"%(tName,p),  self.tronHitsProg)
             self.accept("%s-out-%s_donthitthis"%(tName,p), self.tronOutProg)
         for d in drones:

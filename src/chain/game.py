@@ -205,8 +205,9 @@ class Game(object):
     def game_over(self):
         print "Game over"
         p = self.local_player()
-        p.tron.hide()
+        p.hide()
         p.handleEvents = False
+        p.invincible = True
         p.show_scores()
         taskMgr.remove('timerTask')
         if not self.end_sequence:

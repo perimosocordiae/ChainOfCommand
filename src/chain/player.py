@@ -1,4 +1,4 @@
-from math import sin, cos, radians,  pi
+from math import sin, cos, radians,  pi, sqrt
 from random import randint
 from direct.task import Task
 from direct.actor import Actor
@@ -14,6 +14,8 @@ from agent import Agent
 from constants import *
 
 #Constants
+BASE_CAMERA_Y = -4.0
+HIDE_DIST = 10
 MOTION_MULTIPLIER = 300.0
 TURN_MULTIPLIER = 0.1
 LOOK_MULTIPLIER = 0.1
@@ -74,7 +76,7 @@ class Player(Agent):
             pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
             pickedSpot = self.collisionQueue.getEntry(i).getSurfacePoint(render)
             if 'donthitthis' in pickedObj: continue
-            if '_wall' in pickedObj: continue
+            #if '_wall' in pickedObj: continue
             if '_pusher' in pickedObj: continue
             if not (self.name in pickedObj): break
         return pickedObj, pickedSpot
@@ -83,7 +85,7 @@ class Player(Agent):
         self.laserGlow = glow
     
     def die(self):
-        self.tron.hide()
+        self.hide()
         self.handleEvents = False
         self.drop(randint(0,len(self.programs)-1)) # drop a random program
         self.stats['deaths'] += 1
@@ -92,7 +94,7 @@ class Player(Agent):
         
     def spawn(self,pt=None,_=None):
         if self.game.gameTime > 0 and not self.tron.isEmpty():
-            self.tron.show()
+            self.show()
             self.handleEvents = True
             self.health = STARTING_HEALTH
             if pt == None : pt = self.game.rand_point()
@@ -156,7 +158,7 @@ class Player(Agent):
         # the camera follows tron
         self.camera = None
         self.get_camera().reparentTo(self.tron)
-        self.get_camera().setPos(0, 40, TRON_ORIGIN_HEIGHT)
+        self.get_camera().setPos(10.5, 40, TRON_ORIGIN_HEIGHT)
         self.get_camera().setHpr(180, 0, 0)
         
     def initialize_camera(self):
@@ -166,29 +168,37 @@ class Player(Agent):
         self.cameraRay = CollisionRay(0, self.get_camera().getY(), 0, 0, 1, 0)
         cameraNode.addSolid(self.cameraRay)
         base.cTrav.addCollider(cameraNP, self.collisionQueue)
+        #set all parameters correctly now that everything is available
+        self.setCameraDist(40)
     
     def switchPerspective(self):
         #Switch between 3 perspectives
         if not self.handleEvents: return
         if self.get_camera().getY() > 60:
-            self.get_camera().setPos(0, 0, TRON_ORIGIN_HEIGHT)
+            self.setCameraDist(BASE_CAMERA_Y)
         elif self.get_camera().getY() > 20:
-            self.get_camera().setPos(0, 100, TRON_ORIGIN_HEIGHT)
+            self.setCameraDist(100)
         else:
-            self.get_camera().setPos(0, 40, TRON_ORIGIN_HEIGHT)
-        self.cameraRay.setOrigin(Point3(0, self.get_camera().getY(), 0))
+            self.setCameraDist(40)
     
     def zoomIn(self):
         if not self.handleEvents: return
-        if self.get_camera().getY() > 0:
-            self.get_camera().setY(self.get_camera().getY() - 2)
-        self.cameraRay.setOrigin(Point3(0, self.get_camera().getY(), 0))
+        if self.get_camera().getY() > BASE_CAMERA_Y:
+            self.setCameraDist(self.get_camera().getY() - 2)
             
     def zoomOut(self):
         if not self.handleEvents: return
         if self.get_camera().getY() < 100:
-            self.get_camera().setY(self.get_camera().getY() + 2)
-        self.cameraRay.setOrigin(Point3(0, self.get_camera().getY(), 0))
+            self.setCameraDist(self.get_camera().getY() + 2)
+    
+    def setCameraDist(self, dist):
+        #use 'zeroed' to account for the negative first-person y value
+        zeroed = dist - BASE_CAMERA_Y
+        if dist > HIDE_DIST:
+            self.get_camera().setPos(min(-sqrt(zeroed), -5), dist, 5 + (zeroed / 102) * TRON_ORIGIN_HEIGHT)
+        else:
+            self.get_camera().setPos(-max(dist/2,0), dist, 5 + (zeroed / 102) * TRON_ORIGIN_HEIGHT)
+        self.cameraRay.setOrigin(Point3(0, 1 + self.get_camera().getY() / self.get_camera().getSy(), 0))
     
     def shoot(self, playSound=True):
         if not self.handleEvents: return
@@ -197,25 +207,28 @@ class Player(Agent):
         #print objHit
         if objHit in self.game.drones:
             d = self.game.drones[objHit]
-            d.hit(self.damage())
-            print "hit drone %s for %d damage" % (objHit, self.damage() / d.shield())
-            if d.is_dead():
-                print "killed it!"
-                self.add_kill(d)
+            if not d.is_dead():
+                d.hit(self.damage())
+                print "hit drone %s for %d damage" % (objHit, self.damage() / d.shield())
+                if d.is_dead():
+                    print "killed it!"
+                    self.add_kill(d)
         elif objHit in self.game.programs:
             p = self.game.programs[objHit]
-            p.hit(self.damage())
-            print "hit program %s for %d damage" % (objHit, self.damage() / p.shield())
-            if p.is_dead():
-                print "Oh no, you blew up a program!"
-                self.add_kill(p)
+            if not p.is_dead():
+                p.hit(self.damage())
+                print "hit program %s for %d damage" % (objHit, self.damage() / p.shield())
+                if p.is_dead():
+                    print "Oh no, you blew up a program!"
+                    self.add_kill(p)
         elif objHit in self.game.players:
             p = self.game.players[objHit]
-            p.hit(self.damage())
-            print "hit %s for %d damage" % (objHit, self.damage() / p.shield())
-            if p.is_dead():
-                print "you killed %s!"%objHit
-                self.add_kill(p)
+            if not p.is_dead():
+                p.hit(self.damage())
+                print "hit %s for %d damage" % (objHit, self.damage() / p.shield())
+                if p.is_dead():
+                    print "you killed %s!"%objHit
+                    self.add_kill(p)
         #end if 
         self.fire_laser(objHit,spotHit,playSound)
     
@@ -247,7 +260,6 @@ class Player(Agent):
         
     def fire_laser(self, objHit, spotHit, playSound):
         startPos = self.tron.getPos()
-        startPos.setZ(startPos.getZ() + 2)
         laser = Laser()
         laser.set_pos(startPos)
         laser.model.setScale(16.0)
@@ -322,12 +334,28 @@ class LocalPlayer(Player):
     
     def get_camera(self):
         return base.camera
+    
+    def setCameraDist(self, dist):
+        super(LocalPlayer,self).setCameraDist(dist)
+        if dist <= HIDE_DIST:
+            self.hide()
+        else:
+            self.show()
+    
+    def show(self):
+        if self.get_camera().getY() > HIDE_DIST and self.tron.isHidden():
+            self.tron.show()
+    
+    def hide(self):
+        if self.get_camera().getY() <= HIDE_DIST and not self.tron.isHidden():
+            self.tron.hide()
         
     def die(self):
         super(LocalPlayer,self).die()
         self.show_scores()
     
     def respawn(self):
+        print "respawning"
         Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn), Wait(1.0),
                  Func(self.hide_scores),Func(self.toggle_god)).start()
     
