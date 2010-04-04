@@ -17,9 +17,12 @@ environ.reparentTo(render)
 environ.setScale(0.25, 0.25, 0.25)
 environ.setPos(-8, 42, 0)
 
+base.disableMouse()
+base.camera.setPos(0,-8,2.5)
+
 drone = Actor.Actor("../../models/cyborg_newer.egg", {"sword": "../../models/cyborg_swing_sword.egg"})
 drone.setScale(0.2, 0.2, 0.2)
-drone.setPos(0,0,2.5)
+drone.setPos(0,5,2.5)
 drone.setHpr(0,90,0)
 drone.reparentTo(render)
 #drone.loop("sword")
