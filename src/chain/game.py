@@ -103,7 +103,7 @@ class Game(object):
         self.eventHandle.addDroneHandler(d)
     
     def add_wall(self, name, parent, p1, p2, p3, p4):
-        self.obstacles[name] = Wall(self, name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
+        self.obstacles[name] = Wall(name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
         #self.eventHandle.addWallHandler(self.obstacles[name])
     
     def add_ram(self, name, pos, scale, hpr):

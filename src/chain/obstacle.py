@@ -10,18 +10,12 @@ class Obstacle(object):
         pass
 
 class Wall(Obstacle):
-    #params: Game, Wall ID, parent PathNode, 4 counterclockwise points,
-    #        collision mask, tile scale size, HPR rotation of the wall
-    def __init__(self, game, name, parent, p1, p2, p3, p4, mask, tileSize=1.0, rotPoint=0):
-        self.game = game
+    def __init__(self, name, parent, mask, collisionSolid):
         self.name = name
         self.node = parent.attachNewNode(CollisionNode(name))
-        self.node.node().addSolid(CollisionPolygon(p1,p2,p3,p4))
+        self.node.node().addSolid(collisionSolid)
         self.node.node().setFromCollideMask(mask)
         self.node.node().setIntoCollideMask(mask)
-        vec1 = p2-p1
-        vec2 = p4-p1
-        self.normal = vec1.cross(vec2)
         #for now, tile size and rotation don't affect this... goal is for this
         #to tessellate the wall with models of the given tileSize
         
@@ -30,6 +24,22 @@ class Wall(Obstacle):
     
     def destroy(self):
         self.node.removeNode()
+
+class QuadWall(Obstacle):
+    #params: Game, Wall ID, parent PathNode, 4 counterclockwise points,
+    #        collision mask, tile scale size, HPR rotation of the wall
+    def __init__(self, name, parent, p1, p2, p3, p4, mask):
+        super(QuadWall, self).__init__(name, parent, mask, CollisionPolygon(p1,p2,p3,p4))
+        vec1 = p2-p1
+        vec2 = p4-p1
+        self.normal = vec1.cross(vec2)
+
+class TriangleWall(Wall):
+    def __init__(self, name, parent, p1, p2, p3, mask):
+        super(TriangleWall, self).__init__(name, parent, mask, CollisionPolygon(p1,p2,p3))
+        vec1 = p2-p1
+        vec2 = p3-p1
+        self.normal = vec1.cross(vec2)
 
 class Tower(Obstacle):
     
@@ -109,3 +119,14 @@ class CopperWire(Obstacle):
         
     def destroy(self):
         self.wire.removeNode()
+        
+def make_tile(parent,fname,pos,hpr, scale=1.0):
+    tile = loader.loadModel("%s/white_floor.egg"%MODEL_PATH)
+    tile.reparentTo(parent)
+    tile.setScale(scale, scale, scale)
+    tile.setPos(pos)
+    tile.setHpr(*hpr)
+    ts = TextureStage('ts')
+    tex = loader.loadTexture(fname)
+    ts.setMode(TextureStage.MModulate)
+    tile.setTexture(ts, tex)
