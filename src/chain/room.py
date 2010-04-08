@@ -18,8 +18,10 @@ class Room(Obstacle):
         self.walls.clear()
     
 class CubeRoom(Room):
-    def __init__(self, name, parent):
+    def __init__(self, name, parent, scale, eggs):
         super(CubeRoom, self).__init__(name, parent)
         
-    
+class Hallway(Room):
+    def __init__(self, name, parent):
+        super(Hallway, self).__init__(name, parent)
         

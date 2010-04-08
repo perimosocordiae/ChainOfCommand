@@ -25,7 +25,7 @@ class Wall(Obstacle):
     def destroy(self):
         self.node.removeNode()
 
-class QuadWall(Obstacle):
+class QuadWall(Wall):
     #params: Game, Wall ID, parent PathNode, 4 counterclockwise points,
     #        collision mask, tile scale size, HPR rotation of the wall
     def __init__(self, name, parent, p1, p2, p3, p4, mask):
@@ -69,16 +69,16 @@ class Box(Obstacle):
         p7 = Point3(p3[0], p3[1], p3[2] + h)
         p8 = Point3(p4[0], p4[1], p4[2] + h)
         #Make the 4 walls
-        self.wall1 = Wall(game, name + "_wall1", parent,
+        self.wall1 = QuadWall(name + "_wall1", parent,
                           p1, p2, p6, p5, WALL_COLLIDER_MASK)
-        self.wall2 = Wall(game, name + "_wall1", parent,
+        self.wall2 = QuadWall(name + "_wall1", parent,
                           p2, p3, p7, p6, WALL_COLLIDER_MASK)
-        self.wall3 = Wall(game, name + "_wall1", parent,
+        self.wall3 = QuadWall(name + "_wall1", parent,
                           p3, p4, p8, p7, WALL_COLLIDER_MASK)
-        self.wall4 = Wall(game, name + "_wall1", parent,
+        self.wall4 = QuadWall(name + "_wall1", parent,
                           p4, p1, p5, p8, WALL_COLLIDER_MASK)
         #Make the ceiling
-        self.ceiling = Wall(game, name + "_ceiling", parent,
+        self.ceiling = QuadWall(name + "_ceiling", parent,
                           p5, p6, p7, p8, FLOOR_COLLIDER_MASK)
     
     def destroy(self):
@@ -120,13 +120,13 @@ class CopperWire(Obstacle):
     def destroy(self):
         self.wire.removeNode()
         
-def make_tile(parent,fname,pos,hpr, scale=1.0):
-    tile = loader.loadModel("%s/white_floor.egg"%MODEL_PATH)
+def make_tile(parent,modelFile,color,pos,hpr, scale=1.0):
+    tile = loader.loadModel("%s/%s"%(MODEL_PATH, modelFile))
     tile.reparentTo(parent)
     tile.setScale(scale, scale, scale)
     tile.setPos(pos)
     tile.setHpr(*hpr)
     ts = TextureStage('ts')
-    tex = loader.loadTexture(fname)
+    tex = loader.loadTexture("%s/%s1040.jpg"%(COLOR_PATH,color))
     ts.setMode(TextureStage.MModulate)
     tile.setTexture(ts, tex)

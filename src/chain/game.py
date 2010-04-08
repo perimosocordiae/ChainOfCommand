@@ -14,7 +14,7 @@ from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
-from obstacle import Wall, Tower, RAMSlot, CopperWire
+from obstacle import Wall, Tower, RAMSlot, CopperWire, QuadWall
 from networking import Client
 from program import DashR, Rm, Chmod, RAM, Gdb
 from constants import *
@@ -103,7 +103,7 @@ class Game(object):
         self.eventHandle.addDroneHandler(d)
     
     def add_wall(self, name, parent, p1, p2, p3, p4):
-        self.obstacles[name] = Wall(name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
+        self.obstacles[name] = QuadWall(name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
         #self.eventHandle.addWallHandler(self.obstacles[name])
     
     def add_ram(self, name, pos, scale, hpr):
@@ -171,7 +171,7 @@ class Game(object):
         
         #The reason this is different is because walls have their own event collision
         #handler method... floors don't need one (so no need for a dictionary of them)
-        self.floor = Wall(self, "floor", self.environ, Point3(-2*center, -2*center, 0),
+        self.floor = QuadWall("floor", self.environ, Point3(-2*center, -2*center, 0),
                 Point3(2*center, -2*center, 0), Point3(2*center, 2*center, 0),
                 Point3(-2*center, 2*center, 0), FLOOR_COLLIDER_MASK)
         #Note: if it makes sense, this can be added as an obstacle and destroyed like the others
