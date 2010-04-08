@@ -18,6 +18,7 @@ from obstacle import Wall, Tower, RAMSlot, CopperWire, QuadWall
 from networking import Client
 from program import DashR, Rm, Chmod, RAM, Gdb
 from constants import *
+from room import CubeRoom
 
 class Game(object):
 
@@ -112,69 +113,80 @@ class Game(object):
         self.readd_program(ram)
     
     def load_env(self):
-        #Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
-        eggs = map(lambda s:"%s/%s1040.jpg"%(COLOR_PATH,s),['yellow','blue','green','red'])
-        #num_tiles = self.map_size/self.tile_size
-        num_tiles = 2
-        self.tile_size = self.map_size / num_tiles
-        colscale = 0.01
-        #scale = colscale * self.tile_size
-        #environ = loader.loadModel('%s/special_floor.egg'%MODEL_PATH)
+        #The size of a cube
+        num_tiles = 3
+        wall_height = 2
+        colscale = 1.0
+        
         self.environ = render.attachNewNode("Environment Scale")
         self.environ.reparentTo(render)
+        self.tile_size = 2 * self.map_size / num_tiles
         self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         self.environ.setPos(0, 0, 0)
         
-        center = num_tiles/2
-        #wall_height = 10
-        wall_height = num_tiles
+        self.room = CubeRoom("Cube Room", self.environ, (0,0,0),
+                        (0,0,0), 1.0, "blue", holes=(5,0,0,0,0,0,0,0))
+        ##Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
+        #eggs = map(lambda s:"%s/%s1040.jpg"%(COLOR_PATH,s),['yellow','blue','green','red'])
+        #
+        ##scale = colscale * self.tile_size
+        ##environ = loader.loadModel('%s/special_floor.egg'%MODEL_PATH)
+        #self.environ = render.attachNewNode("Environment Scale")
+        #self.environ.reparentTo(render)
+        #self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
+        #self.environ.setPos(0, 0, 0)
+        #
+        #center = num_tiles/2
+        ##wall_height = 10
+        #wall_height = num_tiles
+        #
+        ##for i,j in iproduct(range(num_tiles),repeat=2):
+        #for i in range(num_tiles):
+        #  for j in range(num_tiles):
+        #    egg = eggs[egg_index(i,j,center)]
+        #    self.make_tile(self.environ,egg,(-2*(i-center) - 1,-2*(j-center) - 1, 2*wall_height), (0, 0, 180), colscale) #ceiling
+        #    #if i == center and j == center: continue #bottom center is already done
+        #    self.make_tile(self.environ,egg,(2*(i-center) + 1, 2*(j-center) + 1, 0),(0, 0, 0), colscale) #floor
+        #
+        ##for i,j in iproduct(range(num_tiles),range(wall_height)):
+        #for i in range(num_tiles):
+        #  for j in range(wall_height):
+        #    egg = eggs[egg_index(i,j,center)]
+        #    #TODO: try removing these in kill_everything
+        #    self.make_tile(self.environ,egg,(-2*center,    -2*(i-center)-1,  2*(wall_height-j)-1),(0, 0, 90), colscale)  #wall 1
+        #    self.make_tile(self.environ,egg,(-2*(i-center)-1, -2*center,  2*(wall_height-j)-1),(0,-90,0), colscale)   #wall 2
+        #    self.make_tile(self.environ,egg,( 2*center,     2*(i-center) + 1, 2*j+1),            (0, 0, -90), colscale) #wall 3
+        #    self.make_tile(self.environ,egg,(-2*(i-center) - 1, 2*center,   2*j+1),            (0, 90,0), colscale)   #wall 4
+        ##CopperWire("wire", self.environ, (0,0,0.001), (0,0,0), (colscale / 20, colscale * 2))
+        ##add collision handlers for walls
+        #self.add_wall("wall1", self.environ,
+        #              Point3(-2*center, -2*center, 2*wall_height + 1),
+        #              Point3(-2*center, -2*center, 0),
+        #              Point3(-2*center, 2*center, 0),
+        #              Point3(-2*center, 2*center, 2*wall_height + 1))
+        #self.add_wall("wall2", self.environ,
+        #              Point3(2*center, 2*center, 2*wall_height + 1),
+        #              Point3(2*center, 2*center, 0),
+        #              Point3(2*center, -2*center, 0),
+        #              Point3(2*center, -2*center, 2*wall_height + 1))
+        #self.add_wall("wall3", self.environ,
+        #              Point3(-2*center, 2*center, 2*wall_height + 1),
+        #              Point3(-2*center, 2*center, 0),
+        #              Point3(2*center, 2*center, 0),
+        #              Point3(2*center, 2*center, 2*wall_height + 1))
+        #self.add_wall("wall4", self.environ,
+        #              Point3(2*center, -2*center, 2*wall_height + 1),
+        #              Point3(2*center, -2*center, 0),
+        #              Point3(-2*center, -2*center, 0),
+        #              Point3(-2*center, -2*center, 2*wall_height + 1))
+        #
+        ##The reason this is different is because walls have their own event collision
+        ##handler method... floors don't need one (so no need for a dictionary of them)
+        #self.floor = QuadWall("floor", self.environ, Point3(-2*center, -2*center, 0),
+        #        Point3(2*center, -2*center, 0), Point3(2*center, 2*center, 0),
+        #        Point3(-2*center, 2*center, 0), FLOOR_COLLIDER_MASK)
+        ##Note: if it makes sense, this can be added as an obstacle and destroyed like the others
         
-        #for i,j in iproduct(range(num_tiles),repeat=2):
-        for i in range(num_tiles):
-          for j in range(num_tiles):
-            egg = eggs[egg_index(i,j,center)]
-            self.make_tile(self.environ,egg,(-2*(i-center) - 1,-2*(j-center) - 1, 2*wall_height), (0, 0, 180), colscale) #ceiling
-            #if i == center and j == center: continue #bottom center is already done
-            self.make_tile(self.environ,egg,(2*(i-center) + 1, 2*(j-center) + 1, 0),(0, 0, 0), colscale) #floor
-        
-        #for i,j in iproduct(range(num_tiles),range(wall_height)):
-        for i in range(num_tiles):
-          for j in range(wall_height):
-            egg = eggs[egg_index(i,j,center)]
-            #TODO: try removing these in kill_everything
-            self.make_tile(self.environ,egg,(-2*center,    -2*(i-center)-1,  2*(wall_height-j)-1),(0, 0, 90), colscale)  #wall 1
-            self.make_tile(self.environ,egg,(-2*(i-center)-1, -2*center,  2*(wall_height-j)-1),(0,-90,0), colscale)   #wall 2
-            self.make_tile(self.environ,egg,( 2*center,     2*(i-center) + 1, 2*j+1),            (0, 0, -90), colscale) #wall 3
-            self.make_tile(self.environ,egg,(-2*(i-center) - 1, 2*center,   2*j+1),            (0, 90,0), colscale)   #wall 4
-        #CopperWire("wire", self.environ, (0,0,0.001), (0,0,0), (colscale / 20, colscale * 2))
-        #add collision handlers for walls
-        self.add_wall("wall1", self.environ,
-                      Point3(-2*center, -2*center, 2*wall_height + 1),
-                      Point3(-2*center, -2*center, 0),
-                      Point3(-2*center, 2*center, 0),
-                      Point3(-2*center, 2*center, 2*wall_height + 1))
-        self.add_wall("wall2", self.environ,
-                      Point3(2*center, 2*center, 2*wall_height + 1),
-                      Point3(2*center, 2*center, 0),
-                      Point3(2*center, -2*center, 0),
-                      Point3(2*center, -2*center, 2*wall_height + 1))
-        self.add_wall("wall3", self.environ,
-                      Point3(-2*center, 2*center, 2*wall_height + 1),
-                      Point3(-2*center, 2*center, 0),
-                      Point3(2*center, 2*center, 0),
-                      Point3(2*center, 2*center, 2*wall_height + 1))
-        self.add_wall("wall4", self.environ,
-                      Point3(2*center, -2*center, 2*wall_height + 1),
-                      Point3(2*center, -2*center, 0),
-                      Point3(-2*center, -2*center, 0),
-                      Point3(-2*center, -2*center, 2*wall_height + 1))
-        
-        #The reason this is different is because walls have their own event collision
-        #handler method... floors don't need one (so no need for a dictionary of them)
-        self.floor = QuadWall("floor", self.environ, Point3(-2*center, -2*center, 0),
-                Point3(2*center, -2*center, 0), Point3(2*center, 2*center, 0),
-                Point3(-2*center, 2*center, 0), FLOOR_COLLIDER_MASK)
-        #Note: if it makes sense, this can be added as an obstacle and destroyed like the others
         
         # make some random towers
         for tower in range(4):
@@ -182,7 +194,7 @@ class Game(object):
             name = "tower_%d"%tower
             self.obstacles[name] = Tower(render, pos[0], pos[1], 
                                      randint(10,2*wall_height*self.tower_size), 
-                                     colscale,self.tile_size)
+                                     colscale/100,self.tile_size)
         
         # make some random RAM slots
         for slot in range(5):
@@ -239,9 +251,10 @@ class Game(object):
         for k in self.programs.keys():
             self.programs[k].die()
             del self.programs[k]
-        for o in self.obstacles.itervalues():
-            o.destroy()
-        self.floor.destroy()
+        self.room.destroy()
+        #for o in self.obstacles.itervalues():
+        #    o.destroy()
+        #self.floor.destroy()
             
         self.client.close_connection()
         base.enableMouse()

@@ -41,6 +41,30 @@ class TriangleWall(Wall):
         vec2 = p3-p1
         self.normal = vec1.cross(vec2)
 
+class LWall(Obstacle):
+    def __init__(self, name, parent, p1, p2, p3, p4, mask):
+        self.name = name
+        p5 = p2 + (p3-p2)*0.5
+        p7 = p1 + (p4-p1)*0.5
+        p6 = p5 + (p7-p5)*0.5
+        p8 = p3 + (p4-p3)*0.5
+        self.node1 = parent.attachNewNode(CollisionNode(name))
+        self.node1.node().addSolid(CollisionPolygon(p3,p8,p6,p5))
+        self.node1.node().setFromCollideMask(mask)
+        self.node1.node().setIntoCollideMask(mask)
+        
+        self.node2 = parent.attachNewNode(CollisionNode(name))
+        self.node2.node().addSolid(CollisionPolygon(p1,p2,p5,p7))
+        self.node2.node().setFromCollideMask(mask)
+        self.node2.node().setIntoCollideMask(mask)
+        
+    def getNormal(self):
+        return self.normal
+    
+    def destroy(self):
+        self.node1.removeNode()
+        self.node2.removeNode()
+        
 class Tower(Obstacle):
     
     def __init__(self, parent, x,y,h, scale, tile_size):
@@ -120,7 +144,7 @@ class CopperWire(Obstacle):
     def destroy(self):
         self.wire.removeNode()
         
-def make_tile(parent,modelFile,color,pos,hpr, scale=1.0):
+def make_tile(parent,modelFile,color,pos, hpr=(0,0,0), scale=1.0):
     tile = loader.loadModel("%s/%s"%(MODEL_PATH, modelFile))
     tile.reparentTo(parent)
     tile.setScale(scale, scale, scale)
@@ -130,3 +154,4 @@ def make_tile(parent,modelFile,color,pos,hpr, scale=1.0):
     tex = loader.loadTexture("%s/%s1040.jpg"%(COLOR_PATH,color))
     ts.setMode(TextureStage.MModulate)
     tile.setTexture(ts, tex)
+    return tile
