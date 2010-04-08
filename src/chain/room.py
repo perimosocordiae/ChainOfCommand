@@ -36,8 +36,8 @@ class Room(Obstacle):
             egg = "white_wall.egg"
         model = make_tile(parent,egg,color,pos,(0,0,90 * rotation))
         if total >= divisor:
-            wall = LWall(name, model, Point3(1,0,2), Point3(-1,0,2),
-                    Point3(-1,0,0), Point3(1,0,0), WALL_COLLIDER_MASK)
+            wall = LWall(name, model, Point3(1,0,1), Point3(-1,0,1),
+                    Point3(-1,0,-1), Point3(1,0,-1), WALL_COLLIDER_MASK)
         else:
             wall = QuadWall(name, model, Point3(1,0,1), Point3(-1,0,1),
                     Point3(-1,0,-1), Point3(1,0,-1), WALL_COLLIDER_MASK)
