@@ -11,6 +11,7 @@ from direct.showbase.InputStateGlobal import inputState
 from eventHandler import PlayerEventHandler
 from projectile import Laser
 from agent import Agent
+from hud import HUD
 from constants import *
 
 #Constants
@@ -25,9 +26,6 @@ JUMP_SPEED = 300.0 #make sure this stays less than SAFE_FALL - he should be able
 TRON_ORIGIN_HEIGHT = 10
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
-EMPTY_PROG_STR = "|        |"
-HUD_PROG_SCALE = 0.08
-HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 
 class Player(Agent):
     def __init__(self, game, name, startPos):
@@ -305,7 +303,7 @@ class LocalPlayer(Player):
         self.collecting = False
         self.shooting = False
         self.dropping = -1
-        self.setup_HUD()
+        self.hud = HUD(self)
         #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.add_background_music()
@@ -361,23 +359,11 @@ class LocalPlayer(Player):
     
     def spawn(self,startPos=None,update=True):
         super(LocalPlayer,self).spawn(startPos)
-        if hasattr(self, "healthHUD") and self.healthHUD : self.healthHUD.setText("HP: %d" % self.health)
+        if hasattr(self, "hud") and self.hud:
+            self.hud.heal()
         if update:
             self.sendUpdate()
 
-    def show_scores(self):
-        #self.crosshairs.hide()
-        try: self.score_screen.destroy()
-        except: pass
-        players = reversed(sorted(self.game.players.values(), key=lambda p: p.killcount()))
-        score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount()) for p in players])
-        self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.8),pos=(0,0.75))
-    
-    def hide_scores(self):
-        #self.crosshairs.show()
-        try: self.score_screen.destroy()
-        except: pass
-    
     @staticmethod
     def setup_sounds():
         keys = ['laser', 'yes', 'snarl']
@@ -397,34 +383,15 @@ class LocalPlayer(Player):
         print "Author: Trevor Dericks"
     
     def toggle_background_music(self):
-        base.enableMusic(not base.musicManager.getActive())
-        if base.musicManager.getActive():
-            LocalPlayer.backgroundMusic.setTime(35)
-            self.musicHUD.setImage("%s/music_on.png" % TEXTURE_PATH)
-            self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
-        else:
-            self.musicHUD.setImage("%s/music_off.png" % TEXTURE_PATH)
-            self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
+        active = base.musicManager.getActive()
+        base.enableMusic(not active)
+        if active: LocalPlayer.backgroundMusic.setTime(35)
+        self.hud.toggle_background_music()
         
     def toggle_sound_effects(self):
         base.enableSoundEffects(not base.sfxManagerList[0].getActive())
-        if base.sfxManagerList[0].getActive():
-            self.soundHUD.setImage("%s/speaker_on.png" % TEXTURE_PATH)
-            self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
-        else:
-            self.soundHUD.setImage("%s/speaker_off.png" % TEXTURE_PATH)
-            self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
+        self.hud.toggle_sound_effects()
 
-    def target(self):
-        objHit,spotHit = self.findCrosshairHit()
-        if objHit in self.game.drones or objHit in self.game.players: #turn the crosshairs red
-            self.crosshairs.setImage("%s/crosshairs_locked.tif" % TEXTURE_PATH)
-        elif objHit in self.game.programs:
-            self.crosshairs.setImage("%s/crosshairs_program.tif" % TEXTURE_PATH)
-        else:
-            self.crosshairs.setImage("%s/crosshairs.tif" % TEXTURE_PATH)
-        self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
-    
     def click(self):
         #self.shoot()
         delay = self.rapid_fire()
@@ -447,95 +414,33 @@ class LocalPlayer(Player):
     def hit(self, amt=0):
         if not super(LocalPlayer, self).hit(amt): return
         LocalPlayer.sounds['snarl'].play()
-        self.flashRed.start() # flash the screen red
-        print "hit! health = %d" % self.health
-        self.healthHUD.setText("HP: %d" % self.health)
+        self.hud.hit()
     
     def heal(self, amt=0):
         super(LocalPlayer, self).heal(amt)
-        self.healthHUD.setText("HP: %d" % self.health)
-        #print "Healed %d"%amt 
+        self.hud.heal()
     
     def collect(self):
         #sound/message depends on status
         i, prog = super(LocalPlayer, self).collect()
         if prog:
             LocalPlayer.sounds['yes'].play()
-            print "Program get: %s" % prog.name
             if i >= 0:
-                self.programHUD[i].setText("|  %s  |" % prog.name)
+                self.hud.collect(i,prog.name)
     
     def drop(self, i):
         if (super(LocalPlayer, self).drop(i)):
-            print "Program dropped: %s" %self.programs[i]
-            self.programHUD[i].setText("|        |")
+            self.hud.drop(i)
         
     def add_slot(self):
-        currentCount = len(self.programs)
-        if currentCount < 9:
+        if len(self.programs) < 9:
             self.programs.append(None)
-            x = self.programHUD[-1].getPos()[0]
-            self.programHUD.append(OnscreenText(text=EMPTY_PROG_STR,
-                            pos=(x + 0.3, -0.9), scale=HUD_PROG_SCALE,
-                            fg=HUD_FG, bg=HUD_BG, mayChange=True))
-            for txt in self.programHUD:
-                #they couldn't just make it simple and override getX() could they?
-                txt.setX(txt.getPos()[0] - 0.15)
+            self.hud.add_slot()
         
     def add_kill(self, objKilled):
         super(LocalPlayer, self).add_kill(objKilled)
-        self.killHUD.setText("Kills: %d" % self.killcount())
+        self.hud.add_kill()
     
-    def setup_HUD(self):
-        #show health, programs, crosshairs, etc. (some to come, some done now)
-        base.setFrameRateMeter(True)
-        self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(-0.025, 0, 0), scale=0.05)
-        self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
-        
-        self.programHUD = [
-            OnscreenText(text=EMPTY_PROG_STR, pos=(-0.3, -0.9), scale=HUD_PROG_SCALE,
-                         fg=HUD_FG, bg=HUD_BG, mayChange=True),
-            OnscreenText(text=EMPTY_PROG_STR, pos=(0, -0.9), scale=HUD_PROG_SCALE,
-                         fg=HUD_FG, bg=HUD_BG, mayChange=True),
-            OnscreenText(text=EMPTY_PROG_STR, pos=(0.3, -0.9), scale=HUD_PROG_SCALE,
-                         fg=HUD_FG, bg=HUD_BG, mayChange=True)
-		]
-        # red flash for indicating hits
-        self.redScreen = None
-        self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
-        # health status
-        self.healthHUD = OnscreenText(text="HP: %d" % self.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
-        # kill counter
-        self.killHUD = OnscreenText(text="Kills: %d" % self.killcount(), pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
-        self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.92), scale=0.05)
-        self.musicHUD.setImage(image="%s/music_on.png" % TEXTURE_PATH)
-        self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.82), scale=0.05)
-        self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
-        self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
-    
-    def destroy_HUD(self):
-        self.crosshairs.destroy() 
-        for programDisp in self.programHUD : programDisp.destroy() 
-        self.healthHUD.destroy()
-        self.healthHUD = None
-        self.killHUD.destroy() 
-        self.killHUD = None
-        self.musicHUD.destroy()
-        self.musicHUD = None
-        self.soundHUD.destroy()
-        self.soundHUD = None
-        self.hide_scores()
-        base.setFrameRateMeter(False) 
-    
-    def flash_red(self):
-        if not self.redScreen:
-            self.redScreen = OnscreenImage(image="%s/red_screen.png" % TEXTURE_PATH, pos=(0, 0, 0), scale=(2, 1, 1))
-            self.redScreen.setTransparency(TransparencyAttrib.MAlpha)
-        else:
-            self.redScreen.destroy()
-            self.redScreen = None
-
     def setup_camera(self):
         super(LocalPlayer,self).setup_camera()
         self.input_tokens = [inputState.watch('forward', 'w', 'w-up'),
@@ -561,7 +466,7 @@ class LocalPlayer(Player):
     
     def sendUpdate(self):
         if not self.handleEvents: return Task.cont
-        self.target()
+        self.hud.target()
         self.handleGravity()
         self.LookAtMouse()
         

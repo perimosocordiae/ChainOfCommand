@@ -16,16 +16,16 @@ class PlayerEventHandler(DirectObject):
         self.accept('p',self.pause_menu)
         self.accept('m',playr.toggle_background_music)
         self.accept('n',playr.toggle_sound_effects)
-        self.accept('e',playr.jump)
-        self.accept('tab',playr.show_scores)
-        self.accept('tab-up',playr.hide_scores)
+        self.accept('space',playr.jump)
+        self.accept('tab',playr.hud.show_scores)
+        self.accept('tab-up',playr.hud.hide_scores)
         
         # networked events
         self.accept('mouse1',playr.click)
         self.accept('mouse1-up',playr.clickRelease)
-        self.accept('space',playr.collectOn)
-        self.accept('space-repeat',playr.collectOn)
-        self.accept('space-up',playr.collectOff)
+        self.accept('e',playr.collectOn)
+        self.accept('e-repeat',playr.collectOn)
+        self.accept('e-up',playr.collectOff)
         
         #drop program i; if we go past 9 programs, we'll need another key system anyway
         for i in range(9):

@@ -33,10 +33,10 @@ LOGO = """\n\n\n
 LOADINGTEXT = """\n\nControls:
   Mouse       | look and turn
   Left click  | shoot
-  Spacebar    | pick up programs
+  E           | pick up programs
   1-9         | drop program
   W/A/S/D     | move forward/left/back/right
-  E           | jump
+  Spacebar    | jump
   F or scroll | change perspective
   P           | pause
   M/N         | toggle music/sound fx

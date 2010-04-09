@@ -220,7 +220,7 @@ class Game(object):
         p.hide()
         p.handleEvents = False
         p.invincible = True
-        p.show_scores()
+        p.hud.show_scores()
         taskMgr.remove('timerTask')
         if not self.end_sequence:
             self.end_sequence = Sequence(Wait(5),
@@ -238,7 +238,7 @@ class Game(object):
         for t in self.local_player().input_tokens:
             t.release()
         self.local_player().get_camera().reparentTo(render)
-        self.local_player().destroy_HUD()
+        self.local_player().hud.destroy_HUD()
         self.timer.destroy()
         for d in self.drones.values():
             taskMgr.remove(d.walkTask)
