@@ -88,9 +88,11 @@ class Hallway(Room):
         
         #Calculate how much shear, scale, and rotation is needed for the angle:
         origZ = self.environ.getSz();
+        print origZ
         radAng = radians(angle)
         self.environ.setSz(origZ * cos(radAng))
-        self.environ.setShyz(2 * origZ * sin(radAng))
+        self.environ.setShyz(2 * origZ * tan(radAng))
+        print self.environ.getShyz()
         self.environ.setP(self.environ.getP() + angle)
         
         #Add the 2 walls
@@ -108,6 +110,6 @@ class Hallway(Room):
                          Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
         self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,2),(0,180,0),1.0),
                 QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
-                         Point3(-1,2,4), Point3(1,2,2), WALL_COLLIDER_MASK))
+                         Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
         
     
