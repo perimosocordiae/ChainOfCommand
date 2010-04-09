@@ -78,7 +78,7 @@ class Agent(object):
         if self.floorQueue.getNumEntries() == 0: return True # technically
         self.floorQueue.sortEntries()
         floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
-        return self.get_model().getZ() > floorZ + self.get_origin_height()
+        return self.get_model().getZ() > floorZ + self.get_origin_height() + 0.5
     
     def handleGravity(self):
         #in the future, have 2 rays - one above, one below, so he can't jump

@@ -18,14 +18,19 @@ from obstacle import Wall, Tower, RAMSlot, CopperWire, QuadWall
 from networking import Client
 from program import DashR, Rm, Chmod, RAM, Gdb
 from constants import *
-from room import CubeRoom
+from level import *
 
 class Game(object):
 
-    def __init__(self,ip,port_num,shell,map_size=320,tile_size=16, tower_size=16, gameLength=180):
+    def __init__(self,ip,port_num,shell,tile_size=100, tower_size=16, gameLength=180):
         self.shell = shell
         self.players, self.programs,self.drones,self.obstacles,self.startPoints = {},{},{},{},{}
-        self.map_size,self.tile_size, self.tower_size, self.gameLength = map_size,tile_size, tower_size, gameLength
+        self.tile_size, self.tower_size, self.gameLength = tile_size, tower_size, gameLength
+        
+        #The size of a cube
+        num_tiles = 3
+        self.map_size = (self.tile_size * num_tiles) / 2.0
+        
         self.end_sequence = None
         self.client = Client(ip,port_num)
         self.load_models()
@@ -108,24 +113,24 @@ class Game(object):
         #self.eventHandle.addWallHandler(self.obstacles[name])
     
     def add_ram(self, name, pos, scale, hpr):
-        self.obstacles[name] = RAMSlot(self, name, render, pos, scale, hpr)
+        self.obstacles[name] = RAMSlot(name, render, pos, scale, hpr)
         ram = RAM(self, pos, scale * 7.0)
         self.readd_program(ram)
     
     def load_env(self):
-        #The size of a cube
-        num_tiles = 3
+        
         wall_height = 2
         colscale = 1.0
         
         self.environ = render.attachNewNode("Environment Scale")
         self.environ.reparentTo(render)
-        self.tile_size = 2 * self.map_size / num_tiles
+        #self.tile_size = 2 * self.map_size / num_tiles
         self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         self.environ.setPos(0, 0, 0)
         
-        self.room = CubeRoom("Cube Room", self.environ, (0,0,0),
-                        (0,0,0), 1.0, "blue", holes=(5,0,0,0,0,0,0,0))
+        #self.level = CubeLevel(self.environ)
+        self.level = BasicBaseLevel(self.environ)
+        
         ##Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
         #eggs = map(lambda s:"%s/%s1040.jpg"%(COLOR_PATH,s),['yellow','blue','green','red'])
         #
@@ -251,7 +256,7 @@ class Game(object):
         for k in self.programs.keys():
             self.programs[k].die()
             del self.programs[k]
-        self.room.destroy()
+        self.level.destroy()
         #for o in self.obstacles.itervalues():
         #    o.destroy()
         #self.floor.destroy()

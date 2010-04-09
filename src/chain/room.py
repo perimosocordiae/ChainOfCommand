@@ -1,10 +1,13 @@
+from math import sin, cos, tan, radians
 from random import randint
 from obstacle import *
 from constants import *
+from program import RAM
 
 class Room(Obstacle):
     def __init__(self, name, parent, pos, rot, scale):
         self.walls = {}
+        self.obstacles = {}
         self.hasRand = False
         self.scale = scale
         self.environ = parent.attachNewNode("%s_root"%name)
@@ -15,6 +18,11 @@ class Room(Obstacle):
     def add_wall(self, name, model, parent, p1, p2, p3, p4, colliderMask):
         self.walls[name] = (model, QuadWall(name, parent, p1, p2, p3, p4, colliderMask))
     
+    def add_ram(self, game, name, pos, scale, hpr):
+        self.obstacles[name] = RAMSlot(name, self.environ, pos, scale, hpr)
+        ram = RAM(game, pos, scale * 7.0)
+        game.readd_program(ram)
+        
     def add_triangle(self, name, model, parent, p1, p2, p3, colliderMask):
         self.walls[name] = (model, TriangleWall(name, parent, p1, p2, p3, colliderMask))
         
@@ -22,12 +30,15 @@ class Room(Obstacle):
         for wall in self.walls.itervalues():
             wall[0].removeNode()
             wall[1].destroy()
+        for obstacle in self.obstacles.itervalues():
+            obstacle.destroy()
         self.walls.clear()
+        self.obstacles.clear()
     
     def rand_point(self):
         return (0,0,0)
     
-    def addWallSection(self, name, parent, pos, color, divisor, total):
+    def addWallSection(self, name, parent, pos, color, divisor=1, total=0):
         if total >= divisor:
             rotation = (6-(total//divisor)) % 4
             egg = "L_wall.egg"
@@ -64,7 +75,7 @@ class CubeRoom(Room):
                 QuadWall("floor", self.environ, Point3(3,3,0), Point3(-3,3,0),
                          Point3(-3,-3,0), Point3(3,-3,0), FLOOR_COLLIDER_MASK))
         self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,0,4),(0,180,0),3.0),
-                QuadWall("floor", self.environ, Point3(3,-3,4), Point3(-3,-3,4),
+                QuadWall("ceiling", self.environ, Point3(3,-3,4), Point3(-3,-3,4),
                          Point3(-3,3,4), Point3(3,3,4), WALL_COLLIDER_MASK))
         
     
@@ -72,6 +83,31 @@ class CubeRoom(Room):
         return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
     
 class Hallway(Room):
-    def __init__(self, name, parent):
-        super(Hallway, self).__init__(name, parent)
+    def __init__(self, name, parent, pos, rot, scale, color, angle):
+        super(Hallway, self).__init__(name, parent, pos, rot, scale)
         
+        #Calculate how much shear, scale, and rotation is needed for the angle:
+        origZ = self.environ.getSz();
+        radAng = radians(angle)
+        self.environ.setSz(origZ * cos(radAng))
+        self.environ.setShyz(2 * origZ * sin(radAng))
+        self.environ.setP(self.environ.getP() + angle)
+        
+        #Add the 2 walls
+        wall = self.environ.attachNewNode("wall_1")
+        wall.setH(90)
+        self.addWallSection("wall_1_1", wall, (1,1,1), color)
+        
+        wall = self.environ.attachNewNode("wall_2")
+        wall.setH(270)
+        self.addWallSection("wall_2_1", wall, (-1,1,1), color)
+        
+        #Add the floor & ceiling
+        self.walls["floor"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,0),(0,0,0),1.0),
+                QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
+                         Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
+        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,2),(0,180,0),1.0),
+                QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
+                         Point3(-1,2,4), Point3(1,2,2), WALL_COLLIDER_MASK))
+        
+    

@@ -87,7 +87,7 @@ class Tower(Obstacle):
 class Box(Obstacle):
     #The points represent, in counter-clockwise order (as seen from the top), the
     #bottom of the box.  The last parameter is height of the box 
-    def __init__(self, game, name, parent, p1, p2, p3, p4, h):
+    def __init__(self, name, parent, p1, p2, p3, p4, h):
         p5 = Point3(p1[0], p1[1], p1[2] + h)
         p6 = Point3(p2[0], p2[1], p2[2] + h)
         p7 = Point3(p3[0], p3[1], p3[2] + h)
@@ -114,13 +114,13 @@ class Box(Obstacle):
         
 class RAMSlot(Obstacle):
     
-    def __init__(self, game, name, parent, pos, scale, hpr):
+    def __init__(self, name, parent, pos, scale, hpr):
         self.slot = loader.loadModel("%s/DDR2_slot.egg"%MODEL_PATH)
         self.slot.reparentTo(parent)
         self.slot.setScale(scale)
         self.slot.setHpr(hpr)
         self.slot.setPos(pos)
-        self.colliderBox = Box(game, name, self.slot, Point3(-7.5, 0.5, 0),
+        self.colliderBox = Box(name, self.slot, Point3(-7.5, 0.5, 0),
                 Point3(-7.5, -0.5, 0), Point3(7.5, -0.5, 0), Point3(7.5, 0.5, 0), 1.0)
     
     def destroy(self):
@@ -150,8 +150,9 @@ def make_tile(parent,modelFile,color,pos, hpr=(0,0,0), scale=1.0):
     tile.setScale(scale, scale, scale)
     tile.setPos(pos)
     tile.setHpr(*hpr)
-    ts = TextureStage('ts')
-    tex = loader.loadTexture("%s/%s1040.jpg"%(COLOR_PATH,color))
-    ts.setMode(TextureStage.MModulate)
-    tile.setTexture(ts, tex)
+    if color != "white":
+        ts = TextureStage('ts')
+        tex = loader.loadTexture("%s/%s1040.jpg"%(COLOR_PATH,color))
+        ts.setMode(TextureStage.MModulate)
+        tile.setTexture(ts, tex)
     return tile
