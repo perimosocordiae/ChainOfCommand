@@ -45,7 +45,7 @@ class Player(Agent):
     
     def setup_color(self):
         ts = TextureStage('ts')
-        tex = loader.loadTexture("%s/%s512.jpg"%(COLOR_PATH,self.color))
+        tex = loader.loadTexture("%s/tron-color_%s.png"%(COLOR_PATH,self.color))
         ts.setMode(TextureStage.MModulate)
         self.tron.setTexture(ts, tex)
     
