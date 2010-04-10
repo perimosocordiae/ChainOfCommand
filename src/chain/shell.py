@@ -1,13 +1,11 @@
 import sys
-from time import sleep
 from platform import uname
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
 from direct.filter.CommonFilters import CommonFilters
-from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import TextNode, Thread
-from direct.interval.IntervalGlobal import Func, Sequence
+from direct.interval.IntervalGlobal import Func, Sequence,Wait
 from networking import Server
 from game import Game
 from constants import MODEL_PATH,USE_GLOW
@@ -65,12 +63,12 @@ class Shell(object):
             'help' : self.help, 'ls' : self.help, 'dir' : self.help, 'wtf': self.help,
             'man' : self.manual,
             'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
-            'rm': self.permission_error, 'sudo': self.permission_error,
+            'rm': self.rm, 'sudo': self.sudo, 'make':self.make,
             'host': self.start_server, 'server': self.start_server,
             'start': self.start_game, 'run': self.start_game, 'join': self.start_game
         }
         self.help_cmds = ['help','host','join','man','scores','quit']
-        self.cmd_hist = ["join 1337 localhost last"]
+        self.cmd_hist = [""]
         self.cmd_pos = 0
         if USE_GLOW:
             CommonFilters(base.win, base.cam).setBloom(blend=(0,0,0,1), desat=-0.5, intensity=3.0, size=2)
@@ -122,65 +120,17 @@ class Shell(object):
         
     def tab_completion(self):
         currentInput = self.input.get()
-        possibleCommand = ""
-        for validCommand in self.cmd_dict:
-            if validCommand.startswith(currentInput):
-                if possibleCommand == "":
-                    possibleCommand = validCommand
-                else: return
-        if possibleCommand != "":
-            self.input.enterText(possibleCommand)
-        
-    def start_game(self,cmd,arglist=[]):
-        if len(arglist) < 2:
-            self.append_line("Usage: %s [port_num] [host_ip] <last>"%cmd)
-        else:
-            loadingScreen = Sequence(Func(self.hide_inputs))
-            for line in LOADINGTEXT.split("\n"):
-                loadingScreen.append(Func(self.append_line, line))
-                loadingScreen.append(Wait(0.05))
-            for i in range(25 - len(LOADINGTEXT.split("\n"))):
-                loadingScreen.append(Func(self.append_line, ""))
-                loadingScreen.append(Wait(0.05))
-            loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1],len(arglist) == 3))
-            loadingScreen.start()
-    
-    def start_server(self,cmd,arglist=[]):
-        if len(arglist) != 1:
-            self.append_line("Usage: %s [port_num]"%cmd)
-        else:
-            port = int(arglist[0])
-            self.append_line("Starting server on port %d..."%port)
-            Server(port)
-            self.append_line("Server active, use 'join' to connect")
-            
-    def quit(self,cmd,arglist=[]):
-        self.append_line("Bye!")
-        sleep(0.5)
-        sys.exit()
-
-    def permission_error(self,cmd,arglist=[]):
-        self.append_line("Error: permission denied")
-        
-    def help(self,cmd,arglist=[]):
-        self.append_line("Commands:")
-        for cmd in self.help_cmds:
-            self.append_line("   " + cmd)
-            
-    def manual(self,cmd,arglist=[]):
-        if len(arglist) == 0:
-            self.append_line("Usage: %s [program]"%cmd)
-            self.append_line("Program listing: %s"%', '.join(PROGRAMS.keys()))
-        elif arglist[0] in PROGRAMS:
-            self.append_line("%s -- %s"%(arglist[0],PROGRAMS[arglist[0]]))
-        elif arglist[0] in self.cmd_dict:
-            self.append_line("Sorry, %s is only for in-game programs"%cmd)
-        else:
-            self.append_line("Error: no such program: %s"%arglist[0])
-            
-    def scores(self,cmd,arglist=[]):
-        self.append_line("High Scores: ")
-        self.append_line("   1. Dude - 42")
+        if len(currentInput) == 0: return
+        valids = [cmd for cmd in self.cmd_dict if cmd.startswith(currentInput)]
+        if len(valids) == 0: return
+        # look for max common substring
+        for i in range(len(currentInput),min(len(s) for s in valids)):
+            if len(set(s[i] for s in valids)) > 1: break
+        else: # got to the end of the minstr
+            i += 1 
+        if len(valids) > 1:
+            self.append_line(' '.join(valids))
+        self.input.enterText(valids[0][:i])
     
     def hide_inputs(self):
         self.input.destroy()
@@ -223,9 +173,9 @@ class Shell(object):
             input = str.split()
             cmd,args = input[0],input[1:]
             if cmd in self.cmd_dict:
-                self.cmd_dict[cmd](cmd,args)
+                self.cmd_dict[cmd](cmd,args,False)
             else:
-                self.append_line("unknown command: %s" % cmd)
+                self.default(cmd, args, False)
         self.cmd_pos = 0
         self.input.enterText("")
         self.input.setFocus()
@@ -248,9 +198,109 @@ class Shell(object):
         print "starting up"
         self.last = last
         self.g = Game(ip,port_num,self,100.0,16.0,120)
-        
+
+    #### HERE THERE BE SHELL COMMANDS ####
+    
+    def start_game(self,cmd,arglist=[],sudo=False):
+        if len(arglist) < 2:
+            self.append_line("Usage: %s [port_num] [host_ip] <last>"%cmd)
+        else:
+            loadingScreen = Sequence(Func(self.hide_inputs))
+            for line in LOADINGTEXT.split("\n"):
+                loadingScreen.append(Func(self.append_line, line))
+                loadingScreen.append(Wait(0.05))
+            for _ in range(25 - len(LOADINGTEXT.split("\n"))):
+                loadingScreen.append(Func(self.append_line, ""))
+                loadingScreen.append(Wait(0.05))
+            loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1],len(arglist) == 3))
+            loadingScreen.start()
+    
+    def start_server(self,cmd,arglist=[],sudo=False):
+        if len(arglist) != 1:
+            self.append_line("Usage: %s [port_num]"%cmd)
+        else:
+            port = int(arglist[0])
+            str = "vigorously " if sudo else ""
+            self.append_line("Starting server %son port %d..."%(str,port))
+            Server(port)
+            self.append_line("Server active, use 'join' to connect")
+            
+    def quit(self,cmd,arglist=[],sudo=False):
+        Sequence(Func(self.append_line,"Bye!"),Wait(0.75),Func(sys.exit)).start()
+    
+    def sudo(self,cmd,arglist=[],sudo=False):
+        if len(arglist) == 0:
+            self.append_line("sudo what?")
+        elif arglist[0] in self.cmd_dict:
+            self.cmd_dict[arglist[0]](arglist[0],arglist[1:],True)
+        else:
+            self.default(arglist[0], arglist[1:], True)
+    
+    def rm(self,cmd,arglist=[],sudo=False):
+        if len(arglist) == 0:
+            self.append_line("rm: missing operand")
+        if sudo:
+            if '/' in arglist:
+                self.append_line("I'm sorry, Dave. I'm afraid I can't do that.")
+        else:
+            for arg in arglist:
+                if not arg.startswith('-'):
+                    self.append_line("rm: cannot remove `%s': Permission denied"%arg)
+
+    def help(self,cmd,arglist=[],sudo=False):
+        self.append_line("Commands:")
+        if sudo:
+            for cmd in self.cmd_dict:
+                self.append_line("   " + cmd)
+        else:
+            for cmd in self.help_cmds:
+                self.append_line("   " + cmd)
+            
+    def manual(self,cmd,arglist=[],sudo=False):
+        if len(arglist) == 0:
+            self.append_line("Usage: %s [program]"%cmd)
+            self.append_line("Program listing: %s"%', '.join(PROGRAMS.keys()))
+        elif arglist[0] in PROGRAMS:
+            self.append_line("%s -- %s"%(arglist[0],PROGRAMS[arglist[0]]))
+        elif arglist[0] in self.cmd_dict:
+            self.append_line("Sorry, %s is only for in-game programs"%cmd)
+        else:
+            self.append_line("Error: no such program: %s"%arglist[0])
+            
+    def scores(self,cmd,arglist=[],sudo=False):
+        self.append_line("High scores not yet implemented")
+    
+    def make(self,cmd,arglist=[],sudo=False):
+        if ' '.join(arglist) == "me a sandwich":
+            if sudo:
+                self.append_line("Okay.")
+            else:
+                self.append_line("What? Make it yourself.")
+        else:
+            self.append_line("make: *** No targets specified and no makefile found.  Stop.")
+    
+    def default(self,cmd,arglist=[],sudo=False):
+        if cmd in ['emacs','gnuemacs']:
+            self.append_line("Sorry, emacs is not installed")
+        elif cmd in ['vi','vim','gvim']:
+            self.append_line("Sorry, vi is not installed")
+        elif cmd in ['nano','pico','ed']:
+            self.append_line("Really, now? Poor editor choice: -5 CHA")
+        elif cmd in ['notepad','textedit','gedit']:
+            self.append_line("What do I look like, a graphical user interface?")
+        elif cmd == 'nethack':
+            self.append_line("You zap a cursed wand of magic missile. It bounces! You die.")
+        elif cmd in ['apt-get','aptitude']:
+            self.append_line("I'm fine with the way I am, thanks.")
+        elif sudo:
+            self.append_line("sudo: %s: command not found" % cmd)
+        else:
+            self.append_line("%s: command not found" % cmd)
+    
 # end Shell class
 
 if __name__ == '__main__':
-    Shell(False)
+    s = Shell(False)
+    # hack the history, but only for our debugging runs
+    s.cmd_hist = ["join 1337 localhost last"]
     run()
