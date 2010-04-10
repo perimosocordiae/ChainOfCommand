@@ -28,8 +28,10 @@ LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
 
 class Player(Agent):
-    def __init__(self, game, name, startPos):
+    def __init__(self, game, name, startPos, color):
         super(Player, self).__init__(game, name)
+        self.color = color
+        self.setup_color()
         self.programs = [None, None, None]
         self.stats = {'damage_taken': 0, 'deaths': 0, 'pickups':0, 'drops':0}
         self.laserGlow = False
@@ -40,6 +42,12 @@ class Player(Agent):
         self.collisionQueue = CollisionHandlerQueue()
         self.invincible = False
         self.spawn(startPos, False)
+    
+    def setup_color(self):
+        ts = TextureStage('ts')
+        tex = loader.loadTexture("%s/%s512.jpg"%(COLOR_PATH,self.color))
+        ts.setMode(TextureStage.MModulate)
+        self.tron.setTexture(ts, tex)
     
     def setup_collider(self):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
@@ -303,8 +311,8 @@ class Player(Agent):
         self.do_debug()
 
 class LocalPlayer(Player):
-    def __init__(self, game, name, startPos):
-        super(LocalPlayer, self).__init__(game, name, startPos)
+    def __init__(self, game, name, startPos, color):
+        super(LocalPlayer, self).__init__(game, name, startPos, color)
         self.hpr = VBase3(0,0,0)
         self.collecting = False
         self.shooting = False

@@ -88,12 +88,12 @@ class Game(object):
     def add_local_player(self):
         name = uname()[1]
         print "adding local player:",name
-        self.players[name] = LocalPlayer(self,name,self.startPoints[name])
+        self.players[name] = LocalPlayer(self,name,self.startPoints[name],"blue")
         self.players[name].shoot(False)
             
     def add_player(self,pname):
         print "making player: %s"%pname
-        self.players[pname] = Player(self,pname,self.startPoints[pname])
+        self.players[pname] = Player(self,pname,self.startPoints[pname],"blue")
         
     def add_program(self,ptype):
         prog = ptype(self)
