@@ -320,7 +320,6 @@ class LocalPlayer(Player):
         self.hud = HUD(self)
         #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
-        self.add_background_music()
         self.game.network_listener.loop()
         #self.sendUpdate()
     
@@ -381,8 +380,8 @@ class LocalPlayer(Player):
 
     @staticmethod
     def setup_sounds():
-        keys = ['laser', 'yes', 'snarl']
-        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Snarl.mp3"]
+        keys = ['laser', 'yes', 'grunt']
+        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Grunt.wav"]
         LocalPlayer.sounds = dict(zip(keys, [base.sfxManagerList[0].getSound(f % SOUND_PATH) for f in fnames]))
         for s in LocalPlayer.sounds.itervalues():
             s.setVolume(0.3)
@@ -428,7 +427,8 @@ class LocalPlayer(Player):
     
     def hit(self, amt=0):
         if not super(LocalPlayer, self).hit(amt): return
-        LocalPlayer.sounds['snarl'].play()
+        if LocalPlayer.sounds['grunt'].getTime() == 0.0 : LocalPlayer.sounds['grunt'].play()
+        print "Hit"
         self.hud.hit()
     
     def heal(self, amt=0):
