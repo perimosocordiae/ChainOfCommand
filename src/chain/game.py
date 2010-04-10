@@ -1,8 +1,7 @@
-from time import time, sleep
+from time import time
 from platform import uname
 import sys
-from random import randint, choice, seed
-#from itertools import product as iproduct
+from random import randint, seed
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionTube, BitMask32
@@ -40,11 +39,9 @@ class Game(object):
         base.cTrav.setRespectPrevTransform(True)
         #wsbase.cTrav.showCollisions(render)
         base.disableMouse()
-        self.timer = OnscreenText(text="Time:", pos=(0,0.9), scale=(0.08), fg=(0,0,1,0.8), bg=(1,1,1,0.8), mayChange=True)
         self.startTime = time()
         self.endTime = self.startTime + self.gameLength
         self.gameTime = self.endTime - time()
-        taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         for pname in self.players:
             self.add_player(pname)
@@ -119,7 +116,6 @@ class Game(object):
         self.readd_program(ram)
     
     def load_env(self):
-        
         wall_height = 2
         colscale = 1.0
         
@@ -131,68 +127,6 @@ class Game(object):
         
         #self.level = CubeLevel(self.environ)
         self.level = SniperLevel(self.environ)
-        
-        ##Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
-        #eggs = map(lambda s:"%s/%s1040.jpg"%(COLOR_PATH,s),['yellow','blue','green','red'])
-        #
-        ##scale = colscale * self.tile_size
-        ##environ = loader.loadModel('%s/special_floor.egg'%MODEL_PATH)
-        #self.environ = render.attachNewNode("Environment Scale")
-        #self.environ.reparentTo(render)
-        #self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
-        #self.environ.setPos(0, 0, 0)
-        #
-        #center = num_tiles/2
-        ##wall_height = 10
-        #wall_height = num_tiles
-        #
-        ##for i,j in iproduct(range(num_tiles),repeat=2):
-        #for i in range(num_tiles):
-        #  for j in range(num_tiles):
-        #    egg = eggs[egg_index(i,j,center)]
-        #    self.make_tile(self.environ,egg,(-2*(i-center) - 1,-2*(j-center) - 1, 2*wall_height), (0, 0, 180), colscale) #ceiling
-        #    #if i == center and j == center: continue #bottom center is already done
-        #    self.make_tile(self.environ,egg,(2*(i-center) + 1, 2*(j-center) + 1, 0),(0, 0, 0), colscale) #floor
-        #
-        ##for i,j in iproduct(range(num_tiles),range(wall_height)):
-        #for i in range(num_tiles):
-        #  for j in range(wall_height):
-        #    egg = eggs[egg_index(i,j,center)]
-        #    #TODO: try removing these in kill_everything
-        #    self.make_tile(self.environ,egg,(-2*center,    -2*(i-center)-1,  2*(wall_height-j)-1),(0, 0, 90), colscale)  #wall 1
-        #    self.make_tile(self.environ,egg,(-2*(i-center)-1, -2*center,  2*(wall_height-j)-1),(0,-90,0), colscale)   #wall 2
-        #    self.make_tile(self.environ,egg,( 2*center,     2*(i-center) + 1, 2*j+1),            (0, 0, -90), colscale) #wall 3
-        #    self.make_tile(self.environ,egg,(-2*(i-center) - 1, 2*center,   2*j+1),            (0, 90,0), colscale)   #wall 4
-        ##CopperWire("wire", self.environ, (0,0,0.001), (0,0,0), (colscale / 20, colscale * 2))
-        ##add collision handlers for walls
-        #self.add_wall("wall1", self.environ,
-        #              Point3(-2*center, -2*center, 2*wall_height + 1),
-        #              Point3(-2*center, -2*center, 0),
-        #              Point3(-2*center, 2*center, 0),
-        #              Point3(-2*center, 2*center, 2*wall_height + 1))
-        #self.add_wall("wall2", self.environ,
-        #              Point3(2*center, 2*center, 2*wall_height + 1),
-        #              Point3(2*center, 2*center, 0),
-        #              Point3(2*center, -2*center, 0),
-        #              Point3(2*center, -2*center, 2*wall_height + 1))
-        #self.add_wall("wall3", self.environ,
-        #              Point3(-2*center, 2*center, 2*wall_height + 1),
-        #              Point3(-2*center, 2*center, 0),
-        #              Point3(2*center, 2*center, 0),
-        #              Point3(2*center, 2*center, 2*wall_height + 1))
-        #self.add_wall("wall4", self.environ,
-        #              Point3(2*center, -2*center, 2*wall_height + 1),
-        #              Point3(2*center, -2*center, 0),
-        #              Point3(-2*center, -2*center, 0),
-        #              Point3(-2*center, -2*center, 2*wall_height + 1))
-        #
-        ##The reason this is different is because walls have their own event collision
-        ##handler method... floors don't need one (so no need for a dictionary of them)
-        #self.floor = QuadWall("floor", self.environ, Point3(-2*center, -2*center, 0),
-        #        Point3(2*center, -2*center, 0), Point3(2*center, 2*center, 0),
-        #        Point3(-2*center, 2*center, 0), FLOOR_COLLIDER_MASK)
-        ##Note: if it makes sense, this can be added as an obstacle and destroyed like the others
-        
         
         # make some random towers
         for tower in range(4):
@@ -208,17 +142,6 @@ class Game(object):
             name = "RAM_slot_%d"%slot
             scale = randint(5,10)
             self.add_ram(name, Point3(pos[0], pos[1], 0), scale, Point3(0, 0, 0))
-    
-    
-    def timerTask(self, task):
-        self.gameTime = self.endTime - time()
-        self.timer.setText("Time: %.2f seconds"%(self.gameTime))
-        if 0 < self.gameTime < 10:
-            self.timer.setFg((1,0,0,0.8))
-        elif self.gameTime <= 0:
-            self.game_over()
-            return task.done
-        return task.again
 
     def game_over(self):
         print "Game over"
