@@ -38,8 +38,9 @@ class HUD(object):
         self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.82), scale=HUD_PROG_SCALE)
         self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
-        #timer
         self.timer = OnscreenText(text="Time:", pos=(0,0.9), scale=(0.08), fg=HUD_FG, bg=HUD_BG, mayChange=True)
+        
+    def start_timer(self):
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
 
     def show_scores(self):
@@ -146,7 +147,7 @@ class HUD(object):
         if 0 < game.gameTime < 10:
             self.timer.setFg((1,0,0,0.8))
         elif game.gameTime <= 0:
-            self.timer.setText("Time: %.2f seconds"%0)
+            self.timer.setText("Time: %.2f seconds"%0.00)
             #gray screen here
             game.game_over()
             return task.done

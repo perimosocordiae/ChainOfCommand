@@ -61,6 +61,9 @@ class Game(object):
         self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
         self.drone_adder.loop()
         self.local_player().add_background_music()
+        self.startTime = time() # reset the start and end times
+        self.endTime = self.startTime + self.gameLength
+        self.local_player().hud.start_timer()
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
