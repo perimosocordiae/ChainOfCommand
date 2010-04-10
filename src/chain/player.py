@@ -82,6 +82,12 @@ class Player(Agent):
     def set_laser_glow(self, glow):
         self.laserGlow = glow
     
+    def show(self):
+        self.tron.show()
+        
+    def hide(self):
+        self.tron.hide()
+    
     def die(self):
         self.hide()
         self.handleEvents = False
@@ -345,7 +351,7 @@ class LocalPlayer(Player):
             self.tron.show()
     
     def hide(self):
-        if self.get_camera().getY() <= HIDE_DIST and not self.tron.isHidden():
+        if (self.get_camera().getY() <= HIDE_DIST or self.is_dead()) and not self.tron.isHidden():
             self.tron.hide()
         
     def die(self):
