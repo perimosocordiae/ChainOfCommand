@@ -61,9 +61,9 @@ class Shell(object):
         self.cmd_dict = { 
             'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
             'help' : self.help, 'ls' : self.help, 'dir' : self.help, 'wtf': self.help,
-            'man' : self.manual,
+            'man' : self.manual,'clear' : self.clear, 'echo' : self.echo,
             'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
-            'rm': self.rm, 'sudo': self.sudo, 'make':self.make,
+            'rm': self.rm, 'sudo': self.sudo, 'make':self.make, '!!':self.bangbang,
             'host': self.start_server, 'server': self.start_server,
             'start': self.start_game, 'run': self.start_game, 'join': self.start_game
         }
@@ -278,6 +278,27 @@ class Shell(object):
                 self.append_line("What? Make it yourself.")
         else:
             self.append_line("make: *** No targets specified and no makefile found.  Stop.")
+    
+    def bangbang(self,cmd,arglist=[],sudo=False):
+        del self.cmd_hist[-1] # remove the '!!'
+        if sudo:
+            self.parse_cmd("sudo "+self.cmd_hist[-1])
+        else:
+            self.parse_cmd(self.cmd_hist[-1])
+    
+    def clear(self,cmd,arglist=[],sudo=False):
+        for _ in range(24): # I think that's the height?
+            self.append_line("")
+    
+    def echo(self,cmd,arglist=[],sudo=False):
+        if len(arglist) == 0:
+            self.append_line("Echo... echo... echo...")
+        else:
+            echo = ' '.join(arglist)
+            try:
+                echo = str(eval(echo))
+            except: pass
+            self.append_line(echo)
     
     def default(self,cmd,arglist=[],sudo=False):
         if cmd in ['emacs','gnuemacs']:
