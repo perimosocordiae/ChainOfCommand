@@ -102,6 +102,7 @@ class Game(object):
         self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])
     
     def add_drone(self):
+
         d = Drone(self)
         self.drones[str(hash(d))] = d 
         self.eventHandle.addDroneHandler(d)

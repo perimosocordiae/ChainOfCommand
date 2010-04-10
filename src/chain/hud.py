@@ -2,12 +2,13 @@ from time import time
 from pandac.PandaModules import TransparencyAttrib 
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
+from direct.gui.DirectGui import *
 from direct.interval.IntervalGlobal import *
 from constants import *
 
 #Constants
 EMPTY_PROG_STR = "|        |"
-HUD_PROG_SCALE = 0.08
+HUD_PROG_SCALE = 0.06
 HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 
 class HUD(object):
@@ -28,12 +29,13 @@ class HUD(object):
         # red flash for indicating hits
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
-        self.healthHUD = OnscreenText(text="HP: %d" % player.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
+        #self.healthHUD = OnscreenText(text="HP: %d" % player.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
+        self.healthBAR = DirectWaitBar(range = 100, value = 100, pos = (0,.85,.85), barColor = (0,1,0,1), scale = 0.5)
         self.killHUD = OnscreenText(text="Kills: %d" % player.killcount(), pos=(-0.9, 0.8), fg=HUD_FG, bg=HUD_BG, mayChange=True)
-        self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.92), scale=0.05)
+        self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.92), scale=HUD_PROG_SCALE)
         self.musicHUD.setImage(image="%s/music_on.png" % TEXTURE_PATH)
         self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.82), scale=0.05)
+        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(-1.2,0,0.82), scale=HUD_PROG_SCALE)
         self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
         #timer
@@ -81,11 +83,17 @@ class HUD(object):
     
     def hit(self):
         self.flashRed.start() # flash the screen red
-        self.healthHUD.setText("HP: %d" % self.player.health)
-    
+        #self.healthHUD.setText("HP: %d" % self.player.health)
+        self.healthBAR['value'] = self.player.health
+        if self.player.health <= 20:
+            self.healthBAR['barColor'] = (1,0,0,1)
+        
     def heal(self):
-        if hasattr(self, "healthHUD") and self.healthHUD:
-            self.healthHUD.setText("HP: %d" % self.player.health)
+        if hasattr(self, "healthBAR") and self.healthBAR:
+            #self.healthHUD.setText("HP: %d" % self.player.health)
+            self.healthBAR['value'] = self.player.health
+            if self.player.health > 20:
+                self.healthBAR['barColor'] = (0,1,0,1)
     
     def collect(self,i,prog_name):
         self.programHUD[i].setText("|  %s  |" % prog_name)
@@ -108,8 +116,10 @@ class HUD(object):
     def destroy_HUD(self):
         self.crosshairs.destroy() 
         for programDisp in self.programHUD : programDisp.destroy() 
-        self.healthHUD.destroy()
-        self.healthHUD = None
+        #self.healthHUD.destroy()
+        #self.healthHUD = None
+        self.healthBAR.destroy()
+        self.healthBAR = None
         self.killHUD.destroy() 
         self.killHUD = None
         self.musicHUD.destroy()

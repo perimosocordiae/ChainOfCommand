@@ -23,7 +23,7 @@ LOOK_MULTIPLIER = 0.1
 MAX_TURN = 2.0
 MAX_LOOK = 2.0
 JUMP_SPEED = 200.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
-TRON_ORIGIN_HEIGHT = 10
+TRON_ORIGIN_HEIGHT = 7
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
 
