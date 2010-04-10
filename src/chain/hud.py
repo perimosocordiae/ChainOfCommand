@@ -85,15 +85,15 @@ class HUD(object):
         self.flashRed.start() # flash the screen red
         #self.healthHUD.setText("HP: %d" % self.player.health)
         self.healthBAR['value'] = self.player.health
-        if self.player.health <= 20:
-            self.healthBAR['barColor'] = (1,0,0,1)
+        hpct = self.player.health/100.0
+        self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
         
     def heal(self):
         if hasattr(self, "healthBAR") and self.healthBAR:
             #self.healthHUD.setText("HP: %d" % self.player.health)
             self.healthBAR['value'] = self.player.health
-            if self.player.health > 20:
-                self.healthBAR['barColor'] = (0,1,0,1)
+            hpct = self.player.health/100.0
+            self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
     
     def collect(self,i,prog_name):
         self.programHUD[i].setText("|  %s  |" % prog_name)
