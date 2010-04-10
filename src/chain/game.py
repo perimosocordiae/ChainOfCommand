@@ -129,7 +129,7 @@ class Game(object):
         self.environ.setPos(0, 0, 0)
         
         #self.level = CubeLevel(self.environ)
-        self.level = BasicBaseLevel(self.environ)
+        self.level = SniperLevel(self.environ)
         
         ##Note: using glow slows down frame rate SIGNIFICANTLY... I don't know of a way around it either
         #eggs = map(lambda s:"%s/%s1040.jpg"%(COLOR_PATH,s),['yellow','blue','green','red'])

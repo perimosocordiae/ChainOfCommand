@@ -112,4 +112,34 @@ class Hallway(Room):
                 QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
                          Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
         
-    
+class HallwayIntersection(Room):
+    #types are: 1: angle right, 2: angle left, 3: T-intersection, 4: 4-way
+    def __init__(self, name, parent, pos, rot, scale, color, type):
+        super(HallwayIntersection, self).__init__(name, parent, pos, rot, scale)
+        
+        #Add the (up to 2) walls
+        if type != 4:
+            #Not a 4-way intersection - the opposite wall exists
+            wall = self.environ.attachNewNode("wall_1")
+            wall.setH(0)
+            self.addWallSection("wall_1_1", wall, (0,1,1), color)
+        
+            if type != 3:
+                #Not a T - there's another wall
+                wall = self.environ.attachNewNode("wall_2")
+                if type == 1:
+                    wall.setH(90)
+                    x = 1
+                else:
+                    wall.setH(270)
+                    x = -1
+                self.addWallSection("wall_2_1", wall, (x,1,1), color)
+        
+        #Add the floor & ceiling
+        self.walls["floor"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,0),(0,0,0),1.0),
+                QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
+                         Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
+        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,2),(0,180,0),1.0),
+                QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
+                         Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
+        
