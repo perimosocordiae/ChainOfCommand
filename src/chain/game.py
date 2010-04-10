@@ -169,7 +169,6 @@ class Game(object):
             t.release()
         self.local_player().get_camera().reparentTo(render)
         self.local_player().hud.destroy_HUD()
-        self.timer.destroy()
         for d in self.drones.values():
             taskMgr.remove(d.walkTask)
             d.walk.finish()

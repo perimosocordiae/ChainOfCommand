@@ -126,6 +126,8 @@ class HUD(object):
         self.musicHUD = None
         self.soundHUD.destroy()
         self.soundHUD = None
+        self.timer.destroy()
+        self.timer = None
         self.hide_scores()
         base.setFrameRateMeter(False) 
     
