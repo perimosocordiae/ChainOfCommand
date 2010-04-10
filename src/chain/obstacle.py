@@ -147,7 +147,7 @@ class CopperWire(Obstacle):
 def make_tile(parent,modelFile,color,pos, hpr=(0,0,0), scale=1.0):
     tile = loader.loadModel("%s/%s"%(MODEL_PATH, modelFile))
     tile.reparentTo(parent)
-    tile.setScale(scale, scale, scale)
+    tile.setScale(scale)
     tile.setPos(pos)
     tile.setHpr(*hpr)
     if color != "white":

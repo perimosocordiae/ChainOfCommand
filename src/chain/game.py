@@ -109,11 +109,11 @@ class Game(object):
         self.eventHandle.addDroneHandler(d)
     
     def add_wall(self, name, parent, p1, p2, p3, p4):
-        self.obstacles[name] = QuadWall(name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
+        self.level.obstacles[name] = QuadWall(name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
         #self.eventHandle.addWallHandler(self.obstacles[name])
     
     def add_ram(self, name, pos, scale, hpr):
-        self.obstacles[name] = RAMSlot(name, render, pos, scale, hpr)
+        self.level.obstacles[name] = RAMSlot(name, render, pos, scale, hpr)
         ram = RAM(self, pos, scale * 7.0)
         self.readd_program(ram)
     
@@ -197,7 +197,7 @@ class Game(object):
         for tower in range(4):
             pos = self.rand_point()
             name = "tower_%d"%tower
-            self.obstacles[name] = Tower(render, pos[0], pos[1], 
+            self.level.obstacles[name] = Tower(render, pos[0], pos[1], 
                                      randint(10,2*wall_height*self.tower_size), 
                                      colscale/100,self.tile_size)
         

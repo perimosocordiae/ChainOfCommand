@@ -1,4 +1,4 @@
-from math import sin, cos, tan, radians
+from math import sin, cos, tan, radians, sqrt
 from random import randint
 from obstacle import *
 from constants import *
@@ -41,7 +41,10 @@ class Room(Obstacle):
     def addWallSection(self, name, parent, pos, color, divisor=1, total=0):
         if total >= divisor:
             rotation = (6-(total//divisor)) % 4
-            egg = "L_wall.egg"
+            if rotation % 2 == 1:
+                egg = "L_wall.egg"
+            else:
+                egg = "Reverse_L_wall.egg"
         else:
             rotation = 0
             egg = "white_wall.egg"
@@ -53,6 +56,12 @@ class Room(Obstacle):
             wall = QuadWall(name, model, Point3(1,0,1), Point3(-1,0,1),
                     Point3(-1,0,-1), Point3(1,0,-1), WALL_COLLIDER_MASK)
         self.walls[name] = (model,wall)
+    
+    def addRightTriangle(self, name, parent, pos, color):
+        model = make_tile(parent,"right_triangle.egg",color,pos,(0,0,0))
+        wall = TriangleWall(name, model, Point3(2,0,0), Point3(0,2,0),
+                            Point3(0,0,0), WALL_COLLIDER_MASK)
+        self.walls[name] = (model, wall)
     
 class CubeRoom(Room):
     def __init__(self, name, parent, pos, rot, scale, color, holes=(0,0,0,0,0,0,0,0)):
@@ -80,7 +89,7 @@ class CubeRoom(Room):
         
     
     def rand_point(self):
-        return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
+        return (randint(-25,25) / 10,randint(-25,25)/10)
     
 class Hallway(Room):
     def __init__(self, name, parent, pos, rot, scale, color, angle):
@@ -142,4 +151,24 @@ class HallwayIntersection(Room):
         self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,2),(0,180,0),1.0),
                 QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
                          Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
+        
+class Platform(Room):
+    def __init__(self, name, parent, pos, rot, scale, color):
+        super(Platform, self).__init__(name, parent, pos, rot, scale)
+        
+        #Add the floor & ceiling
+        self.walls["floor"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,0),(0,0,0),1.0),
+                QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
+                         Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
+        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,-1),(0,225,0),(1.0,sqrt(2),sqrt(2))),
+                QuadWall("ceiling", self.environ, Point3(1,0,-2), Point3(-1,0,-2),
+                         Point3(-1,2,0), Point3(1,2,0), WALL_COLLIDER_MASK))
+        
+        wall = self.environ.attachNewNode("wall_1")
+        wall.setR(90)
+        self.addRightTriangle("wall_1_1", wall, (0,0,1), color)
+        
+        wall = self.environ.attachNewNode("wall_2")
+        wall.setHpr(90,-90,0)
+        self.addRightTriangle("wall_2_1", wall, (0,0,1), color)
         

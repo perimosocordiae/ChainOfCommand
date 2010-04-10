@@ -1,5 +1,8 @@
 from pandac.PandaModules import BitMask32
 
+#The lowest point imaginable - if below this, you fell!
+BOTTOM_OF_EVERYTHING = -100
+
 #masks
 DRONE_COLLIDER_MASK = BitMask32.bit(1)
 WALL_COLLIDER_MASK = BitMask32.bit(0)
@@ -8,10 +11,10 @@ DRONE_PUSHER_MASK = BitMask32.bit(2)
 PROGRAM_PUSHER_MASK = BitMask32.bit(8)
 
 #gravity-related
-GRAVITATIONAL_CONSTANT = -10 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
-SAFE_FALL = -400.0 #fall velocity after which damage is induced
-FALL_DAMAGE_MULTIPLIER = 1.0 #How much to damage Tron per 1 over safe fall
-TERMINAL_VELOCITY = -500.0
+GRAVITATIONAL_CONSTANT = -7 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
+SAFE_FALL = -300.0 #fall velocity after which damage is induced
+FALL_DAMAGE_MULTIPLIER = 0.4 #How much to damage Tron per 1 over safe fall
+TERMINAL_VELOCITY = -450.0
 
 #agent-y things
 STARTING_HEALTH = 100

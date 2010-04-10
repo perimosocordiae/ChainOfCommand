@@ -1,0 +1,145 @@
+<CoordinateSystem> { Z-up }
+
+<Comment> { "Egg laid by Chicken for Blender, version R85" }
+
+<Material> Material.001 {
+  <Scalar> diffr {0.800000011921}
+  <Scalar> diffg {0.800000011921}
+  <Scalar> diffb {0.800000011921}
+  <Scalar> specr {0.25}
+  <Scalar> specg {0.25}
+  <Scalar> specb {0.25}
+  <Scalar> shininess {12.5}
+}
+<Texture> Reverse_L_wall_Plane.tga {
+  "../../textures/Reverse_L_wall_Plane.tga"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Group> Plane {
+  <VertexPool> Plane {
+    <Vertex> 0 {
+      1.00000071526 0.0 0.00000047684
+      <UV>  {
+        1.000035 0.499978
+        <Tangent> { -1.000000 0.000000 -0.000000 }
+        <Binormal> { -0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 1 {
+      1.00000071526 0.0 1.00000047684
+      <UV>  {
+        1.000035 0.999982
+        <Tangent> { -1.000000 0.000000 -0.000000 }
+        <Binormal> { -0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 2 {
+      7.51570382818e-07 0.0 1.00000047684
+      <UV>  {
+        0.500031 0.999982
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 3 {
+      7.51570382818e-07 0.0 0.00000047684
+      <UV>  {
+        0.500031 0.499978
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 4 {
+      7.51570382818e-07 0.0 0.00000047684
+      <UV>  {
+        0.500031 0.499978
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 5 {
+      7.51570382818e-07 0.0 1.00000047684
+      <UV>  {
+        0.500031 0.999982
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 6 {
+      -0.99999922514 0.0 1.00000047684
+      <UV>  {
+        0.000028 0.999983
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 7 {
+      -0.99999922514 0.0 0.00000047684
+      <UV>  {
+        0.000027 0.499979
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 8 {
+      7.51570382818e-07 0.0 0.00000047684
+      <UV>  {
+        0.500031 0.499978
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 9 {
+      -0.99999922514 0.0 0.00000047684
+      <UV>  {
+        0.000027 0.499979
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 10 {
+      -0.99999922514 0.0 -1.0
+      <UV>  {
+        0.000027 -0.000025
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 11 {
+      7.51570382818e-07 0.0 -1.0
+      <UV>  {
+        0.500031 -0.000026
+        <Tangent> { -1.000000 0.000000 -0.000001 }
+        <Binormal> { -0.000001 -0.000000 1.000000 }
+      }
+    }
+  }
+  <Polygon> {
+    <TRef> { Reverse_L_wall_Plane.tga }
+    <MRef> { Material.001 }
+    <Normal> { 0.000000 -1.000000 0.000000
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 0 1 2 3 <Ref> { Plane } }
+  }
+  <Polygon> {
+    <TRef> { Reverse_L_wall_Plane.tga }
+    <MRef> { Material.001 }
+    <Normal> { 0.000000 -1.000000 0.000000
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 4 5 6 7 <Ref> { Plane } }
+  }
+  <Polygon> {
+    <TRef> { Reverse_L_wall_Plane.tga }
+    <MRef> { Material.001 }
+    <Normal> { 0.000000 -1.000000 0.000000
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 8 9 10 11 <Ref> { Plane } }
+  }
+}

@@ -80,7 +80,8 @@ class HUD(object):
         self.healthHUD.setText("HP: %d" % self.player.health)
     
     def heal(self):
-        self.healthHUD.setText("HP: %d" % self.player.health)
+        if hasattr(self, "healthHUD") and self.healthHUD:
+            self.healthHUD.setText("HP: %d" % self.player.health)
     
     def collect(self,i,prog_name):
         self.programHUD[i].setText("|  %s  |" % prog_name)

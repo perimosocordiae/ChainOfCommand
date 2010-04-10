@@ -102,4 +102,8 @@ class Drone(Agent):
         self.velocity.setX(tronVec.getX())
         self.velocity.setY(tronVec.getY())
         self.panda.setFluidPos(self.panda.getPos() + (self.velocity*self.speed*SERVER_TICK))
+        #Kill any pandas that somehow manage to slip through the cracks
+        if self.panda.getZ() < BOTTOM_OF_EVERYTHING:
+            self.die()
+            
         
