@@ -8,6 +8,7 @@ from pandac.PandaModules import (Shader, CollisionNode, CollisionRay, CollisionS
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.InputStateGlobal import inputState
+from itertools import ifilter
 from eventHandler import PlayerEventHandler
 from projectile import Laser
 from agent import Agent
@@ -16,6 +17,7 @@ from constants import *
 
 #Constants
 BASE_CAMERA_Y = -4.0
+BASE_CAMERA_FOCAL_LENGTH = 1.39951908588
 HIDE_DIST = 10
 MOTION_MULTIPLIER = 1000.0
 TURN_MULTIPLIER = 0.1
@@ -23,7 +25,7 @@ LOOK_MULTIPLIER = 0.1
 MAX_TURN = 2.0
 MAX_LOOK = 2.0
 JUMP_SPEED = 700.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
-TRON_ORIGIN_HEIGHT = 7
+TRON_ORIGIN_HEIGHT = 6.5
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
 
@@ -316,6 +318,7 @@ class LocalPlayer(Player):
         self.hpr = VBase3(0,0,0)
         self.collecting = False
         self.shooting = False
+        self.scopeZoomed = False
         self.dropping = -1
         self.hud = HUD(self)
         #self.setup_shooting()
@@ -345,6 +348,9 @@ class LocalPlayer(Player):
     
     def get_camera(self):
         return base.camera
+    
+    def get_camera_lens(self):
+        return base.camLens
     
     def setCameraDist(self, dist):
         super(LocalPlayer,self).setCameraDist(dist)
@@ -416,6 +422,17 @@ class LocalPlayer(Player):
     def clickRelease(self):
         self.shooting = False
         taskMgr.remove("updateShotTask")
+        
+    def scopeZoom(self):
+        d = BASE_CAMERA_FOCAL_LENGTH
+        for p in ifilter(lambda p: p != None, self.programs):
+            d = p.scope_zoom_mod(d)
+        if d > 0 and not self.scopeZoomed:
+            self.get_camera_lens().setFocalLength(d)
+            self.scopeZoomed = True
+        else:
+            self.get_camera_lens().setFocalLength(BASE_CAMERA_FOCAL_LENGTH)
+            self.scopeZoomed = False
     
     def collectOn(self):
         self.collecting = True

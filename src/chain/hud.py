@@ -53,7 +53,7 @@ class HUD(object):
         players = reversed(sorted(self.player.game.players.values(), key=lambda p: p.killcount()))
         score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount()) for p in players])
         #self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.8),pos=(0,0.75))
-        self.score_screen = DirectLabel(text="Kills: \n"+score_str, pos=(-0.2,0,0.75), frameColor=HUD_BG, text_fg=HUD_FG, scale=HUD_SCALE, sortOrder=4)
+        self.score_screen = DirectLabel(text="Kills: \n"+score_str, pos=(-0.1,0,0.75), frameColor=HUD_BG, text_fg=HUD_FG, scale=HUD_SCALE, sortOrder=4)
                                         
     def hide_scores(self):
         #self.crosshairs.show()

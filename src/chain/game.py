@@ -15,7 +15,7 @@ from player import Player,LocalPlayer
 from drone import Drone
 from obstacle import Wall, Tower, RAMSlot, CopperWire, QuadWall
 from networking import Client
-from program import DashR, Rm, Chmod, RAM, Gdb
+from program import DashR, Rm, Chmod, RAM, Gdb, Locate
 from constants import *
 from level import *
 
@@ -56,9 +56,10 @@ class Game(object):
             self.add_program(DashR)
             #self.add_program(RAM)
             self.add_program(Gdb)
+            self.add_program(Locate)
         print "programs added"
         self.shell.hide_shell()
-        self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
+        self.drone_adder = Sequence(Wait(10.0), Func(self.add_drone))
         self.drone_adder.loop()
         self.local_player().add_background_music()
         self.startTime = time() # reset the start and end times

@@ -219,6 +219,8 @@ class Achievement(Program):
         return s
     def rapid_fire_mod(self, a):
         return a
+    def scope_zoom_mod(self, d):
+        return d
     #override these methods to create/remove visual effects when you have programs
     def add_effect(self, agent):
         return
@@ -258,3 +260,10 @@ class DashR(Achievement):
     
     def rapid_fire_mod(self,a):
         return a/2 # half the shooting delay
+    
+class Locate(Achievement):
+    def __init__(self,game,pos=None):
+        super(Locate,self).__init__(game,'locate',"Scope Zoom * 2",BASE_SCALE,pos)
+        
+    def scope_zoom_mod(self,d):
+        return d*2
