@@ -147,7 +147,8 @@ class HUD(object):
             self.redScreen = None
             
     def display_gray(self):
-        self.grayScreen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,0.8), sortOrder=3)
+        if not self.grayScreen:
+            self.grayScreen = DirectFrame(frameSize=(-1.34,1.34,-1,1), frameColor=(0,0,0,0.8), sortOrder=3)
     
     def destroy_gray(self):
         self.grayScreen.destroy()

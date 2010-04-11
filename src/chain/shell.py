@@ -197,7 +197,7 @@ class Shell(object):
     def main(self,port_num,ip,last=False):
         print "starting up"
         self.last = last
-        self.g = Game(ip,port_num,self,100.0,16.0,20)
+        self.g = Game(ip,port_num,self,100.0,16.0,120)
 
     #### HERE THERE BE SHELL COMMANDS ####
     
