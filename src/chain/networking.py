@@ -68,8 +68,8 @@ class Server(NetworkBase):
         for d in self.getData():
             if d.split()[0] == 'player':
                 self.player_list.add(d)
-            elif d == 'start':
                 for p in self.player_list: self.broadcast(p)
+            elif d == 'start':
                 self.player_list.clear()
                 self.rand_seed = int(time())
                 self.broadcast(d)

@@ -29,7 +29,7 @@ class Game(object):
         #The size of a cube
         num_tiles = 3
         self.map_size = (self.tile_size * num_tiles) / 2.0
-        
+        self.player_set = set()
         self.end_sequence = None
         self.client = Client(ip,port_num)
         self.load_models()
@@ -203,12 +203,21 @@ class Game(object):
                 seed(self.rand_seed)
                 print "seed",self.rand_seed
             elif ds[0] == 'player':
-                self.startPoints[ds[1]] = self.rand_point() # generate starting points
-                if ds[1] != uname()[1] : # don't add yourself
-                    self.players[ds[1]] = None
-                    print "added",ds[1]
+                if ds[1] not in self.player_set:
+                    if ds[1] != uname()[1] : 
+                        joinStr = ds[1] + " joined";
+                        if ds[1] == 'pc107' : joinStr += ", CJ sucks"
+                        self.shell.append_line(joinStr)
+                    else:
+                        self.shell.append_line("You joined")
+                    self.player_set.add(ds[1])
             elif ds[0] == 'start':
                 print "starting"
+                for player in self.player_set :
+                    self.startPoints[player] = self.rand_point() # generate starting points
+                    if player != uname()[1] : # don't add yourself
+                        self.players[player] = None
+                        print "added",player
                 Sequence(Func(self.shell.starting_output), Wait(0.05), Func(self.rest_of_init)).start()
                 return task.done # ends task
         return task.cont
