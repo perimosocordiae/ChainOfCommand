@@ -155,6 +155,7 @@ class Game(object):
         p.hud.display_gray()
         p.hud.show_scores()
         taskMgr.remove('timerTask')
+        taskMgr.remove('radarTask')
         if not self.end_sequence:
             self.end_sequence = Sequence(Wait(5),
                      Func(self.kill_everything),

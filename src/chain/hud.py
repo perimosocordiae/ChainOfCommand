@@ -1,5 +1,5 @@
 from time import time
-from pandac.PandaModules import TransparencyAttrib 
+from pandac.PandaModules import TransparencyAttrib, Point3
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.DirectGui import *
@@ -41,6 +41,19 @@ class HUD(object):
         self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
         self.timer = OnscreenText(text="Time:", pos=(0,0.94), scale=HUD_SCALE, bg=HUD_BG, fg=HUD_FG, mayChange=True)
+        self.setup_radar()
+        
+    def setup_radar(self):
+        #self.radar_background = DirectLabel(image="%s/white_circle.png" % TEXTURE_PATH, 
+        #                                    scale=0.25, pos=(1.09, 0, -0.75), sortOrder=-1)
+        self.radar_background = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, color=(.871,.722,.529, 0.5), 
+                                            scale=0.25, pos=(1.09, 0, -0.75))
+        self.radar_background.setTransparency(TransparencyAttrib.MAlpha)
+        me = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (0,0,0), 
+                                         scale=0.05, color=(0,0,1,.8), parent=self.radar_background)
+        self.dronePoints = []
+        taskMgr.doMethodLater(0.01, self.radarTask, 'radarTask')
+        
         
     def start_timer(self):
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
@@ -165,3 +178,20 @@ class HUD(object):
             game.game_over()
             return task.done
         return task.again
+    
+    def radarTask(self, task):
+        for dronePoint in self.dronePoints : dronePoint.destroy()
+        game = self.player.game
+        myPos = game.local_player().get_model().getPos()
+        clipConstant = game.tile_size * 2
+        clipConstantSquared = clipConstant * clipConstant
+        scaleConstant = clipConstant/0.40
+        for drone in game.drones :
+            position = game.drones[drone].get_model().getPos()
+            vectorToDrone = position-myPos
+            if (vectorToDrone.lengthSquared() < clipConstantSquared) :
+                vectorToDrone = -game.local_player().get_model().getRelativeVector(render, vectorToDrone)/scaleConstant
+                dronePoint = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (vectorToDrone.getX(),0,vectorToDrone.getY()), 
+                                         scale=0.05, color=(1,0,0,.8), parent=self.radar_background)
+                self.dronePoints.append(dronePoint)
+        return task.cont
