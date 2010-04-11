@@ -57,6 +57,7 @@ class Shell(object):
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
         self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
+        self.keep_last_line = False
         self.intro(full)
         self.cmd_dict = { 
             'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
@@ -136,6 +137,7 @@ class Shell(object):
         self.input.destroy()
         self.prompt.destroy()
         self.screen.ignoreAll()
+        self.keep_last_line = False
         
     def hide_shell(self):
         self.output.stash()
@@ -145,7 +147,13 @@ class Shell(object):
         self.screen.unstash()
         self.output.unstash()
         self.game_recap(stats_list)
-    
+        
+    def show_start_prompt(self):
+        self.append_line("Enter start to start the game when all players have joined")
+        self.keep_last_line = True
+        self.prompt = DirectLabel(text="> ", frameSize=(-0.04,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
+        self.input = DirectEntry(scale=0.07, command=self.parse_start_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
+            
     def game_recap(self,stats_list):
         textType = Sequence(Func(self.append_line,"Game recap:"))
         for p in stats_list: # for now
@@ -160,7 +168,11 @@ class Shell(object):
     def append_line(self,txt):
         lines = self.output.getText().split('\n')
         del lines[0] # scroll
-        lines.append(txt)
+        if self.keep_last_line:
+            lines.append(lines[len(lines)-1])
+            lines[len(lines)-2] = txt
+        else:
+            lines.append(txt)
         self.output.setText('\n'.join(lines))
         
     def append_char(self,char):
@@ -180,14 +192,23 @@ class Shell(object):
         self.input.enterText("")
         self.input.setFocus()
     
+    def parse_start_cmd(self, str):
+        valid_cmds = ['start', 'begin', 'go']
+        if str and str in valid_cmds : 
+            self.g.client.send("start")
+            self.hide_inputs()
+        else :
+            self.input.enterText("")
+            self.input.setFocus()
+    
     def load_finished(self):
         print "loading finished"
         self.g.client.send("player %s"%uname()[1])
-        if self.last:
-            self.g.client.send("start")
-        else:
-            self.append_line("Waiting for other players...")
-            self.append_line("")
+        #if self.last:
+        #    self.g.client.send("start")
+        
+        self.append_line("Waiting for other players...")
+        self.append_line("")
     
     def starting_output(self):
         self.append_line("Starting...")
@@ -196,7 +217,7 @@ class Shell(object):
             
     def main(self,port_num,ip,last=False):
         print "starting up"
-        self.last = last
+        #self.last = last
         self.g = Game(ip,port_num,self,100.0,16.0,120)
 
     #### HERE THERE BE SHELL COMMANDS ####
@@ -323,5 +344,5 @@ class Shell(object):
 if __name__ == '__main__':
     s = Shell(False)
     # hack the history, but only for our debugging runs
-    s.cmd_hist = ["join 1337 localhost last", "host 1337"]
+    s.cmd_hist = ["join 1337 localhost", "host 1337"]
     run()

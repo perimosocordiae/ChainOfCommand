@@ -203,12 +203,14 @@ class Game(object):
                 print "seed",self.rand_seed
             elif ds[0] == 'player':
                 if ds[1] not in self.player_set:
+                    if (len(self.player_set) == 0) : self.shell.show_start_prompt()
                     if ds[1] != uname()[1] : 
                         joinStr = ds[1] + " joined";
                         if ds[1] == 'pc107' : joinStr += ", CJ sucks"
                         self.shell.append_line(joinStr)
                     else:
                         self.shell.append_line("You joined")
+                    self.shell.append_line("")
                     self.player_set.add(ds[1])
             elif ds[0] == 'start':
                 print "starting"
