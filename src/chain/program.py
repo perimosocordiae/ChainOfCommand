@@ -170,7 +170,7 @@ class RAM(Basic):
 
 class Debug(Basic):
     #Per is the amount to heal per tick... times is the number of ticks to heal for
-    def __init__(self,game,name,desc,scale,pos,prefix='', per=0.2, times=500):
+    def __init__(self,game,name,desc,scale,pos,prefix='', per=0.8, times=125):
         super(Debug, self).__init__(game, name, desc, scale, pos, prefix)
         self.per = per
         self.times = times

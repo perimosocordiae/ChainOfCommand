@@ -76,11 +76,7 @@ class GameEventHandler(DirectObject):
         for d in game.drones.itervalues():
             base.cTrav.addCollider(d.pusher,self.pusherHandler)
             #base.cTrav.addCollider(d.collider,self.collisionHandler)
-            self.pusherHandler.addCollider(d.pusher, d.panda)
-            
-            base.cTrav.addCollider(d.wallPusher,self.pusherHandler)
-            #base.cTrav.addCollider(d.collider,self.collisionHandler)
-            self.pusherHandler.addCollider(d.wallPusher, d.panda)
+            self.pusherHandler.addCollider(d.pusher, d.parent)
         for p in game.programs.itervalues():
             base.cTrav.addCollider(p.pusher, self.pusherHandler)
             self.pusherHandler.addCollider(p.pusher, p.model)
@@ -94,8 +90,8 @@ class GameEventHandler(DirectObject):
                 self.accept("%s-into-%s_donthitthis"%(t,p),  self.tronHitsProg)
                 self.accept("%s-out-%s_donthitthis"%(t,p), self.tronOutProg)
             for d in drones:
-                self.accept("%s-into-%s"%(t,d),  self.tronHitsDrone)
-                self.accept("%s-repeat-%s"%(t,d),self.tronRepeatsDrone)
+                self.accept("%s-into-%sdonthitthis"%(t,d),  self.tronHitsDrone)
+                self.accept("%s-out-%sdonthitthis"%(t,d),self.tronOutDrone)
             #for w in walls:
             #    self.accept("%s_wall-into-%s"%(t,w),  self.tronHitsWall)
             #    self.accept("%s_wall-repeat-%s"%(t,w),  self.tronHitsWall)
@@ -111,13 +107,11 @@ class GameEventHandler(DirectObject):
     
     def addDroneHandler(self, d):
         base.cTrav.addCollider(d.pusher,self.pusherHandler)
-        self.pusherHandler.addCollider(d.pusher, d.panda)
-        base.cTrav.addCollider(d.wallPusher,self.pusherHandler)
-        self.pusherHandler.addCollider(d.wallPusher, d.panda)
+        self.pusherHandler.addCollider(d.pusher, d.parent)
         dName = str(hash(d))
         for t in self.game.players.iterkeys():
-            self.accept("%s-into-%s"%(t,dName),  self.tronHitsDrone)
-            self.accept("%s-repeat-%s"%(t,dName),self.tronRepeatsDrone)
+            self.accept("%s-into-%sdonthitthis"%(t,dName),  self.tronHitsDrone)
+            self.accept("%s-out-%sdonthitthis"%(t,dName),self.tronOutDrone)
     
     def addPlayerHandler(self, t):
         base.cTrav.addCollider(t.collider,self.collisionHandler)
@@ -132,8 +126,8 @@ class GameEventHandler(DirectObject):
             self.accept("%s-into-%s_donthitthis"%(tName,p),  self.tronHitsProg)
             self.accept("%s-out-%s_donthitthis"%(tName,p), self.tronOutProg)
         for d in drones:
-            self.accept("%s-into-%s"%(tName,d),  self.tronHitsDrone)
-            self.accept("%s-repeat-%s"%(tName,d),self.tronRepeatsDrone)
+            self.accept("%s-into-%sdonthitthis"%(tName,d),  self.tronHitsDrone)
+            self.accept("%s-out-%sdonthitthis"%(tName,d),self.tronOutDrone)
         #for w in walls:
         #    self.accept("%s_wall-into-%s"%(tName,w),  self.tronHitsWall)
         #    self.accept("%s_wall-repeat-%s"%(tName,w),  self.tronHitsWall)
@@ -149,17 +143,19 @@ class GameEventHandler(DirectObject):
     
     def tronHitsDrone(self,entry):
         tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+        dn = dn.rstrip("donthitthis")
         try:
             drone,tron = self.game.drones[dn], self.game.players[tn]
         except KeyError: return
-        tron.hit(drone.damage())
+        drone.canHitPlayer(tron, True)
         
-    def tronRepeatsDrone(self, entry):
+    def tronOutDrone(self, entry):
         tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
+        dn = dn.rstrip("donthitthis")
         try:
             drone,tron = self.game.drones[dn], self.game.players[tn]
         except KeyError: return
-        tron.hit(drone.repeat_damage())
+        drone.canHitPlayer(tron, False)
         
     def tronHitsProg(self,entry):
         tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()

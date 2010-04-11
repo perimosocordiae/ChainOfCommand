@@ -173,7 +173,7 @@ class Game(object):
         self.local_player().hud.destroy_HUD()
         for d in self.drones.values():
             #taskMgr.remove(d.walkTask)
-            d.walk.finish()
+            #d.walk.finish()
             d.die()
         for k in self.players.keys():
             self.players[k].tron.cleanup()

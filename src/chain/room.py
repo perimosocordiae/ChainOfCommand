@@ -97,11 +97,9 @@ class Hallway(Room):
         
         #Calculate how much shear, scale, and rotation is needed for the angle:
         origZ = self.environ.getSz();
-        print origZ
         radAng = radians(angle)
         self.environ.setSz(origZ * cos(radAng))
         self.environ.setShyz(2 * origZ * tan(radAng))
-        print self.environ.getShyz()
         self.environ.setP(self.environ.getP() + angle)
         
         #Add the 2 walls

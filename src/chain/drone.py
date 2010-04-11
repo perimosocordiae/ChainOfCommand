@@ -1,6 +1,7 @@
 from direct.task import Task
 from direct.actor import Actor
-from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32, NodePath
+from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32
+from pandac.PandaModules import DirectionalLight, VBase4, NodePath
 from direct.interval.IntervalGlobal import *
 from agent import Agent
 from random import random
@@ -10,19 +11,19 @@ from constants import *
 CHASE_SCALE = 1.0
 
 class Drone(Agent):
-
     def __init__(self,game,pos=None):
         super(Drone,self).__init__(game,str(hash(self)))
         if not pos: pos = game.rand_point()
-        self.panda.setPos(pos[0],pos[1],0)
+        self.hittables = {}
+        self.parent.setPos(pos[0],pos[1],8)
         self.setup_collider()
-        self.speed = (random()+0.5)*6
-    
+        self.speed = (random()+0.5)*2 + 15
+        
     def get_text_pos(self):
         return (0,0,5)
     
     def damage(self):
-        return 5
+        return 20
      
     def repeat_damage(self):
         return 0.1
@@ -32,58 +33,69 @@ class Drone(Agent):
         del self.game.drones[str(hash(self))]
         self.collider.removeNode()
         self.pusher.removeNode()
-        self.panda.cleanup()
-        self.panda.removeNode()
+        self.hitter.removeNode()
+        self.model.cleanup()
+        self.model.removeNode()
+        self.parent.removeNode()
 
     def load_model(self):
-        self.panda = Actor.Actor("models/panda-model", {"walk":"models/panda-walk4"})
-        self.panda.reparentTo(render)
-        self.panda.setScale(max(0.01,random()*0.05))
-        self.panda.setHpr(0,0,0)
-        self.walk = self.panda.actorInterval("walk")
-        self.walk.loop()
+        self.parent = render.attachNewNode("%s_Parent"%str(hash(self)))
+        
+        self.model = Actor.Actor("../../models/cyborg_newer.egg", {"sword": "../../models/cyborg_swing_sword.egg"})
+        self.model.reparentTo(self.parent)
+        #self.model.setScale(max(0.01,random()*2))
+        self.model.setScale(0.7)
+        self.model.setHpr(0,90,0)
+        #self.walk = self.model.actorInterval("sword")
+        #self.walk.loop()
+        self.pose = 1
+        self.model.pose("sword", 1)
+        
+        dlight = DirectionalLight('dlight')
+        dlight.setColor(VBase4(1, 1, 0.9, 1))
+        self.light = self.model.attachNewNode(dlight)
+        self.light.setHpr(90,-60,60) 
+        self.model.setLight(self.light)
         #self.walkTask = taskMgr.add(self.WalkTask, "WalkTask")
     
     def get_model(self):
-        return self.panda    
+        return self.parent
     
     def get_origin_height(self):
-        return 0
+        return 10
     
     def setup_collider(self):
         key = str(hash(self))
         # Get the size of the object for the collision sphere.
-        bounds = self.panda.getChild(0).getBounds()
+        bounds = self.model.getChild(0).getBounds()
         center = bounds.getCenter()
-        radius = bounds.getRadius() * 0.85
-        radius2 = bounds.getRadius() * 0.43
+        center.setZ(center.getZ() - 0.5)
+        radius = bounds.getRadius() * 0.4
+        radius2 = bounds.getRadius() * 0.15
         x = center.getX()
-        z = center.getZ()
-        posY = center.getY() + radius - radius2
-        negY = center.getY() - radius + radius2
+        y = center.getY()
+        posZ = center.getZ() + radius - radius2
+        negZ = center.getZ() - radius + radius2
         
         # Create a collision tube
         cNode = CollisionNode(key)
-        cNode.addSolid(CollisionTube(x, posY, z, x, negY, z, radius2))
-        self.collider = self.panda.attachNewNode(cNode)
+        cNode.addSolid(CollisionTube(x, y, posZ, x, y, negZ, radius2))
+        self.collider = self.parent.attachNewNode(cNode)
         self.collider.node().setFromCollideMask(DRONE_COLLIDER_MASK)
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
             
         # Create a pusher sphere
         cNode2 = CollisionNode(key+'donthitthis')
-        cNode2.addSolid(CollisionSphere(center, radius))
-        self.pusher = self.panda.attachNewNode(cNode2)
-        self.pusher.node().setFromCollideMask(DRONE_PUSHER_MASK)
-        self.pusher.node().setIntoCollideMask(DRONE_PUSHER_MASK)
+        cNode2.addSolid(CollisionSphere((center.getX(), center.getY() - 3.5, center.getZ()), radius*2.4))
+        self.hitter = self.parent.attachNewNode(cNode2)
+        self.hitter.node().setFromCollideMask(DRONE_COLLIDER_MASK)
+        self.hitter.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         
         cNode3 = CollisionNode(key+'_wall_donthitthis')
-        cNode3.addSolid(CollisionSphere(center, radius))
-        self.wallPusher = self.panda.attachNewNode(cNode3)
-        self.wallPusher.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        self.wallPusher.node().setIntoCollideMask(WALL_COLLIDER_MASK)
-        
-        #self.collider.show()
-        #self.pusher.show()
+        cNode3.addSolid(CollisionSphere(center, radius * .05))
+        self.pusher = self.parent.attachNewNode(cNode3)
+        self.pusher.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.pusher.node().setIntoCollideMask(WALL_COLLIDER_MASK)
         
     def get_shield_sphere(self):
         return self.pusher
@@ -95,24 +107,41 @@ class Drone(Agent):
     def act(self):
         self.follow_tron()
     
+    def canHitPlayer(self, player, canHit):
+        if canHit != (player.name in self.hittables.keys()):
+            #if in and can't hit or not in but can hit
+            if canHit:
+                self.hittables[player.name] = player
+            else:
+                del self.hittables[player.name]
+    
     def follow_tron(self):
         # get closest player
-        dist_to = lambda p: (p.tron.getPos()-self.panda.getPos()).lengthSquared()
+        dist_to = lambda p: (p.tron.getPos()-self.model.getPos()).lengthSquared()
         tron = sorted(self.game.players.values(),key=dist_to)[0].tron
-        self.panda.lookAt(tron)
-        self.panda.setH(self.panda.getH() + 180)
-        self.panda.setP(0)
+        self.parent.lookAt(tron)
+        self.parent.setH(self.parent.getH() + 180)
+        self.parent.setP(0)
         #move one "unit" towards tron
-        tronVec = tron.getPos() - self.panda.getPos()
+        tronVec = tron.getPos() - self.parent.getPos()
         tronVec.setZ(0)
         tronVec.normalize()
         tronVec *= self.speed
         self.handleGravity()
         self.velocity.setX(tronVec.getX())
         self.velocity.setY(tronVec.getY())
-        self.panda.setFluidPos(self.panda.getPos() + (self.velocity*self.speed*SERVER_TICK))
+        self.parent.setFluidPos(self.parent.getPos() + (self.velocity*self.speed*SERVER_TICK))
         #Kill any pandas that somehow manage to slip through the cracks
-        if self.panda.getZ() < BOTTOM_OF_EVERYTHING:
+        if self.model.getZ() < BOTTOM_OF_EVERYTHING:
             self.die()
+            
+        if self.pose != 52 or len(self.hittables) > 0:
+            self.pose += 1
+            if self.pose == 65:
+                for tron in self.hittables.itervalues():
+                    tron.hit(self.damage())
+            elif self.pose == 73:
+                self.pose = 52
+            self.model.pose("sword", self.pose)
             
         

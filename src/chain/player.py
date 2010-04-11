@@ -17,12 +17,12 @@ from constants import *
 #Constants
 BASE_CAMERA_Y = -4.0
 HIDE_DIST = 10
-MOTION_MULTIPLIER = 300.0
+MOTION_MULTIPLIER = 1000.0
 TURN_MULTIPLIER = 0.1
 LOOK_MULTIPLIER = 0.1
 MAX_TURN = 2.0
 MAX_LOOK = 2.0
-JUMP_SPEED = 200.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
+JUMP_SPEED = 700.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 7
 LASER_SPEED = 5000
 BASE_DAMAGE = 10 #arbitrary
@@ -321,14 +321,14 @@ class LocalPlayer(Player):
         #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.game.network_listener.loop()
-        #self.sendUpdate()
+        self.sendUpdate()
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
         super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
         newP = self.get_camera().getP() + hpr.getY() 
         newP = max(min(newP, 80), -80)
         self.get_camera().setP(newP)
-        #self.sendUpdate()
+        self.sendUpdate()
         #self.shooting = False
         base.win.movePointer(0, base.win.getXSize() / 2, base.win.getYSize() / 2)
         if dropping > -1:
@@ -471,13 +471,13 @@ class LocalPlayer(Player):
     def updateShotTask(self, task):
         #self.shoot()
         self.shooting = True
-        self.sendUpdate()
+        #self.sendUpdate()
         return task.again
         
     #Task to move the camera
     def updateCameraTask(self, task):
         #print self.velocity * globalClock.getDt()
-        self.sendUpdate()
+        #self.sendUpdate()
         return Task.cont
     
     def sendUpdate(self):
