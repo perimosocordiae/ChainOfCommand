@@ -13,7 +13,7 @@ DESCRIPTION_SCALE = 0.2
 
 class Program(Agent):
     
-    def __init__(self,game,name,prefix,desc,scale,pos):
+    def __init__(self, game, name, prefix, desc, scale, pos):
         super(Program, self).__init__(game, name, False)
         self.game = game
         if not pos:
@@ -29,7 +29,7 @@ class Program(Agent):
         self.setup_collider()
     
     def unique_str(self):
-        return self.name+str(hash(self))
+        return self.name + str(hash(self))
     
     def die(self):
         #maybe explode instead if killed?
@@ -59,7 +59,7 @@ class Program(Agent):
         #self.pusher.stash()
     
     def load_model(self):
-        self.model = loader.loadModel("%s/%s%s.egg"%(MODEL_PATH,self.prefix,self.name))
+        self.model = loader.loadModel("%s/%s%s.egg" % (MODEL_PATH, self.prefix, self.name))
         self.model.setScale(self.scale)
         self.model.setPos(self.pos[0], self.pos[1], 10)
         self.model.reparentTo(render)
@@ -71,8 +71,8 @@ class Program(Agent):
         #Create the intervals needed to spin and expand/contract
         hpr1 = self.model.hprInterval(1.5, Point3(180, 0, 0), startHpr=Point3(0, 0, 0))
         hpr2 = self.model.hprInterval(1.5, Point3(360, 0, 0), startHpr=Point3(180, 0, 0))
-        scale1 = self.model.scaleInterval(1.5, self.scale*2, startScale=self.scale, blendType='easeInOut')
-        scale2 = self.model.scaleInterval(1.5, self.scale, startScale=self.scale*2, blendType='easeInOut')
+        scale1 = self.model.scaleInterval(1.5, self.scale * 2, startScale=self.scale, blendType='easeInOut')
+        scale2 = self.model.scaleInterval(1.5, self.scale, startScale=self.scale * 2, blendType='easeInOut')
         
         #Create and play the sequence that coordinates the intervals  
         self.seq = Sequence(Parallel(scale1, hpr1), Parallel(scale2, hpr2))
@@ -80,8 +80,8 @@ class Program(Agent):
     
     def setup_collider(self):
         self.setup_collider_solid(CollisionSphere(0, 0, 0, 8),
-                CollisionSphere(0, 0, 0, 4), CollisionPolygon(Point3(-1,0,-0.877),
-                Point3(1,0,-0.877), Point3(1,0,0.877), Point3(-1,0,0.877)))
+                CollisionSphere(0, 0, 0, 4), CollisionPolygon(Point3(-1, 0, -0.877),
+                Point3(1, 0, -0.877), Point3(1, 0, 0.877), Point3(-1, 0, 0.877)))
     
     def setup_collider_solid(self, solid, pusherSolid, hitterSolid):
         self.collider = self.model.attachNewNode(CollisionNode(self.unique_str() + "_donthitthis"))
@@ -102,18 +102,18 @@ class Program(Agent):
     def load_desc(self, desc):
         text = TextNode(self.name + 'Desc')
         text.setText(desc)
-        text.setTextColor(0,0,0,1)
+        text.setTextColor(0, 0, 0, 1)
         text.setFont(self.game.font)
         text.setAlign(TextNode.ACenter)
-        text.setFrameColor(0,0,0,1)
-        text.setFrameAsMargin(0,0,0,0)
-        text.setCardColor(1,1,1,1)
-        text.setCardAsMargin(0,0,0,0)
+        text.setFrameColor(0, 0, 0, 1)
+        text.setFrameAsMargin(0, 0, 0, 0)
+        text.setCardColor(1, 1, 1, 1)
+        text.setCardAsMargin(0, 0, 0, 0)
         text.setCardDecal(True)
         self.desc = NodePath(text)
         self.desc.stashTo(self.model)
         self.desc.setScale(DESCRIPTION_SCALE)
-        self.desc.setPos(0,0,1.5)
+        self.desc.setPos(0, 0, 1.5)
         self.desc.setBillboardPointEye()
         
     def show_desc(self):
@@ -132,7 +132,7 @@ class Program(Agent):
 #Programs that have an immediate effect and then disappear
 class Basic(Program):
     
-    def __init__(self,game,name,desc,scale,pos,prefix=''):
+    def __init__(self, game, name, desc, scale, pos, prefix=''):
         super(Basic, self).__init__(game, name, prefix, desc, scale, pos)
     
     #do effect and make it disappear; return false so player doesn't add it to a slot
@@ -149,7 +149,7 @@ class Basic(Program):
         return
     
 class RAM(Basic):
-    def __init__(self,game,pos=None,scale=4.0):
+    def __init__(self, game, pos=None, scale=4.0):
         super(RAM, self).__init__(game, 'RAM', "Add Program Slot", scale, pos)
         self.desc.setZ(0.5)
         self.desc.setScale(0.1)
@@ -165,19 +165,19 @@ class RAM(Basic):
     def setup_collider(self):
         self.setup_collider_solid(CollisionTube(-1, 0, 0, 1, 0, 0, 0.6),
                             CollisionTube(-1, 0, 0, 1, 0, 0, 0.6),
-                            CollisionPolygon(Point3(-1,0,-0.25), Point3(1,0,-0.25),
-                            Point3(1,0,0.25), Point3(-1,0,0.25)))
+                            CollisionPolygon(Point3(-1, 0, -0.25), Point3(1, 0, -0.25),
+                            Point3(1, 0, 0.25), Point3(-1, 0, 0.25)))
 
 class Debug(Basic):
     #Per is the amount to heal per tick... times is the number of ticks to heal for
-    def __init__(self,game,name,desc,scale,pos,prefix='', per=0.8, times=125):
+    def __init__(self, game, name, desc, scale, pos, prefix='', per=0.8, times=125):
         super(Debug, self).__init__(game, name, desc, scale, pos, prefix)
         self.per = per
         self.times = times
     
-    def pick_up(self,player):
+    def pick_up(self, player):
         if player.health < player.get_max_health(): # no effect if full health
-            super(Debug,self).pick_up(player)
+            super(Debug, self).pick_up(player)
         else:
             print "Already at full health"
         return False
@@ -186,15 +186,15 @@ class Debug(Basic):
         agent.debug(self.unique_str(), self.per, self.times)
 
 class Gdb(Debug):
-    def __init__(self,game,pos=None):
-        super(Gdb, self).__init__(game, 'gdb',"Restore Health", BASE_SCALE, pos, 'terminal_window_')
+    def __init__(self, game, pos=None):
+        super(Gdb, self).__init__(game, 'gdb', "Restore Health", BASE_SCALE, pos, 'terminal_window_')
 
 #***************************** ACHIEVEMENT PROGRAMS *****************************
 
 #The "Achievement" Programs that take up a slot
 class Achievement(Program):
     
-    def __init__(self,game,name,desc,scale,pos):
+    def __init__(self, game, name, desc, scale, pos):
          super(Achievement, self).__init__(game, name, 'terminal_window_', desc, scale, pos)
          self.description = desc
         
@@ -213,9 +213,9 @@ class Achievement(Program):
         self.game.readd_program(self)
     
     # modifiers: generic program has no effect
-    def damage_mod(self,d):
+    def damage_mod(self, d):
         return d
-    def shield_mod(self,s):
+    def shield_mod(self, s):
         return s
     def rapid_fire_mod(self, a):
         return a
@@ -230,11 +230,11 @@ class Achievement(Program):
         return
     
 class Rm(Achievement):
-    def __init__(self,game,pos=None):
-        super(Rm,self).__init__(game,'rm',"Damage x 2",BASE_SCALE,pos)
+    def __init__(self, game, pos=None):
+        super(Rm, self).__init__(game, 'rm', "Damage x 2", BASE_SCALE, pos)
     
-    def damage_mod(self,d):
-        return d*2 # double the player's damage
+    def damage_mod(self, d):
+        return d * 2 # double the player's damage
     
     def add_effect(self, agent):
         agent.set_laser_glow(True)
@@ -245,11 +245,11 @@ class Rm(Achievement):
         agent.set_glow(False)
 
 class Chmod(Achievement):
-    def __init__(self,game,pos=None):
-        super(Chmod,self).__init__(game,'chmod',"Shield x 2",BASE_SCALE,pos)
+    def __init__(self, game, pos=None):
+        super(Chmod, self).__init__(game, 'chmod', "Shield x 2", BASE_SCALE, pos)
     
-    def shield_mod(self,s):
-        return s*2 # double the player's shield strength
+    def shield_mod(self, s):
+        return s * 2 # double the player's shield strength
     
     def add_effect(self, agent):
         agent.get_shield_sphere().show()
@@ -257,25 +257,25 @@ class Chmod(Achievement):
         player.get_shield_sphere().hide()
 
 class DashR(Achievement):
-    def __init__(self,game,pos=None):
-        super(DashR,self).__init__(game,'-r',"Fire Speed x 2",BASE_SCALE,pos)
+    def __init__(self, game, pos=None):
+        super(DashR, self).__init__(game, '-r', "Fire Speed x 2", BASE_SCALE, pos)
     
-    def rapid_fire_mod(self,a):
-        return a/2 # half the shooting delay
+    def rapid_fire_mod(self, a):
+        return a / 2 # half the shooting delay
     
 class Locate(Achievement):
-    def __init__(self,game,pos=None):
-        super(Locate,self).__init__(game,'locate',"Scope Zoom * 2",BASE_SCALE,pos)
+    def __init__(self, game, pos=None):
+        super(Locate, self).__init__(game, 'locate', "Scope Zoom * 2", BASE_SCALE, pos)
         
-    def scope_zoom_mod(self,d):
-        return d*2
+    def scope_zoom_mod(self, d):
+        return d * 2
     
 class Ls(Achievement):
-    def __init__(self,game,pos=None):
-        super(Ls,self).__init__(game,'ls',"Radar",BASE_SCALE,pos)
+    def __init__(self, game, pos=None):
+        super(Ls, self).__init__(game, 'ls', "Radar * 1.5", BASE_SCALE, pos)
     
     def radar_mod(self, r):
-        return r*1.5
+        return r * 1.5
     
     def add_effect(self, agent):
         print "add radar"

@@ -7,7 +7,7 @@ from direct.interval.IntervalGlobal import *
 from constants import *
 
 #Constants
-EMPTY_PROG_STR = "|        |"
+EMPTY_PROG_STR = "[ - ]"
 HUD_SCALE = 0.06
 HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 
@@ -18,29 +18,31 @@ class HUD(object):
         self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(-0.025, 0, 0), scale=0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
         
+        self.bottomHUD = DirectFrame(frameSize=(-0.5,0.5,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,-0.96))
         self.programHUD = [
-            OnscreenText(text=EMPTY_PROG_STR, pos=(-0.25, -0.96), scale=HUD_SCALE,
-                         fg=HUD_FG, bg=HUD_BG, mayChange=True),
-            OnscreenText(text=EMPTY_PROG_STR, pos=(0, -0.96), scale=HUD_SCALE,
-                         fg=HUD_FG, bg=HUD_BG, mayChange=True),
-            OnscreenText(text=EMPTY_PROG_STR, pos=(0.25, -0.96), scale=HUD_SCALE,
-                         fg=HUD_FG, bg=HUD_BG, mayChange=True)
+            OnscreenText(text=EMPTY_PROG_STR, pos=(-0.2, -0.98), scale=HUD_SCALE,
+                         fg=HUD_FG, mayChange=True),
+            OnscreenText(text=EMPTY_PROG_STR, pos=(0, -0.98), scale=HUD_SCALE,
+                         fg=HUD_FG, mayChange=True),
+            OnscreenText(text=EMPTY_PROG_STR, pos=(0.2, -0.98), scale=HUD_SCALE,
+                         fg=HUD_FG, mayChange=True)
 		]
         # red flash for indicating hits
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         self.grayScreen = None
         #self.healthHUD = OnscreenText(text="HP: %d" % player.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
+        self.topHUD = DirectFrame(frameSize=(-0.5,0.5,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,0.96))
         self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, text="", text_scale=0.12, frameColor=HUD_BG, sortOrder=2)
         self.healthBAR.setTransparency(TransparencyAttrib.MAlpha)
-        self.killHUD = OnscreenText(text="Kills: %d" % player.killcount(), pos=(-0.4, 0.94), scale=HUD_SCALE, fg=HUD_FG, bg=HUD_BG, mayChange=True)
-        self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(0.35,0,0.96), scale=0.04)
+        self.killHUD = OnscreenText(text="Kills: %d" % player.killcount(), pos=(-0.41, 0.94), scale=HUD_SCALE, fg=HUD_FG, mayChange=True)
+        self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(0.38,0,0.96), scale=0.04)
         self.musicHUD.setImage(image="%s/music_on.png" % TEXTURE_PATH)
         self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(0.45,0,0.96), scale=0.04)
+        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(0.46,0,0.96), scale=0.04)
         self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.timer = OnscreenText(text="Time:", pos=(0,0.94), scale=HUD_SCALE, bg=HUD_BG, fg=HUD_FG, mayChange=True)
+        self.timer = OnscreenText(text="Time:", pos=(0,0.94), scale=HUD_SCALE, fg=HUD_FG, mayChange=True)
         
     def setup_radar(self):
         print "setup radar"
@@ -117,7 +119,7 @@ class HUD(object):
             self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
     
     def collect(self,i,prog_name):
-        self.programHUD[i].setText("|  %s  |" % prog_name)
+        self.programHUD[i].setText("[ %s ]" % prog_name)
     
     def drop(self, prog_index):
         self.programHUD[prog_index].setText(EMPTY_PROG_STR)
@@ -125,11 +127,11 @@ class HUD(object):
     def add_slot(self):
         x = self.programHUD[-1].getPos()[0]
         self.programHUD.append(OnscreenText(text=EMPTY_PROG_STR,
-                        pos=(x + 0.25, -0.96), scale=HUD_SCALE,
-                        fg=HUD_FG, bg=HUD_BG, mayChange=True))
+                        pos=(x + 0.2, -0.98), scale=HUD_SCALE,
+                        fg=HUD_FG, mayChange=True))
         for txt in self.programHUD:
             #they couldn't just make it simple and override getX() could they?
-            txt.setX(txt.getPos()[0] - 0.15)
+            txt.setX(txt.getPos()[0] - 0.1)
         
     def add_kill(self):
         self.killHUD.setText("Kills: %d" % self.player.killcount())

@@ -31,6 +31,7 @@ LOGO = """\n\n\n
 LOADINGTEXT = """\n\nControls:
   Mouse       | look and turn
   Left click  | shoot
+  Right click | scope zoom
   E           | pick up programs
   1-9         | drop program
   W/A/S/D     | move forward/left/back/right
@@ -48,7 +49,9 @@ PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',
             '-r' : 'Increases shoot speed',
             'RAM' : 'Provides an additional program slot',
-            'gdb' : 'Debugger restores health over time'
+            'gdb' : 'Debugger restores health over time',
+            'ls' : 'Increases radar range by 1.5',
+            'locate' : 'Doubles scope zoom',
            }
 
 

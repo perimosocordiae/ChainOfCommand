@@ -60,8 +60,8 @@ class Game(object):
             self.add_program(Ls)
         print "programs added"
         self.shell.hide_shell()
-        self.drone_adder = Sequence(Wait(10.0), Func(self.add_drone))
-        #self.drone_adder.loop()
+        self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
+        self.drone_adder.loop()
         self.local_player().add_background_music()
         self.startTime = time() # reset the start and end times
         self.endTime = self.startTime + self.gameLength

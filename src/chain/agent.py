@@ -4,6 +4,9 @@ from direct.interval.IntervalGlobal import *
 from itertools import ifilter
 from constants import *
 
+#Constants
+MAX_PROGRAMS = 5
+
 class Agent(object):
 
     def __init__(self,game,name,setup_mcs=True):
@@ -138,10 +141,16 @@ class Agent(object):
     def collect(self):
         if self.canCollect:
             prog = self.canCollect
+
             if prog.unique_str() in self.game.programs:
+                # 
+                if prog.name == "RAM" and len(self.programs) == MAX_PROGRAMS:
+                    return -1, None
             
                 #if basic, have it do its effect and return
-                if not prog.pick_up(self): # fails for non-effectful gdb
+                #fails for non-effectful gdb
+                #fails when maximum number of slots/programs is reached
+                if not prog.pick_up(self) or (prog.name == "RAM" and len(self.programs) == MAX_PROGRAMS):
                     return -1, prog
                 
                 for i,p in enumerate(self.programs):

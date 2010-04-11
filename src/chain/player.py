@@ -482,7 +482,7 @@ class LocalPlayer(Player):
             self.hud.drop(i)
         
     def add_slot(self):
-        if len(self.programs) < 9:
+        if len(self.programs) <= 5:
             self.programs.append(None)
             self.hud.add_slot()
         
