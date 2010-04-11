@@ -153,6 +153,13 @@ class Shell(object):
         self.keep_last_line = True
         self.prompt = DirectLabel(text="> ", frameSize=(-0.04,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
         self.input = DirectEntry(scale=0.07, command=self.parse_start_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
+    
+    def remove_start_prompt(self):
+        if self.keep_last_line :
+            self.hide_inputs()
+            lines = self.output.getText().split('\n')
+            lines[len(lines)-1] = ""
+            self.output.setText('\n'.join(lines))
             
     def game_recap(self,stats_list):
         textType = Sequence(Func(self.append_line,"Game recap:"))
@@ -196,7 +203,7 @@ class Shell(object):
         valid_cmds = ['start', 'begin', 'go']
         if str and str in valid_cmds : 
             self.g.client.send("start")
-            self.hide_inputs()
+            self.remove_start_prompt()
         else :
             self.input.enterText("")
             self.input.setFocus()
@@ -211,6 +218,7 @@ class Shell(object):
         self.append_line("")
     
     def starting_output(self):
+        self.remove_start_prompt()
         self.append_line("Starting...")
         self.append_line("")
         self.append_line("")
