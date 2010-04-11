@@ -105,6 +105,12 @@ class Agent(object):
     def get_model(self):
         return None
     
+    def add_radar(self):
+        pass
+    
+    def remove_radar(self):
+        pass
+    
     #Per is the amount to heal per tick... times is the number of ticks to heal for
     def debug(self, name, per, times):
         self.debuggers[name] = (per, times)
@@ -143,11 +149,16 @@ class Agent(object):
                 if p:
                     return i, False
                 
+                alreadyHave = False
+                for i2,p2 in enumerate(self.programs):
+                    if p2 and p2.name == prog.name:
+                        alreadyHave = True
                 self.programs[i] = prog
                 prog.disappear()
-                del self.game.programs[prog.unique_str()]  
+                del self.game.programs[prog.unique_str()]
+                if not alreadyHave:
+                    prog.add_effect(self)  
                 self.canCollect = None
-                prog.add_effect(self)
                 return i, prog
             else:
                 return -1, None

@@ -15,7 +15,7 @@ from player import Player,LocalPlayer
 from drone import Drone
 from obstacle import Wall, Tower, RAMSlot, CopperWire, QuadWall
 from networking import Client
-from program import DashR, Rm, Chmod, RAM, Gdb, Locate
+from program import DashR, Rm, Chmod, RAM, Gdb, Locate, Ls
 from constants import *
 from level import *
 
@@ -57,6 +57,7 @@ class Game(object):
             #self.add_program(RAM)
             self.add_program(Gdb)
             self.add_program(Locate)
+            self.add_program(Ls)
         print "programs added"
         self.shell.hide_shell()
         self.drone_adder = Sequence(Wait(10.0), Func(self.add_drone))
@@ -155,7 +156,6 @@ class Game(object):
         p.hud.display_gray()
         p.hud.show_scores()
         taskMgr.remove('timerTask')
-        taskMgr.remove('radarTask')
         if not self.end_sequence:
             self.end_sequence = Sequence(Wait(5),
                      Func(self.kill_everything),

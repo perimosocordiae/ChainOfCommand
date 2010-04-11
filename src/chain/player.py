@@ -422,7 +422,23 @@ class LocalPlayer(Player):
     def clickRelease(self):
         self.shooting = False
         taskMgr.remove("updateShotTask")
+    
+    def add_radar(self):
+        print "radar"
+        if hasattr(self, "hud") and self.hud:
+            self.hud.setup_radar()
         
+    def remove_radar(self):
+        print "radar remove"
+        if hasattr(self, "hud") and self.hud:
+            self.hud.destroy_radar()
+        
+    def radar_mod(self):
+        d = 1
+        for p in ifilter(lambda p: p != None, self.programs):
+            d = p.radar_mod(d)
+        return d
+    
     def scopeZoom(self):
         d = BASE_CAMERA_FOCAL_LENGTH
         for p in ifilter(lambda p: p != None, self.programs):

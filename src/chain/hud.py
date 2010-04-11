@@ -41,13 +41,11 @@ class HUD(object):
         self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
         self.timer = OnscreenText(text="Time:", pos=(0,0.94), scale=HUD_SCALE, bg=HUD_BG, fg=HUD_FG, mayChange=True)
-        self.setup_radar()
         
     def setup_radar(self):
-        #self.radar_background = DirectLabel(image="%s/white_circle.png" % TEXTURE_PATH, 
-        #                                    scale=0.25, pos=(1.09, 0, -0.75), sortOrder=-1)
+        print "setup radar"
         self.radar_background = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, color=(.871,.722,.529, 0.5), 
-                                            scale=0.25, pos=(1.09, 0, -0.75))
+                                            scale=0.25, pos=(1.08, 0, -0.75))
         self.radar_background.setTransparency(TransparencyAttrib.MAlpha)
         me = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (0,0,0), 
                                          scale=0.05, color=(0,0,1,.8), parent=self.radar_background)
@@ -57,7 +55,12 @@ class HUD(object):
         
     def start_timer(self):
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
-
+    
+    def destroy_radar(self):
+        print "destroy radar"
+        if hasattr(self, "radar_background") and self.radar_background:
+            self.radar_background.removeNode()
+        taskMgr.remove('radarTask')
 
     def show_scores(self):
         #self.crosshairs.hide()
@@ -149,6 +152,7 @@ class HUD(object):
         self.grayScreen.destroy()
         self.grayScreen = None
         self.hide_scores()
+        self.destroy_radar()
         base.setFrameRateMeter(False) 
     
     def flash_red(self):
@@ -182,15 +186,15 @@ class HUD(object):
     def radarTask(self, task):
         for dronePoint in self.dronePoints : dronePoint.destroy()
         game = self.player.game
-        myPos = game.local_player().get_model().getPos()
-        clipConstant = game.tile_size * 2
+        myPos = self.player.get_model().getPos()
+        clipConstant = game.tile_size * 2 * self.player.radar_mod()
         clipConstantSquared = clipConstant * clipConstant
         scaleConstant = clipConstant/0.40
         for drone in game.drones :
             position = game.drones[drone].get_model().getPos()
             vectorToDrone = position-myPos
             if (vectorToDrone.lengthSquared() < clipConstantSquared) :
-                vectorToDrone = -game.local_player().get_model().getRelativeVector(render, vectorToDrone)/scaleConstant
+                vectorToDrone = -self.player.get_model().getRelativeVector(render, vectorToDrone)/scaleConstant
                 dronePoint = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (vectorToDrone.getX(),0,vectorToDrone.getY()), 
                                          scale=0.05, color=(1,0,0,.8), parent=self.radar_background)
                 self.dronePoints.append(dronePoint)

@@ -221,6 +221,8 @@ class Achievement(Program):
         return a
     def scope_zoom_mod(self, d):
         return d
+    def radar_mod(self, d):
+        return d
     #override these methods to create/remove visual effects when you have programs
     def add_effect(self, agent):
         return
@@ -267,3 +269,17 @@ class Locate(Achievement):
         
     def scope_zoom_mod(self,d):
         return d*2
+    
+class Ls(Achievement):
+    def __init__(self,game,pos=None):
+        super(Ls,self).__init__(game,'ls',"Radar",BASE_SCALE,pos)
+    
+    def radar_mod(self, r):
+        return r*1.5
+    
+    def add_effect(self, agent):
+        print "add radar"
+        agent.add_radar()
+    def remove_effect(self, agent):
+        print "remove radar"
+        agent.remove_radar()
