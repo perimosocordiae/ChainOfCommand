@@ -77,6 +77,10 @@ class GameEventHandler(DirectObject):
             base.cTrav.addCollider(d.pusher,self.pusherHandler)
             #base.cTrav.addCollider(d.collider,self.collisionHandler)
             self.pusherHandler.addCollider(d.pusher, d.panda)
+            
+            base.cTrav.addCollider(d.wallPusher,self.pusherHandler)
+            #base.cTrav.addCollider(d.collider,self.collisionHandler)
+            self.pusherHandler.addCollider(d.wallPusher, d.panda)
         for p in game.programs.itervalues():
             base.cTrav.addCollider(p.pusher, self.pusherHandler)
             self.pusherHandler.addCollider(p.pusher, p.model)
@@ -108,6 +112,8 @@ class GameEventHandler(DirectObject):
     def addDroneHandler(self, d):
         base.cTrav.addCollider(d.pusher,self.pusherHandler)
         self.pusherHandler.addCollider(d.pusher, d.panda)
+        base.cTrav.addCollider(d.wallPusher,self.pusherHandler)
+        self.pusherHandler.addCollider(d.wallPusher, d.panda)
         dName = str(hash(d))
         for t in self.game.players.iterkeys():
             self.accept("%s-into-%s"%(t,dName),  self.tronHitsDrone)

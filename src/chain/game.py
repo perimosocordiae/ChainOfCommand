@@ -173,7 +173,7 @@ class Game(object):
         self.local_player().get_camera().reparentTo(render)
         self.local_player().hud.destroy_HUD()
         for d in self.drones.values():
-            taskMgr.remove(d.walkTask)
+            #taskMgr.remove(d.walkTask)
             d.walk.finish()
             d.die()
         for k in self.players.keys():
@@ -224,6 +224,8 @@ class Game(object):
             pos,rot,vel,hpr,anim,firing,collecting,dropping = map(eval,strs)
             if name in self.players:
                 self.players[name].move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
+        for drone in self.drones.itervalues():
+            drone.act()
         base.cTrav.traverse(render)
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):

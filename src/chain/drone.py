@@ -28,7 +28,7 @@ class Drone(Agent):
         return 0.1
 
     def die(self):
-        taskMgr.remove(self.walkTask)
+        #taskMgr.remove(self.walkTask)
         del self.game.drones[str(hash(self))]
         self.collider.removeNode()
         self.pusher.removeNode()
@@ -42,7 +42,7 @@ class Drone(Agent):
         self.panda.setHpr(0,0,0)
         self.walk = self.panda.actorInterval("walk")
         self.walk.loop()
-        self.walkTask = taskMgr.add(self.WalkTask, "WalkTask")
+        #self.walkTask = taskMgr.add(self.WalkTask, "WalkTask")
     
     def get_model(self):
         return self.panda    
@@ -76,15 +76,24 @@ class Drone(Agent):
         self.pusher.node().setFromCollideMask(DRONE_PUSHER_MASK)
         self.pusher.node().setIntoCollideMask(DRONE_PUSHER_MASK)
         
+        cNode3 = CollisionNode(key+'_wall_donthitthis')
+        cNode3.addSolid(CollisionSphere(center, radius))
+        self.wallPusher = self.panda.attachNewNode(cNode3)
+        self.wallPusher.node().setFromCollideMask(WALL_COLLIDER_MASK)
+        self.wallPusher.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        
         #self.collider.show()
         #self.pusher.show()
         
     def get_shield_sphere(self):
         return self.pusher
     
-    def WalkTask(self, task):
+    #def WalkTask(self, task):
+    #    self.follow_tron()
+    #    return Task.cont
+    
+    def act(self):
         self.follow_tron()
-        return Task.cont
     
     def follow_tron(self):
         # get closest player
