@@ -23,7 +23,7 @@ class Program(Agent):
         self.pos = pos
         self.load_model()
         self.initialize_flash_sequence()
-        self.initialize_debug_text()
+        #self.initialize_debug_text()
         self.load_desc(desc)
         self.setup_interval()
         self.setup_collider()

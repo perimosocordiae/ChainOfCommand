@@ -31,7 +31,7 @@ class HUD(object):
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         self.grayScreen = None
         #self.healthHUD = OnscreenText(text="HP: %d" % player.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
-        self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, frameColor=HUD_BG, sortOrder=2)
+        self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, text="", text_scale=0.12, frameColor=HUD_BG, sortOrder=2)
         self.healthBAR.setTransparency(TransparencyAttrib.MAlpha)
         self.killHUD = OnscreenText(text="Kills: %d" % player.killcount(), pos=(-0.4, 0.94), scale=HUD_SCALE, fg=HUD_FG, bg=HUD_BG, mayChange=True)
         self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(0.35,0,0.96), scale=0.04)
