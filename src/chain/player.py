@@ -364,12 +364,13 @@ class LocalPlayer(Player):
     def die(self):
         super(LocalPlayer,self).die()
         if hasattr(self, "hud") and self.hud:
+            self.hud.display_gray()
             self.hud.show_scores()
     
     def respawn(self):
         print "respawning"
         Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn), Wait(1.0),
-                 Func(self.hud.hide_scores),Func(self.toggle_god)).start()
+                 Func(self.hud.hide_scores), Func(self.hud.destroy_gray), Func(self.toggle_god)).start()
     
     def spawn(self,startPos=None,update=True):
         super(LocalPlayer,self).spawn(startPos)

@@ -58,7 +58,7 @@ class Game(object):
             self.add_program(Gdb)
         print "programs added"
         self.shell.hide_shell()
-        self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
+        self.drone_adder = Sequence(Wait(10.0), Func(self.add_drone))
         self.drone_adder.loop()
         self.local_player().add_background_music()
         self.startTime = time() # reset the start and end times
@@ -105,7 +105,6 @@ class Game(object):
         self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])
     
     def add_drone(self):
-
         d = Drone(self)
         self.drones[str(hash(d))] = d 
         self.eventHandle.addDroneHandler(d)
@@ -122,7 +121,6 @@ class Game(object):
     def load_env(self):
         wall_height = 2
         colscale = 1.0
-        
         self.environ = render.attachNewNode("Environment Scale")
         self.environ.reparentTo(render)
         #self.tile_size = 2 * self.map_size / num_tiles
@@ -153,6 +151,7 @@ class Game(object):
         p.hide()
         p.handleEvents = False
         p.invincible = True
+        p.hud.display_gray()
         p.hud.show_scores()
         taskMgr.remove('timerTask')
         if not self.end_sequence:

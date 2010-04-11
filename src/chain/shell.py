@@ -197,7 +197,7 @@ class Shell(object):
     def main(self,port_num,ip,last=False):
         print "starting up"
         self.last = last
-        self.g = Game(ip,port_num,self,100.0,16.0,120)
+        self.g = Game(ip,port_num,self,100.0,16.0,20)
 
     #### HERE THERE BE SHELL COMMANDS ####
     
@@ -323,5 +323,5 @@ class Shell(object):
 if __name__ == '__main__':
     s = Shell(False)
     # hack the history, but only for our debugging runs
-    s.cmd_hist = ["join 1337 localhost last"]
+    s.cmd_hist = ["join 1337 localhost last", "host 1337"]
     run()
