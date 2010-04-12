@@ -31,7 +31,6 @@ class HUD(object):
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         self.grayScreen = None
-        #self.healthHUD = OnscreenText(text="HP: %d" % player.health, pos=(-0.9, 0.9), fg=HUD_FG, bg=HUD_BG, mayChange=True)
         self.topHUD = DirectFrame(frameSize=(-0.5,0.5,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,0.96))
         self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, text="", text_scale=0.12, frameColor=HUD_BG, sortOrder=2)
         self.healthBAR.setTransparency(TransparencyAttrib.MAlpha)
@@ -106,14 +105,12 @@ class HUD(object):
     
     def hit(self):
         self.flashRed.start() # flash the screen red
-        #self.healthHUD.setText("HP: %d" % self.player.health)
         self.healthBAR['value'] = self.player.health
         hpct = self.player.health/100.0
         self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
         
     def heal(self):
         if hasattr(self, "healthBAR") and self.healthBAR:
-            #self.healthHUD.setText("HP: %d" % self.player.health)
             self.healthBAR['value'] = self.player.health
             hpct = self.player.health/100.0
             self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
@@ -139,8 +136,6 @@ class HUD(object):
     def destroy_HUD(self):
         self.crosshairs.destroy() 
         for programDisp in self.programHUD : programDisp.destroy() 
-        #self.healthHUD.destroy()
-        #self.healthHUD = None
         if self.healthBAR:
             self.healthBAR.destroy()
             self.healthBAR = None
@@ -186,7 +181,7 @@ class HUD(object):
         if 0 < game.gameTime < 10:
             self.timer.setFg((1,0,0,0.8))
         elif game.gameTime <= 0:
-            self.timer.setText("Time: %.2f seconds"%0.00)
+            self.timer.setText("Time: %.2f seconds"%0)
             game.game_over()
             return task.done
         return task.again

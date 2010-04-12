@@ -33,23 +33,6 @@ class Agent(object):
     def load_model(self):
         return
     
-    #def initialize_debug_text(self):
-    #    text = TextNode(self.name + '_debugging')
-    #    text.setText('Debugging...')
-    #    text.setTextColor(0,0,0,0.6)
-    #    text.setFont(self.game.font)
-    #    text.setAlign(TextNode.ACenter)
-    #    text.setFrameColor(0,0,0,0.6)
-    #    text.setFrameAsMargin(0,0,0,0)
-    #    text.setCardColor(1,1,1,0.6)
-    #    text.setCardAsMargin(0,0,0,0)
-    #    text.setCardDecal(True)
-    #    self.debugText = NodePath(text)
-    #    self.debugText.stashTo(self.get_model())
-    #    self.debugText.setScale(self.get_text_scale())
-    #    self.debugText.setPos(self.get_text_pos())
-    #    self.debugText.setBillboardPointEye()
-    
     def get_text_pos(self):
         return (0,0,1)
     
@@ -117,7 +100,6 @@ class Agent(object):
     #Per is the amount to heal per tick... times is the number of ticks to heal for
     def debug(self, name, per, times):
         self.debuggers[name] = (per, times)
-        #self.debugText.unstash()
         self.hud.healthBAR['text'] = "D e b u g g i n g . . ."
         print "Debugging %s: (%d, %d)"%(name, per, times)
     
@@ -135,7 +117,6 @@ class Agent(object):
             for name in toDelete:
                 del self.debuggers[name]
             if len(self.debuggers) == 0:
-                #self.debugText.stash()
                 self.hud.healthBAR['text'] = ""
     
     def collect(self):
@@ -143,7 +124,6 @@ class Agent(object):
             prog = self.canCollect
 
             if prog.unique_str() in self.game.programs:
-                # 
                 if prog.name == "RAM" and len(self.programs) == MAX_PROGRAMS:
                     return -1, None
             
@@ -238,4 +218,3 @@ class Agent(object):
             a = p.rapid_fire_mod(a)
         return a
     
-

@@ -1,5 +1,7 @@
 from time import time
 from platform import uname
+from os import listdir
+from os.path import splitext
 import sys
 from random import randint, seed
 import direct.directbase.DirectStart
@@ -64,10 +66,10 @@ class Game(object):
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
-        models = ["/white_floor.egg","/terminal_window_-r.egg","/terminal_window_chmod.egg",
-                  "/terminal_window_rm.egg","/RAM.egg","/laser.egg","/tron_anim_updated.egg","/capacitor.egg"]
-        print "loading models now"
-        loader.loadModel(map(lambda p: MODEL_PATH + p, models), callback=self.load_callback)
+        # just load all the eggs in the MODEL_PATH
+        models = filter(lambda p: splitext(p)[-1] == '.egg', listdir(MODEL_PATH))
+        print "loading models now:",models
+        loader.loadModel(map(lambda p: "%s/%s"%(MODEL_PATH,p), models), callback=self.load_callback)
     
     def load_callback(self, models):
         print "models loaded, starting handshake"
@@ -139,9 +141,7 @@ class Game(object):
         self.local_player().get_camera().reparentTo(render)
         self.local_player().hud.destroy_HUD()
         for d in self.drones.values():
-            #taskMgr.remove(d.walkTask)
-            #d.walk.finish()
-            d.die()
+            d.die() # should we be del'ing the drones?
         for k in self.players.keys():
             self.players[k].tron.cleanup()
             self.players[k].tron.removeNode()
@@ -159,6 +159,7 @@ class Game(object):
         data = self.client.getData()
         if len(data) == 0: return task.cont
         print "handshake:",data
+        myname = uname()[1]
         for d in data:
             ds = d.split()
             if ds[0] == 'seed':
@@ -167,20 +168,17 @@ class Game(object):
                 print "seed",self.rand_seed
             elif ds[0] == 'player':
                 if ds[1] not in self.player_set:
-                    if (len(self.player_set) == 0) : self.shell.show_start_prompt()
-                    if ds[1] != uname()[1] : 
-                        joinStr = ds[1] + " joined";
-                        if ds[1] == 'pc107' : joinStr += ", CJ sucks"
-                        self.shell.append_line(joinStr)
-                    else:
-                        self.shell.append_line("You joined")
+                    name = ds[1] if ds[1] != myname else "You"
+                    if len(self.player_set) == 0: 
+                        self.shell.show_start_prompt()
+                    self.shell.append_line("%s joined"%name)
                     self.shell.append_line("")
                     self.player_set.add(ds[1])
             elif ds[0] == 'start':
                 print "starting"
-                for player in self.player_set :
+                for player in self.player_set:
                     #self.startPoints[player] = self.rand_point() # generate starting points
-                    if player != uname()[1] : # don't add yourself
+                    if player != myname: # don't add yourself
                         self.players[player] = None
                         print "added",player
                 Sequence(Func(self.shell.starting_output), Wait(0.05), Func(self.rest_of_init)).start()
@@ -193,7 +191,7 @@ class Game(object):
         if len(data) == 0: return
         for d in data:
             ds = d.split(':')
-            if len(ds) != 9: continue
+            if len(ds) != 9: continue # maybe we should not silently ignore this?
             name,strs = ds[0],ds[1:]
             pos,rot,vel,hpr,anim,firing,collecting,dropping = map(eval,strs)
             if name in self.players:
@@ -216,8 +214,3 @@ class Game(object):
     def local_player(self):
         return self.players[uname()[1]]
 
-def egg_index(i,j,center):
-    if i < center and j < center: return 1
-    if i < center: return 2
-    if j < center: return 3
-    return 0
