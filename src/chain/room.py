@@ -8,7 +8,7 @@ class Room(Obstacle):
     def __init__(self, name, parent, pos, rot, scale):
         self.walls = {}
         self.obstacles = {}
-        self.hasRand = False
+        self.name = name
         self.scale = scale
         self.environ = parent.attachNewNode("%s_root"%name)
         self.environ.setScale(scale)
@@ -19,8 +19,8 @@ class Room(Obstacle):
         self.walls[name] = (model, QuadWall(name, parent, p1, p2, p3, p4, colliderMask))
     
     def add_ram(self, game, name, pos, scale, hpr):
-        self.obstacles[name] = RAMSlot(name, self.environ, pos, scale, hpr)
-        ram = RAM(game, pos, scale * 7.0)
+        self.obstacles[name] = RAMSlot(name, render, pos, scale, hpr)
+        ram = RAM(game, self, pos, scale * 7.0)
         game.readd_program(ram)
         
     def add_triangle(self, name, model, parent, p1, p2, p3, colliderMask):
@@ -34,9 +34,16 @@ class Room(Obstacle):
             obstacle.destroy()
         self.walls.clear()
         self.obstacles.clear()
-    
+        
     def rand_point(self):
+        return render.getRelativePoint(self.environ, self.relative_rand_point())
+    
+    def relative_rand_point(self):
         return (0,0,0)
+    
+    def add_program(self,game,ptype):
+        prog = ptype(game, self)
+        game.readd_program(prog)
     
     def addWallSection(self, name, parent, pos, color, divisor=1, total=0):
         if total >= divisor:
@@ -66,7 +73,6 @@ class Room(Obstacle):
 class CubeRoom(Room):
     def __init__(self, name, parent, pos, rot, scale, color, holes=(0,0,0,0,0,0,0,0)):
         super(CubeRoom, self).__init__(name, parent, pos, rot, scale)
-        self.hasRand = True
         for i in range(8):
             h = (i * 90) % 360
             z = ((i // 4) * 2) + 1
@@ -88,8 +94,8 @@ class CubeRoom(Room):
                          Point3(-3,3,4), Point3(3,3,4), WALL_COLLIDER_MASK))
         
     
-    def rand_point(self):
-        return (randint(-25,25) / 10,randint(-25,25)/10)
+    def relative_rand_point(self):
+        return (randint(-25,25) / 10,randint(-25,25)/10, 0)
     
 class Hallway(Room):
     def __init__(self, name, parent, pos, rot, scale, color, angle):
@@ -119,8 +125,11 @@ class Hallway(Room):
                 QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
                          Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
         
+    def relative_rand_point(self):
+        return (randint(-8,8) / 10,randint(2,18)/10, 0)
+        
 class HallwayIntersection(Room):
-    #types are: 1: angle right, 2: angle left, 3: T-intersection, 4: 4-way
+    #types are: 0: dead end, 1: angle right, 2: angle left, 3: T-intersection, 4: 4-way
     def __init__(self, name, parent, pos, rot, scale, color, type):
         super(HallwayIntersection, self).__init__(name, parent, pos, rot, scale)
         
@@ -129,18 +138,21 @@ class HallwayIntersection(Room):
             #Not a 4-way intersection - the opposite wall exists
             wall = self.environ.attachNewNode("wall_1")
             wall.setH(0)
-            self.addWallSection("wall_1_1", wall, (0,1,1), color)
+            self.addWallSection("wall_1_1", wall, (0,2,1), color)
         
             if type != 3:
                 #Not a T - there's another wall
-                wall = self.environ.attachNewNode("wall_2")
-                if type == 1:
+                if type < 2:
+                    wall = self.environ.attachNewNode("wall_2")
+                    #dead end or right turn - add left wall
                     wall.setH(90)
-                    x = 1
-                else:
+                    self.addWallSection("wall_2_1", wall, (1,1,1), color)
+                if type != 1:
+                    wall = self.environ.attachNewNode("wall_3")
+                    #dead end or left turn - add right wall
                     wall.setH(270)
-                    x = -1
-                self.addWallSection("wall_2_1", wall, (x,1,1), color)
+                    self.addWallSection("wall_3_1", wall, (-1,1,1), color)
+                
         
         #Add the floor & ceiling
         self.walls["floor"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,0),(0,0,0),1.0),
@@ -150,6 +162,8 @@ class HallwayIntersection(Room):
                 QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
                          Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
         
+    def relative_rand_point(self):
+        return (randint(-8,8) / 10,randint(2,18)/10, 0)
 class Platform(Room):
     def __init__(self, name, parent, pos, rot, scale, color):
         super(Platform, self).__init__(name, parent, pos, rot, scale)
@@ -169,4 +183,20 @@ class Platform(Room):
         wall = self.environ.attachNewNode("wall_2")
         wall.setHpr(90,-90,0)
         self.addRightTriangle("wall_2_1", wall, (0,0,1), color)
-        
+    
+    def relative_rand_point(self):
+        return (randint(-8,8) / 10,randint(2,18)/10, 0)
+    
+class StandardHall(Hallway):
+    #Assume it's a flat hallway, no pitch or roll, 1 x 2*y x 1 (y is essentially
+    #half of the hallway's length, width==height==1), with a standard, unique name
+    def __init__(self, parent, pos, hrot, yscale, color):
+        super(StandardHall, self).__init__("Hall_" + str(hash(self)), parent,
+                                pos, (hrot,0,0), (0.5,yscale,0.5), color, 0)
+
+class StandardIntersection(HallwayIntersection):
+    #Like StandardHall, but for intersections
+    def __init__(self, parent, pos, hrot, color, type):
+        super(StandardIntersection, self).__init__("Corner_" + str(hash(self)),
+                                parent, pos, (hrot,0,0), 0.5, color, type)
+    

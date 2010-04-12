@@ -28,7 +28,7 @@ class Game(object):
         
         #The size of a cube
         num_tiles = 3
-        self.map_size = (self.tile_size * num_tiles) / 2.0
+        self.map_size = (self.tile_size * num_tiles) / 8.0
         self.player_set = set()
         self.end_sequence = None
         self.client = Client(ip,port_num)
@@ -49,16 +49,11 @@ class Game(object):
         self.add_local_player()
         self.add_event_handler()
         self.load_env()
+        
+        #Some player stuff just shouldn't be done until we have a world
+        for pname in self.players:
+            self.players[pname].post_environment_init()
         print "game initialized"
-        for _ in range(4):
-            self.add_program(Rm)
-            self.add_program(Chmod)
-            self.add_program(DashR)
-            #self.add_program(RAM)
-            self.add_program(Gdb)
-            self.add_program(Locate)
-            self.add_program(Ls)
-        print "programs added"
         self.shell.hide_shell()
         self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
         self.drone_adder.loop()
@@ -78,9 +73,9 @@ class Game(object):
         print "models loaded, starting handshake"
         taskMgr.add(self.handshakeTask, 'handshakeTask')
         self.shell.load_finished()
-        
-    def rand_point(self): # get a random point that's also a valid play location
-        return (randint(-self.map_size + 1,self.map_size - 2),randint(-self.map_size + 1,self.map_size -2))
+    
+    def point_for(self, color):
+        return self.level.point_for(color)
 
     def add_event_handler(self):
         self.eventHandle = GameEventHandler(self)
@@ -91,17 +86,13 @@ class Game(object):
     def add_local_player(self):
         name = uname()[1]
         print "adding local player:",name
-        self.players[name] = LocalPlayer(self,name,self.startPoints[name],"blue")
+        self.players[name] = LocalPlayer(self,name,None,"blue")
         self.players[name].shoot(False)
             
     def add_player(self,pname):
         print "making player: %s"%pname
-        self.players[pname] = Player(self,pname,self.startPoints[pname],"blue")
+        self.players[pname] = Player(self,pname,None,"blue")
         
-    def add_program(self,ptype):
-        prog = ptype(self)
-        self.readd_program(prog)
-    
     def readd_program(self,prog):
         self.programs[prog.unique_str()] = prog
         self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])
@@ -111,41 +102,15 @@ class Game(object):
         self.drones[str(hash(d))] = d 
         self.eventHandle.addDroneHandler(d)
     
-    def add_wall(self, name, parent, p1, p2, p3, p4):
-        self.level.obstacles[name] = QuadWall(name, parent, p1, p2, p3, p4, WALL_COLLIDER_MASK)
-        #self.eventHandle.addWallHandler(self.obstacles[name])
-    
-    def add_ram(self, name, pos, scale, hpr):
-        self.level.obstacles[name] = RAMSlot(name, render, pos, scale, hpr)
-        ram = RAM(self, pos, scale * 7.0)
-        self.readd_program(ram)
-    
     def load_env(self):
-        wall_height = 2
-        colscale = 1.0
         self.environ = render.attachNewNode("Environment Scale")
         self.environ.reparentTo(render)
-        #self.tile_size = 2 * self.map_size / num_tiles
         self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         self.environ.setPos(0, 0, 0)
         
-        #self.level = CubeLevel(self.environ)
-        self.level = SniperLevel(self.environ)
-        
-        # make some random towers
-        for tower in range(4):
-            pos = self.rand_point()
-            name = "tower_%d"%tower
-            self.level.obstacles[name] = Tower(render, pos[0], pos[1], 
-                                     randint(10,2*wall_height*self.tower_size), 
-                                     colscale/100,self.tile_size)
-        
-        # make some random RAM slots
-        for slot in range(5):
-            pos = self.rand_point()
-            name = "RAM_slot_%d"%slot
-            scale = randint(5,10)
-            self.add_ram(name, Point3(pos[0], pos[1], 0), scale, Point3(0, 0, 0))
+        #self.level = CubeLevel(self, self.environ)
+        self.level = SniperLevel(self, self.environ)
+        #self.level = Beaumont(self, self.environ)
 
     def game_over(self):
         print "Game over"
@@ -185,9 +150,6 @@ class Game(object):
             self.programs[k].die()
             del self.programs[k]
         self.level.destroy()
-        #for o in self.obstacles.itervalues():
-        #    o.destroy()
-        #self.floor.destroy()
             
         self.client.close_connection()
         base.enableMouse()
@@ -217,7 +179,7 @@ class Game(object):
             elif ds[0] == 'start':
                 print "starting"
                 for player in self.player_set :
-                    self.startPoints[player] = self.rand_point() # generate starting points
+                    #self.startPoints[player] = self.rand_point() # generate starting points
                     if player != uname()[1] : # don't add yourself
                         self.players[player] = None
                         print "added",player
@@ -236,7 +198,7 @@ class Game(object):
             pos,rot,vel,hpr,anim,firing,collecting,dropping = map(eval,strs)
             if name in self.players:
                 self.players[name].move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
-        for drone in self.drones.itervalues():
+        for drone in self.drones.values():
             drone.act()
         base.cTrav.traverse(render)
         

@@ -141,18 +141,24 @@ class HUD(object):
         for programDisp in self.programHUD : programDisp.destroy() 
         #self.healthHUD.destroy()
         #self.healthHUD = None
-        self.healthBAR.destroy()
-        self.healthBAR = None
-        self.killHUD.destroy() 
-        self.killHUD = None
-        self.musicHUD.destroy()
-        self.musicHUD = None
-        self.soundHUD.destroy()
-        self.soundHUD = None
-        self.timer.destroy()
-        self.timer = None
-        self.grayScreen.destroy()
-        self.grayScreen = None
+        if self.healthBAR:
+            self.healthBAR.destroy()
+            self.healthBAR = None
+        if self.killHUD:
+            self.killHUD.destroy() 
+            self.killHUD = None
+        if self.musicHUD:
+            self.musicHUD.destroy()
+            self.musicHUD = None
+        if self.soundHUD:
+            self.soundHUD.destroy()
+            self.soundHUD = None
+        if self.timer:
+            self.timer.destroy()
+            self.timer = None
+        if self.grayScreen:
+            self.grayScreen.destroy()
+            self.grayScreen = None
         self.hide_scores()
         self.destroy_radar()
         base.setFrameRateMeter(False) 

@@ -13,11 +13,11 @@ DESCRIPTION_SCALE = 0.2
 
 class Program(Agent):
     
-    def __init__(self, game, name, prefix, desc, scale, pos):
+    def __init__(self, game, room, name, prefix, desc, scale, pos):
         super(Program, self).__init__(game, name, False)
         self.game = game
         if not pos:
-            pos = game.rand_point()
+            pos = room.rand_point()
         self.prefix = prefix
         self.scale = scale
         self.pos = pos
@@ -61,8 +61,8 @@ class Program(Agent):
     def load_model(self):
         self.model = loader.loadModel("%s/%s%s.egg" % (MODEL_PATH, self.prefix, self.name))
         self.model.setScale(self.scale)
-        self.model.setPos(self.pos[0], self.pos[1], 10)
         self.model.reparentTo(render)
+        self.model.setPos(Point3(self.pos[0], self.pos[1], self.pos[2] + 10))
         
     def get_model(self):
         return self.model
@@ -132,8 +132,8 @@ class Program(Agent):
 #Programs that have an immediate effect and then disappear
 class Basic(Program):
     
-    def __init__(self, game, name, desc, scale, pos, prefix=''):
-        super(Basic, self).__init__(game, name, prefix, desc, scale, pos)
+    def __init__(self, game, room, name, desc, scale, pos, prefix=''):
+        super(Basic, self).__init__(game, room, name, prefix, desc, scale, pos)
     
     #do effect and make it disappear; return false so player doesn't add it to a slot
     def pick_up(self, player):
@@ -149,8 +149,8 @@ class Basic(Program):
         return
     
 class RAM(Basic):
-    def __init__(self, game, pos=None, scale=4.0):
-        super(RAM, self).__init__(game, 'RAM', "Add Program Slot", scale, pos)
+    def __init__(self, game, room, pos=None, scale=4.0):
+        super(RAM, self).__init__(game, room, 'RAM', "Add Program Slot", scale, pos)
         self.desc.setZ(0.5)
         self.desc.setScale(0.1)
     
@@ -170,8 +170,8 @@ class RAM(Basic):
 
 class Debug(Basic):
     #Per is the amount to heal per tick... times is the number of ticks to heal for
-    def __init__(self, game, name, desc, scale, pos, prefix='', per=0.8, times=125):
-        super(Debug, self).__init__(game, name, desc, scale, pos, prefix)
+    def __init__(self, game, room, name, desc, scale, pos, prefix='', per=0.8, times=125):
+        super(Debug, self).__init__(game, room, name, desc, scale, pos, prefix)
         self.per = per
         self.times = times
     
@@ -186,16 +186,16 @@ class Debug(Basic):
         agent.debug(self.unique_str(), self.per, self.times)
 
 class Gdb(Debug):
-    def __init__(self, game, pos=None):
-        super(Gdb, self).__init__(game, 'gdb', "Restore Health", BASE_SCALE, pos, 'terminal_window_')
+    def __init__(self, game, room, pos=None):
+        super(Gdb, self).__init__(game, room, 'gdb', "Restore Health", BASE_SCALE, pos, 'terminal_window_')
 
 #***************************** ACHIEVEMENT PROGRAMS *****************************
 
 #The "Achievement" Programs that take up a slot
 class Achievement(Program):
     
-    def __init__(self, game, name, desc, scale, pos):
-         super(Achievement, self).__init__(game, name, 'terminal_window_', desc, scale, pos)
+    def __init__(self, game, room, name, desc, scale, pos):
+         super(Achievement, self).__init__(game, room, name, 'terminal_window_', desc, scale, pos)
          self.description = desc
         
     def reappear(self, pos):
@@ -230,8 +230,8 @@ class Achievement(Program):
         return
     
 class Rm(Achievement):
-    def __init__(self, game, pos=None):
-        super(Rm, self).__init__(game, 'rm', "Damage x 2", BASE_SCALE, pos)
+    def __init__(self, game, room, pos=None):
+        super(Rm, self).__init__(game, room, 'rm', "Damage x 2", BASE_SCALE, pos)
     
     def damage_mod(self, d):
         return d * 2 # double the player's damage
@@ -245,8 +245,8 @@ class Rm(Achievement):
         agent.set_glow(False)
 
 class Chmod(Achievement):
-    def __init__(self, game, pos=None):
-        super(Chmod, self).__init__(game, 'chmod', "Shield x 2", BASE_SCALE, pos)
+    def __init__(self, game, room, pos=None):
+        super(Chmod, self).__init__(game, room, 'chmod', "Shield x 2", BASE_SCALE, pos)
     
     def shield_mod(self, s):
         return s * 2 # double the player's shield strength
@@ -257,22 +257,22 @@ class Chmod(Achievement):
         player.get_shield_sphere().hide()
 
 class DashR(Achievement):
-    def __init__(self, game, pos=None):
-        super(DashR, self).__init__(game, '-r', "Fire Speed x 2", BASE_SCALE, pos)
+    def __init__(self, game, room, pos=None):
+        super(DashR, self).__init__(game, room, '-r', "Fire Speed x 2", BASE_SCALE, pos)
     
     def rapid_fire_mod(self, a):
         return a / 2 # half the shooting delay
     
 class Locate(Achievement):
-    def __init__(self, game, pos=None):
-        super(Locate, self).__init__(game, 'locate', "Scope Zoom * 2", BASE_SCALE, pos)
+    def __init__(self, game, room, pos=None):
+        super(Locate, self).__init__(game, room, 'locate', "Scope Zoom * 2", BASE_SCALE, pos)
         
     def scope_zoom_mod(self, d):
         return d * 2
     
 class Ls(Achievement):
-    def __init__(self, game, pos=None):
-        super(Ls, self).__init__(game, 'ls', "Radar * 1.5", BASE_SCALE, pos)
+    def __init__(self, game, room, pos=None):
+        super(Ls, self).__init__(game, room, 'ls', "Radar * 1.5", BASE_SCALE, pos)
     
     def radar_mod(self, r):
         return r * 1.5

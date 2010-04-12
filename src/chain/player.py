@@ -20,10 +20,10 @@ BASE_CAMERA_Y = -4.0
 BASE_CAMERA_FOCAL_LENGTH = 1.39951908588
 HIDE_DIST = 10
 MOTION_MULTIPLIER = 1000.0
-TURN_MULTIPLIER = 0.1
-LOOK_MULTIPLIER = 0.1
-MAX_TURN = 2.0
-MAX_LOOK = 2.0
+TURN_MULTIPLIER = 0.2
+LOOK_MULTIPLIER = 0.2
+MAX_TURN = 4.0
+MAX_LOOK = 4.0
 JUMP_SPEED = 700.0 #make sure this stays less than SAFE_FALL - he should be able to jump up & down w/o getting hurt!
 TRON_ORIGIN_HEIGHT = 6.5
 LASER_SPEED = 5000
@@ -43,8 +43,12 @@ class Player(Agent):
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
         self.invincible = False
-        self.spawn(startPos, False)
+        self.handleEvents = True
+        #self.spawn(startPos, False)
     
+    def post_environment_init(self):
+        self.spawn()
+        
     def setup_color(self):
         ts = TextureStage('ts')
         tex = loader.loadTexture("%s/tron-color_%s.png"%(COLOR_PATH,self.color))
@@ -111,8 +115,8 @@ class Player(Agent):
             self.show()
             self.handleEvents = True
             self.health = STARTING_HEALTH
-            if pt == None : pt = self.game.rand_point()
-            self.tron.setPos(pt[0],pt[1],TRON_ORIGIN_HEIGHT)
+            if pt == None : pt = self.game.point_for(self.color)
+            self.tron.setPos(pt[0],pt[1],pt[2] + TRON_ORIGIN_HEIGHT)
 
     def respawn(self):
         Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn),Wait(1.0),
@@ -152,7 +156,7 @@ class Player(Agent):
         self.tron.reparentTo(render)
         self.tron.setScale(0.4, 0.4, 0.4)
         self.tron.setHpr(0, 0, 0)
-        self.tron.setPos(-4, 34, TRON_ORIGIN_HEIGHT)
+        #self.tron.setPos(-4, 34, TRON_ORIGIN_HEIGHT)
         self.tron.pose("running", 46)
         self.shortRun = self.tron.actorInterval("running", startFrame=25, endFrame=46)
         self.running = False
@@ -324,7 +328,6 @@ class LocalPlayer(Player):
         #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         self.game.network_listener.loop()
-        self.sendUpdate()
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
         super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping)

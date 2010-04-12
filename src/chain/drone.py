@@ -13,9 +13,9 @@ CHASE_SCALE = 1.0
 class Drone(Agent):
     def __init__(self,game,pos=None):
         super(Drone,self).__init__(game,str(hash(self)))
-        if not pos: pos = game.rand_point()
+        if not pos: pos = game.point_for("white")
         self.hittables = {}
-        self.parent.setPos(pos[0],pos[1],8)
+        self.parent.setPos(pos[0],pos[1],pos[2] + self.get_origin_height())
         self.setup_collider()
         self.speed = (random()+0.5)*2 + 15
         
@@ -132,7 +132,7 @@ class Drone(Agent):
         self.velocity.setY(tronVec.getY())
         self.parent.setFluidPos(self.parent.getPos() + (self.velocity*self.speed*SERVER_TICK))
         #Kill any pandas that somehow manage to slip through the cracks
-        if self.model.getZ() < BOTTOM_OF_EVERYTHING:
+        if self.parent.getZ() < BOTTOM_OF_EVERYTHING:
             self.die()
             
         if self.pose != 52 or len(self.hittables) > 0:
