@@ -95,7 +95,7 @@ class CubeRoom(Room):
         
     
     def relative_rand_point(self):
-        return (randint(-25,25) / 10,randint(-25,25)/10, 0)
+        return (randint(-25,25) / 10, randint(-25,25)/10, 0)
     
 class Hallway(Room):
     def __init__(self, name, parent, pos, rot, scale, color, angle):

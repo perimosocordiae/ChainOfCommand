@@ -120,7 +120,8 @@ class SniperLevel(Level):
                     (180,0,0), (0.8,0.5,0.125), team2)
         
         self.default_environment()
-        
+        self.rooms["%s_Platform"%t1].add_program(self.game, Locate)
+        self.rooms["%s_Platform"%t2].add_program(self.game, Locate)
 
 class Beaumont(Level):
     def __init__(self, game, parent, team1="blue", team2="red"):
