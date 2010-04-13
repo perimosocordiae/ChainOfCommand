@@ -12,7 +12,7 @@ from constants import MODEL_PATH,USE_GLOW
 
 CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
-PROMPT = "Enter a command"
+PROMPT = "Enter a command to get started"
 # generated with: figlet -f slant "Chain of Command"
 LOGO = """\n\n\n
     ________          _                ____
@@ -28,7 +28,7 @@ LOGO = """\n\n\n
  \____/\____/_/ /_/ /_/_/ /_/ /_/\__,_/_/ /_/\__,_/   
 \n\n\n\n\n
 """
-LOADINGTEXT = """\n\nControls:
+LOADINGTEXT = """Controls:
   Mouse       | look and turn
   Left click  | shoot
   Right click | scope zoom
@@ -40,11 +40,9 @@ LOADINGTEXT = """\n\nControls:
   P           | pause
   M/N         | toggle music/sound fx
   tab         | show leaderboard
-  \nGame Type: deathmatch
-  Kill each other and AI drones
-  Player with the highest combined killcount wins!
-  \nLoading game...
 """
+
+GAMETYPES = {'deathmatch' : "Kill each other and AI drones\nPlayer with the highest combined killcount wins!"}
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',
             '-r' : 'Increases shoot speed',
@@ -54,13 +52,11 @@ PROGRAMS = {'rm' : 'Doubles attack power',
             'locate' : 'Doubles scope zoom',
            }
 
-
 class Shell(object):
     def __init__(self,full):
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
         self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
-        self.keep_last_line = False
         self.intro(full)
         self.cmd_dict = { 
             'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
@@ -71,6 +67,7 @@ class Shell(object):
             'host': self.start_server, 'server': self.start_server,
             'start': self.start_game, 'run': self.start_game, 'join': self.start_game
         }
+        # subset of commands, to get the user started
         self.help_cmds = ['help','host','join','man','scores','quit']
         self.cmd_hist = [""]
         self.cmd_pos = 0
@@ -87,7 +84,7 @@ class Shell(object):
                     textType.append(Wait(CHARACTER_DELAY))
                 textType.append(Func(self.append_line, ""))
                 textType.append(Wait(0.5))
-            for line in LOGO.splitlines() :
+            for line in LOGO.splitlines():
                 textType.append(Func(self.append_line, line))
                 textType.append(Wait(CHARACTER_DELAY))
             for char in PROMPT:
@@ -109,19 +106,16 @@ class Shell(object):
     def user_input(self):
         self.prompt = DirectLabel(text=">", frameSize=(-0.04,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
         self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
-        self.screen.accept('arrow_up',self.up_hist)
-        self.screen.accept('arrow_down',self.down_hist)
+        self.screen.accept('arrow_up',self.history,[True])
+        self.screen.accept('arrow_down',self.history,[False])
         self.screen.accept('tab', self.tab_completion)
         self.input.enterText("")
     
-    def up_hist(self):
-        self.cmd_pos = max(self.cmd_pos-1,-len(self.cmd_hist)+1)
+    def history(self,up=True):
+        if up: self.cmd_pos = max(self.cmd_pos-1,-len(self.cmd_hist)+1)
+        else:  self.cmd_pos = min(self.cmd_pos+1,0)
         self.input.enterText(self.cmd_hist[self.cmd_pos])
     
-    def down_hist(self):
-        self.cmd_pos = min(self.cmd_pos+1,0)
-        self.input.enterText(self.cmd_hist[self.cmd_pos])
-        
     def tab_completion(self):
         currentInput = self.input.get()
         if len(currentInput) == 0: return
@@ -151,19 +145,6 @@ class Shell(object):
         self.output.unstash()
         self.game_recap(stats_list)
         
-    def show_start_prompt(self):
-        self.append_line("Enter start to start the game when all players have joined")
-        self.keep_last_line = True
-        self.prompt = DirectLabel(text="> ", frameSize=(-0.04,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
-        self.input = DirectEntry(scale=0.07, command=self.parse_start_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
-    
-    def remove_start_prompt(self):
-        if self.keep_last_line :
-            self.hide_inputs()
-            lines = self.output.getText().split('\n')
-            lines[len(lines)-1] = ""
-            self.output.setText('\n'.join(lines))
-            
     def game_recap(self,stats_list):
         textType = Sequence(Func(self.append_line,"Game recap:"))
         for p in stats_list: # for now
@@ -178,16 +159,17 @@ class Shell(object):
     def append_line(self,txt):
         lines = self.output.getText().split('\n')
         del lines[0] # scroll
-        if self.keep_last_line:
-            lines.append(lines[len(lines)-1])
-            lines[len(lines)-2] = txt
-        else:
-            lines.append(txt)
+        lines.append(txt)
         self.output.setText('\n'.join(lines))
         
     def append_char(self,char):
         self.output.appendText(char)
     
+    def overwrite_line(self,idx,txt):
+        lines = self.output.getText().split('\n')
+        lines[idx] = txt
+        self.output.setText('\n'.join(lines))
+
     def parse_cmd(self,str):
         self.append_line("> %s"%str)
         if str :
@@ -202,51 +184,62 @@ class Shell(object):
         self.input.enterText("")
         self.input.setFocus()
     
-    def parse_start_cmd(self, str):
-        valid_cmds = ['start', 'begin', 'go']
-        if str and str in valid_cmds : 
-            self.g.client.send("start")
-            self.remove_start_prompt()
-        else :
-            self.input.enterText("")
-            self.input.setFocus()
-    
     def load_finished(self):
-        print "loading finished"
-        self.g.client.send("player %s"%uname()[1])
-        
-        self.append_line("Waiting for other players...")
-        self.append_line("")
+        idx = len(LOADINGTEXT.splitlines())+1
+        name = uname()[1]
+        self.overwrite_line(idx,"Loading... Done.")
+        self.overwrite_line(idx+2,"Players: (you are %s, up/down to change team)"%name)
+        self.name_idx = idx+3
+        self.overwrite_line(idx+5,"Game: (left/right to change type)")
+        self.overwrite_line(idx+6,self.g.type.upper().center(60))
+        for i,line in enumerate(GAMETYPES[self.g.type].splitlines()):
+            self.overwrite_line(idx+7+i,line.center(60))
+        self.overwrite_line(idx+9+i,"When everyone is ready, press 'b' to begin")
+        self.g.client.send("player %s"%name)
+        self.screen.accept('b',self.g.client.send,['start'])
+        self.screen.accept('arrow_up',self.g.client.send,['staging'])
+        self.screen.accept('arrow_down',self.g.client.send,['staging'])
+        self.screen.accept('arrow_left',self.g.client.send,['staging'])
+        self.screen.accept('arrow_right',self.g.client.send,['staging'])
     
-    def starting_output(self):
-        self.remove_start_prompt()
-        self.append_line("Starting...")
-        self.append_line("")
-        self.append_line("")
+    def refresh_staging(self):
+        player_names = self.g.player_set
+        self.overwrite_line(self.name_idx,"\t".join(player_names).center(60))
+        self.overwrite_line(self.name_idx+3,self.g.type.upper().center(60))
+        for i,line in enumerate(GAMETYPES[self.g.type].splitlines()):
+            self.overwrite_line(self.name_idx+4+i,line.center(60))
+
+    def finish_staging(self):
+        self.output.setText("\n"*24)
+        self.screen.ignoreAll()
             
-    def main(self,port_num,ip,last=False):
-        print "starting up"
+    def main(self,port_num,ip):
+        print "creating new Game object"
         self.g = Game(ip,port_num,self,100.0,16.0,120)
 
     #### HERE THERE BE SHELL COMMANDS ####
     
     def start_game(self,cmd,arglist=[],sudo=False):
         if len(arglist) < 2:
-            self.append_line("Usage: %s [port_num] [host_ip] <last>"%cmd)
+            self.append_line("Usage: %s [port_num] [host_ip]"%cmd)
+            self.append_line("  join the specified server, to get the game started")
         else:
-            loadingScreen = Sequence(Func(self.hide_inputs))
-            for line in LOADINGTEXT.split("\n"):
+            loadingScreen = Sequence(Func(self.hide_inputs))#,Func(self.output.setText,""))
+            for line in LOADINGTEXT.splitlines():
                 loadingScreen.append(Func(self.append_line, line))
                 loadingScreen.append(Wait(0.05))
-            for _ in range(25 - len(LOADINGTEXT.split("\n"))):
+            loadingScreen.append(Func(self.append_line,""))
+            loadingScreen.append(Func(self.append_line,"Loading... "))
+            for _ in range(23 - len(LOADINGTEXT.splitlines())):
                 loadingScreen.append(Func(self.append_line, ""))
                 loadingScreen.append(Wait(0.05))
-            loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1],len(arglist) == 3))
+            loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1]))
             loadingScreen.start()
     
     def start_server(self,cmd,arglist=[],sudo=False):
         if len(arglist) != 1:
             self.append_line("Usage: %s [port_num]"%cmd)
+            self.append_line("  start a server on this machine")
         else:
             port = int(arglist[0])
             str = "vigorously " if sudo else ""

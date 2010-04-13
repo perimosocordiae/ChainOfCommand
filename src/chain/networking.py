@@ -69,7 +69,7 @@ class Server(NetworkBase):
             if d.split()[0] == 'player':
                 self.player_list.add(d)
                 for p in self.player_list: self.broadcast(p)
-            elif d == 'start':
+            elif d == 'start': # reset this game's data, so we're ready for the next one
                 self.player_list.clear()
                 self.rand_seed = int(time())
                 self.broadcast(d)

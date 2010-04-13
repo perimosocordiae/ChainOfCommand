@@ -27,6 +27,7 @@ class Game(object):
         self.shell = shell
         self.players, self.programs,self.drones,self.obstacles,self.startPoints = {},{},{},{},{}
         self.tile_size, self.tower_size, self.gameLength = tile_size, tower_size, gameLength
+        self.type = 'deathmatch' # just a default value, can be changed from the staging shell
         
         #The size of a cube
         num_tiles = 3
@@ -39,7 +40,6 @@ class Game(object):
     def rest_of_init(self):
         base.cTrav = CollisionTraverser()
         base.cTrav.setRespectPrevTransform(True)
-        #wsbase.cTrav.showCollisions(render)
         base.disableMouse()
         self.startTime = time()
         self.endTime = self.startTime + self.gameLength
@@ -165,23 +165,18 @@ class Game(object):
             if ds[0] == 'seed':
                 self.rand_seed = int(ds[1])
                 seed(self.rand_seed)
-                print "seed",self.rand_seed
             elif ds[0] == 'player':
                 if ds[1] not in self.player_set:
-                    name = ds[1] if ds[1] != myname else "You"
-                    if len(self.player_set) == 0: 
-                        self.shell.show_start_prompt()
-                    self.shell.append_line("%s joined"%name)
-                    self.shell.append_line("")
                     self.player_set.add(ds[1])
+                    self.shell.refresh_staging()
+            elif ds[0] == 'staging':
+                self.shell.refresh_staging()
             elif ds[0] == 'start':
-                print "starting"
+                print "handshake over, starting game"
                 for player in self.player_set:
-                    #self.startPoints[player] = self.rand_point() # generate starting points
                     if player != myname: # don't add yourself
                         self.players[player] = None
-                        print "added",player
-                Sequence(Func(self.shell.starting_output), Wait(0.05), Func(self.rest_of_init)).start()
+                Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init)).start()
                 return task.done # ends task
         return task.cont
     
