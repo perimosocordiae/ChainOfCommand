@@ -39,6 +39,7 @@ class Server(NetworkBase):
         self.cListener = QueuedConnectionListener(self.cManager, 0)
         self.activeConnections = []
         self.player_list = set()
+        self.ready_players = 0
         self.rand_seed = int(time())
         self.__connect(self.port, self.backlog)
         self.__startPolling()
@@ -72,10 +73,14 @@ class Server(NetworkBase):
                     d += choice(list('!@#$%^&*'))
                 self.player_list.add(d)
                 for p in self.player_list: self.broadcast(p)
-            elif d == 'start': # reset this game's data, so we're ready for the next one
-                self.player_list.clear()
-                self.rand_seed = int(time())
-                self.broadcast(d)
+            elif d == 'ready': 
+                self.ready_players = self.ready_players + 1
+                if (self.ready_players == len(self.player_list)) : 
+                    # reset this game's data, so we're ready for the next one
+                    self.player_list.clear()
+                    self.ready_players = 0
+                    self.rand_seed = int(time())
+                    self.broadcast('go')
             else:
                 self.broadcast(d)
         #self.broadcast('time: %s'%time())

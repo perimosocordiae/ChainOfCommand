@@ -42,7 +42,7 @@ class Player(Agent):
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
         self.invincible = False
-        self.handleEvents = True
+        self.handleEvents = False
         #self.spawn(startPos, False)
     
     def post_environment_init(self):
@@ -327,7 +327,7 @@ class LocalPlayer(Player):
         self.hud = HUD(self)
         #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
-        self.game.network_listener.loop()
+        #self.game.network_listener.loop()
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
         super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
@@ -381,12 +381,10 @@ class LocalPlayer(Player):
         Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn), Wait(1.0),
                  Func(self.hud.hide_scores), Func(self.hud.destroy_gray), Func(self.toggle_god)).start()
     
-    def spawn(self,startPos=None,update=True):
+    def spawn(self,startPos=None):
         super(LocalPlayer,self).spawn(startPos)
         if hasattr(self, "hud") and self.hud:
             self.hud.heal()
-        if update:
-            self.sendUpdate()
 
     @staticmethod
     def setup_sounds():

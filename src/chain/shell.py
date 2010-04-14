@@ -227,7 +227,7 @@ class Shell(object):
         self.overwrite_line(name_idx+4,desc.center(60))
 
     def finish_staging(self):
-        self.output.setText("\n"*24)
+        self.output.setText("Synchronizing..."+("\n"*24))
         self.screen.ignoreAll()
             
     def main(self,port_num,ip):

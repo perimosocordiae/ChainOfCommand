@@ -36,27 +36,35 @@ class Game(object):
         base.cTrav = CollisionTraverser()
         base.cTrav.setRespectPrevTransform(True)
         base.disableMouse()
+        self.network_listener = Sequence(Wait(SERVER_TICK), Func(self.network_listen))
         self.startTime = time()
         self.endTime = self.startTime + self.gameLength
         self.gameTime = self.endTime - time()
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         [self.add_player(pname,i) for pname,i in self.players.iteritems() if pname != self.shell.name]
-        self.network_listener = Sequence(Wait(SERVER_TICK), Func(self.network_listen))
         self.add_local_player(self.players[self.shell.name]) # yay python and loose typing
-        self.add_event_handler()
         self.load_env()
-        
+        self.add_event_handler()        
         #Some player stuff just shouldn't be done until we have a world
         for pname in self.players:
             self.players[pname].post_environment_init()
-        print "game initialized"
-        self.shell.hide_shell()
         self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
+        print "game initialized, synchronizing"
+        self.shell.append_line("Synchronizing...")
+        self.client.send("ready")
+        
+    def rest_of_rest_of_init(self):
+        print "starting for real"
+        for pname in self.players:
+            self.players[pname].handleEvents = True
+        self.local_player().sendUpdate()
+        self.shell.hide_shell()
+        self.network_listener.loop()
         self.drone_adder.loop()
         self.local_player().add_background_music()
         self.startTime = time() # reset the start and end times
         self.endTime = self.startTime + self.gameLength
-        self.local_player().hud.start_timer()
+        self.local_player().hud.start_timer()  
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
@@ -190,6 +198,8 @@ class Game(object):
                 print "handshake over, starting game"
                 # don't add yourself
                 Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init)).start()
+            elif ds[0] == 'go':
+                self.rest_of_rest_of_init()
                 return task.done # ends task
         return task.cont
     
