@@ -59,10 +59,10 @@ class HUD(object):
     
     def destroy_radar(self):
         print "destroy radar"
-        if hasattr(self, "radar_background") and self.radar_background:
+        if hasattr(self, "radar_background") and self.radar_background is not None:
             self.radar_background.removeNode()
         taskMgr.remove('radarTask')
-        if hasattr(self, "radarPoints") and self.radarPoints :
+        if hasattr(self, "radarPoints") and self.radarPoints is not None:
             for radarPoint in self.radarPoints : radarPoint.destroy()
 
     def show_scores(self):
@@ -112,7 +112,7 @@ class HUD(object):
         self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
         
     def heal(self):
-        if hasattr(self, "healthBAR") and self.healthBAR:
+        if hasattr(self, "healthBAR") and self.healthBAR is not None:
             self.healthBAR['value'] = self.player.health
             hpct = self.player.health/100.0
             self.healthBAR['barColor'] = (1-hpct,hpct,0,1)

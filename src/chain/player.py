@@ -32,8 +32,7 @@ BASE_DAMAGE = 10 #arbitrary
 class Player(Agent):
     def __init__(self, game, name, startPos, color):
         super(Player, self).__init__(game, name)
-        self.color = color
-        self.setup_color()
+        self.setup_color(color)
         self.programs = [None, None, None]
         self.stats = {'damage_taken': 0, 'deaths': 0, 'pickups':0, 'drops':0}
         self.laserGlow = False
@@ -49,7 +48,8 @@ class Player(Agent):
     def post_environment_init(self):
         self.spawn()
         
-    def setup_color(self):
+    def setup_color(self,col_str):
+        self.color = col_str
         ts = TextureStage('ts')
         tex = loader.loadTexture("%s/tron-color_%s.png"%(COLOR_PATH,self.color))
         ts.setMode(TextureStage.MModulate)

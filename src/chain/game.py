@@ -1,8 +1,7 @@
 from time import time
 from os import listdir
 from os.path import splitext
-import sys
-from random import randint, seed
+from random import seed
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionTube, BitMask32
@@ -14,9 +13,7 @@ from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
-from obstacle import Wall, Tower, RAMSlot, CopperWire, QuadWall
 from networking import Client
-from program import DashR, Rm, Chmod, RAM, Gdb, Locate, Ls
 from constants import *
 from level import *
 
@@ -26,12 +23,11 @@ class Game(object):
         self.shell = shell
         self.players, self.programs,self.drones,self.obstacles,self.startPoints = {},{},{},{},{}
         self.tile_size, self.tower_size, self.gameLength = tile_size, tower_size, gameLength
-        self.type = 'deathmatch' # just a default value, can be changed from the staging shell
+        self.type_idx = 0 # index into GAME_TYPES, can be changed from the staging shell
         
         #The size of a cube
         num_tiles = 3
         self.map_size = (self.tile_size * num_tiles) / 8.0
-        self.player_set = set()
         self.end_sequence = None
         self.client = Client(ip,port_num)
         self.load_models()
@@ -44,10 +40,9 @@ class Game(object):
         self.endTime = self.startTime + self.gameLength
         self.gameTime = self.endTime - time()
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
-        for pname in self.players:
-            self.add_player(pname)
+        [self.add_player(pname,i) for pname,i in self.players.iteritems() if pname != self.shell.name]
         self.network_listener = Sequence(Wait(SERVER_TICK), Func(self.network_listen))
-        self.add_local_player()
+        self.add_local_player(self.players[self.shell.name]) # yay python and loose typing
         self.add_event_handler()
         self.load_env()
         
@@ -84,14 +79,16 @@ class Game(object):
             self.eventHandle.addPlayerHandler(player)
             player.initialize_camera()
             
-    def add_local_player(self):
-        print "adding local player:",self.shell.name
-        self.players[self.shell.name] = LocalPlayer(self,self.shell.name,None,"blue")
+    def add_local_player(self,col_idx):
+        print "making local player:",self.shell.name
+        col_str = TEAM_COLORS.keys()[col_idx]
+        self.players[self.shell.name] = LocalPlayer(self,self.shell.name,None,col_str)
         self.players[self.shell.name].shoot(False)
             
-    def add_player(self,pname):
+    def add_player(self,pname,col_idx):
         print "making player: %s"%pname
-        self.players[pname] = Player(self,pname,None,"blue")
+        col_str = TEAM_COLORS.keys()[col_idx]
+        self.players[pname] = Player(self,pname,None,col_str)
         
     def readd_program(self,prog):
         self.programs[prog.unique_str()] = prog
@@ -108,9 +105,13 @@ class Game(object):
         self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         self.environ.setPos(0, 0, 0)
         
-        #self.level = CubeLevel(self, self.environ)
-        self.level = SniperLevel(self, self.environ)
-        #self.level = Beaumont(self, self.environ)
+        # simply change the level based on game type, for now
+        if GAME_TYPES[self.type_idx][0] == 'deathmatch':
+            self.level = CubeLevel(self, self.environ)
+        elif GAME_TYPES[self.type_idx][0] == 'team deathmatch':
+            self.level = SniperLevel(self, self.environ)
+        else:
+            self.level = Beaumont(self, self.environ)
 
     def game_over(self):
         print "Game over"
@@ -163,16 +164,31 @@ class Game(object):
                 self.rand_seed = int(ds[1])
                 seed(self.rand_seed)
             elif ds[0] == 'player':
-                if ds[1] not in self.player_set:
-                    self.player_set.add(ds[1])
+                if ds[1] not in self.players:
+                    self.players[ds[1]] = 0 # default color index == blue?
                     self.shell.refresh_staging()
             elif ds[0] == 'staging':
+                assert ds[1] in self.players
+                assert len(ds) == 4
+                if ds[2] == 'color':
+                    print ds[1],' (should be) changing color:',ds[3]
+                    if ds[3] == '+':
+                        i = self.players[ds[1]]+1
+                        self.players[ds[1]] = i if i < len(TEAM_COLORS) else 0
+                    else:
+                        i = self.players[ds[1]]-1
+                        self.players[ds[1]] = i if i >= 0 else len(TEAM_COLORS)-1
+                elif ds[2] == 'type':
+                    if ds[3] == '+':
+                        i = self.type_idx+1
+                        self.type_idx = i if i < len(GAME_TYPES) else 0
+                    else:
+                        i = self.type_idx-1
+                        self.type_idx = i if i >= 0 else len(GAME_TYPES)-1
                 self.shell.refresh_staging()
             elif ds[0] == 'start':
                 print "handshake over, starting game"
-                for player in self.player_set:
-                    if player != self.shell.name: # don't add yourself
-                        self.players[player] = None
+                # don't add yourself
                 Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init)).start()
                 return task.done # ends task
         return task.cont

@@ -8,7 +8,7 @@ from pandac.PandaModules import TextNode, Thread
 from direct.interval.IntervalGlobal import Func, Sequence,Wait
 from networking import Server
 from game import Game
-from constants import MODEL_PATH,USE_GLOW
+from constants import MODEL_PATH,USE_GLOW,GAME_TYPES
 
 CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
@@ -28,7 +28,7 @@ LOGO = """\n\n\n
  \____/\____/_/ /_/ /_/_/ /_/ /_/\__,_/_/ /_/\__,_/   
 \n\n\n\n\n
 """
-LOADINGTEXT = """Controls:
+LOADINGTEXT = """In-game Controls:
   Mouse       | look and turn
   Left click  | shoot
   Right click | scope zoom
@@ -42,7 +42,6 @@ LOADINGTEXT = """Controls:
   tab         | show leaderboard
 """
 
-GAMETYPES = {'deathmatch' : "Kill each other and AI drones\nPlayer with the highest combined killcount wins!"}
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength',
             '-r' : 'Increases shoot speed',
@@ -200,25 +199,22 @@ class Shell(object):
         idx = len(LOADINGTEXT.splitlines())+1
         self.overwrite_line(idx,"Loading... Done.")
         self.overwrite_line(idx+2,"Players: (up/down to change team)")
-        self.name_idx = idx+3
         self.overwrite_line(idx+5,"Game: (left/right to change type)")
-        self.overwrite_line(idx+6,self.g.type.upper().center(60))
-        for i,line in enumerate(GAMETYPES[self.g.type].splitlines()):
-            self.overwrite_line(idx+7+i,line.center(60))
-        self.overwrite_line(idx+9+i,"When everyone is ready, press 'b' to begin")
+        self.overwrite_line(idx+9,"When everyone is ready, press 'b' to begin")
         self.g.client.send("player %s"%self.name)
         self.screen.accept('b',self.g.client.send,['start'])
-        self.screen.accept('arrow_up',self.g.client.send,['staging'])
-        self.screen.accept('arrow_down',self.g.client.send,['staging'])
-        self.screen.accept('arrow_left',self.g.client.send,['staging'])
-        self.screen.accept('arrow_right',self.g.client.send,['staging'])
+        self.screen.accept('arrow_up',   self.g.client.send,['staging %s color +'%self.name])
+        self.screen.accept('arrow_down', self.g.client.send,['staging %s color -'%self.name])
+        self.screen.accept('arrow_right',self.g.client.send,['staging %s type +'%self.name])
+        self.screen.accept('arrow_left', self.g.client.send,['staging %s type -'%self.name])
     
     def refresh_staging(self):
-        player_names = self.g.player_set
-        self.overwrite_line(self.name_idx,"\t".join(player_names).center(60))
-        self.overwrite_line(self.name_idx+3,self.g.type.upper().center(60))
-        for i,line in enumerate(GAMETYPES[self.g.type].splitlines()):
-            self.overwrite_line(self.name_idx+4+i,line.center(60))
+        player_names = ("%s (%d)"%(n,t) for n,t in self.g.players.iteritems())
+        type,desc = GAME_TYPES[self.g.type_idx]
+        name_idx = len(LOADINGTEXT.splitlines())+4
+        self.overwrite_line(name_idx,"\t".join(player_names).center(60))
+        self.overwrite_line(name_idx+3,type.upper().center(60))
+        self.overwrite_line(name_idx+4,desc.center(60))
 
     def finish_staging(self):
         self.output.setText("\n"*24)
@@ -256,7 +252,7 @@ class Shell(object):
             str = "vigorously " if sudo else ""
             self.append_line("Starting server %son port %d..."%(str,port))
             Server(port)
-            self.append_line("Server active, use 'join' to connect")
+            self.append_line("Server active, use 'join %d localhost' to connect"%port)
             
     def quit(self,cmd,arglist=[],sudo=False):
         Sequence(Func(self.append_line,"Bye!"),Wait(0.75),Func(sys.exit)).start()
@@ -361,6 +357,10 @@ class Shell(object):
             self.append_line("%s: command not found" % cmd)
     
 # end Shell class
+
+def klaatu_barada_nikto():
+    # callable in-game with tricky shell-fu
+    return "Aha! An easter egg. We should do something cool here"
 
 if __name__ == '__main__':
     s = Shell(False)
