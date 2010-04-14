@@ -334,11 +334,11 @@ class Shell(object):
             self.append_line(echo)
     
     def su(self,cmd,arglist=[],sudo=False):
-        if len(arglist) == 0:
+        if len(arglist) == 0 and not sudo:
             self.append_line("Usage: %s [new_username]"%cmd)
             self.append_line("  change your username")
         else:
-            self.name = arglist[0]
+            self.name = 'root' if sudo else '_'.join(arglist)
             self.set_prompt_str()
             self.append_line("Username changed to: %s"%self.name)
     

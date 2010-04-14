@@ -3,6 +3,7 @@ from direct.distributed.PyDatagramIterator import PyDatagramIterator
 from direct.task.Task import Task
 from pandac.PandaModules import *
 from time import time,sleep
+from random import choice
 
 # adapted from http://www.panda3d.org/phpbb2/viewtopic.php?t=4881
 
@@ -67,6 +68,8 @@ class Server(NetworkBase):
         # republish messages
         for d in self.getData():
             if d.split()[0] == 'player':
+                if d in self.player_list:
+                    d += choice(list('!@#$%^&*'))
                 self.player_list.add(d)
                 for p in self.player_list: self.broadcast(p)
             elif d == 'start': # reset this game's data, so we're ready for the next one
