@@ -69,13 +69,13 @@ class Server(NetworkBase):
         # republish messages
         for d in self.getData():
             if d.split()[0] == 'player':
-                if d in self.player_list:
-                    d += choice(list('!@#$%^&*'))
+                assert d not in self.player_list
+                    #d += choice(list('!@#$%^&*'))
                 self.player_list.add(d)
                 for p in self.player_list: self.broadcast(p)
             elif d == 'ready': 
-                self.ready_players = self.ready_players + 1
-                if (self.ready_players == len(self.player_list)) : 
+                self.ready_players += 1
+                if self.ready_players == len(self.player_list): 
                     # reset this game's data, so we're ready for the next one
                     self.player_list.clear()
                     self.ready_players = 0
