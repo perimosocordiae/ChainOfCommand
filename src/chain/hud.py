@@ -14,34 +14,36 @@ HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 class HUD(object):
     def __init__(self,player):
         self.player = player
+        self.font = player.game.font
         base.setFrameRateMeter(True)
         self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(-0.025, 0, 0), scale=0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
         
-        self.bottomHUD = DirectFrame(frameSize=(-0.5,0.5,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,-0.96))
+        self.bottomHUD = DirectFrame(frameSize=(-0.77,0.77,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,-0.96))
         self.programHUD = [
-            OnscreenText(text=EMPTY_PROG_STR, pos=(-0.2, -0.98), scale=HUD_SCALE,
-                         fg=HUD_FG, mayChange=True),
+            OnscreenText(text=EMPTY_PROG_STR, pos=(-0.3, -0.98), scale=HUD_SCALE,
+                         fg=HUD_FG, font=self.font, mayChange=True),
             OnscreenText(text=EMPTY_PROG_STR, pos=(0, -0.98), scale=HUD_SCALE,
-                         fg=HUD_FG, mayChange=True),
-            OnscreenText(text=EMPTY_PROG_STR, pos=(0.2, -0.98), scale=HUD_SCALE,
-                         fg=HUD_FG, mayChange=True)
+                         fg=HUD_FG, font=self.font, mayChange=True),
+            OnscreenText(text=EMPTY_PROG_STR, pos=(0.3, -0.98), scale=HUD_SCALE,
+                         fg=HUD_FG, font=self.font, mayChange=True)
 		]
         # red flash for indicating hits
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         self.grayScreen = None
-        self.topHUD = DirectFrame(frameSize=(-0.5,0.5,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,0.96))
-        self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, text="", text_scale=0.12, frameColor=HUD_BG, sortOrder=2)
+        self.topHUD = DirectFrame(frameSize=(-0.57,0.57,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,0.96))
+        self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, text="", text_scale=0.12, text_font=self.font, frameColor=HUD_BG, sortOrder=2)
+        self.healthBAR.setSx(0.57)
         self.healthBAR.setTransparency(TransparencyAttrib.MAlpha)
-        self.killHUD = OnscreenText(text="Kills: %d" % player.killcount(), pos=(-0.41, 0.94), scale=HUD_SCALE, fg=HUD_FG, mayChange=True)
-        self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(0.38,0,0.96), scale=0.04)
+        self.killHUD = OnscreenText(text="Kills:%d" % player.killcount(), pos=(-0.39, 0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
+        self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(0.43,0,0.96), scale=0.04)
         self.musicHUD.setImage(image="%s/music_on.png" % TEXTURE_PATH)
         self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(0.46,0,0.96), scale=0.04)
+        self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(0.51,0,0.96), scale=0.04)
         self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.timer = OnscreenText(text="Time:", pos=(0,0.94), scale=HUD_SCALE, fg=HUD_FG, mayChange=True)
+        self.timer = OnscreenText(text="Time:", pos=(0,0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
         
     def setup_radar(self):
         print "setup radar"
@@ -70,7 +72,7 @@ class HUD(object):
         players = reversed(sorted(self.player.game.players.values(), key=lambda p: p.killcount()))
         score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount()) for p in players])
         #self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.8),pos=(0,0.75))
-        self.score_screen = DirectLabel(text="Kills: \n"+score_str, pos=(-0.1,0,0.75), frameColor=HUD_BG, text_fg=HUD_FG, scale=HUD_SCALE, sortOrder=4)
+        self.score_screen = DirectLabel(text="Kills: \n"+score_str, pos=(-0.1,0,0.75), frameColor=HUD_BG, text_fg=HUD_FG, text_font=self.font, scale=HUD_SCALE, sortOrder=4)
                                         
     def hide_scores(self):
         #self.crosshairs.show()
@@ -116,7 +118,7 @@ class HUD(object):
             self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
     
     def collect(self,i,prog_name):
-        self.programHUD[i].setText("[ %s ]" % prog_name)
+        self.programHUD[i].setText("[%s]" % prog_name)
     
     def drop(self, prog_index):
         self.programHUD[prog_index].setText(EMPTY_PROG_STR)
@@ -124,18 +126,24 @@ class HUD(object):
     def add_slot(self):
         x = self.programHUD[-1].getPos()[0]
         self.programHUD.append(OnscreenText(text=EMPTY_PROG_STR,
-                        pos=(x + 0.2, -0.98), scale=HUD_SCALE,
-                        fg=HUD_FG, mayChange=True))
+                        pos=(x + 0.3, -0.98), scale=HUD_SCALE,
+                        fg=HUD_FG, font=self.font, mayChange=True))
         for txt in self.programHUD:
             #they couldn't just make it simple and override getX() could they?
-            txt.setX(txt.getPos()[0] - 0.1)
+            txt.setX(txt.getPos()[0] - 0.15)
         
     def add_kill(self):
-        self.killHUD.setText("Kills: %d" % self.player.killcount())
+        self.killHUD.setText("Kills:%d" % self.player.killcount())
     
     def destroy_HUD(self):
         self.crosshairs.destroy() 
         for programDisp in self.programHUD : programDisp.destroy() 
+        if self.bottomHUD:
+            self.bottomHUD.destroy()
+            self.bottomHUD = None
+        if self.topHUD:
+            self.topHUD.destroy()
+            self.topHUD = None
         if self.healthBAR:
             self.healthBAR.destroy()
             self.healthBAR = None
@@ -168,7 +176,7 @@ class HUD(object):
             
     def display_gray(self):
         if not self.grayScreen:
-            self.grayScreen = DirectFrame(frameSize=(-1.34,1.34,-1,1), frameColor=(0,0,0,0.8), sortOrder=3)
+            self.grayScreen = DirectFrame(frameSize=(-1.34,1.34,-1,1), frameColor=HUD_FG, sortOrder=3)
     
     def destroy_gray(self):
         self.grayScreen.destroy()
@@ -177,11 +185,11 @@ class HUD(object):
     def timerTask(self, task):
         game = self.player.game
         game.gameTime = game.endTime - time()
-        self.timer.setText("Time: %.2f seconds"%game.gameTime)
+        self.timer.setText("Time:%.2fs"%game.gameTime)
         if 0 < game.gameTime < 10:
             self.timer.setFg((1,0,0,0.8))
         elif game.gameTime <= 0:
-            self.timer.setText("Time: %.2f seconds"%0)
+            self.timer.setText("Time:%.2fs"%0)
             game.game_over()
             return task.done
         return task.again

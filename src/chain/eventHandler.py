@@ -23,7 +23,8 @@ class PlayerEventHandler(DirectObject):
         # networked events
         self.accept('mouse1',playr.click)
         self.accept('mouse1-up',playr.clickRelease)
-        self.accept('mouse3', playr.scopeZoom)
+        self.accept('mouse3', playr.scopeZoomOn)
+        self.accept('mouse3-up', playr.scopeZoomOff)
         self.accept('e',playr.collectOn)
         self.accept('e-repeat',playr.collectOn)
         self.accept('e-up',playr.collectOff)

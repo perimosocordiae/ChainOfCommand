@@ -442,16 +442,20 @@ class LocalPlayer(Player):
             d = p.radar_mod(d)
         return d
     
-    def scopeZoom(self):
+    def scopeZoomOn(self):
         d = BASE_CAMERA_FOCAL_LENGTH
         for p in ifilter(lambda p: p != None, self.programs):
             d = p.scope_zoom_mod(d)
-        if d > 0 and not self.scopeZoomed:
-            self.get_camera_lens().setFocalLength(d)
-            self.scopeZoomed = True
-        else:
-            self.get_camera_lens().setFocalLength(BASE_CAMERA_FOCAL_LENGTH)
-            self.scopeZoomed = False
+        self.get_camera_lens().setFocalLength(d)
+        #if d > 0 and not self.scopeZoomed:
+            #self.get_camera_lens().setFocalLength(d)
+            #self.scopeZoomed = True
+        #else:
+            #self.get_camera_lens().setFocalLength(BASE_CAMERA_FOCAL_LENGTH)
+            #self.scopeZoomed = False
+    
+    def scopeZoomOff(self):
+        self.get_camera_lens().setFocalLength(BASE_CAMERA_FOCAL_LENGTH)
     
     def collectOn(self):
         self.collecting = True

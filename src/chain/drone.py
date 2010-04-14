@@ -17,7 +17,7 @@ class Drone(Agent):
         self.hittables = {}
         self.parent.setPos(pos[0],pos[1],pos[2] + self.get_origin_height())
         self.setup_collider()
-        self.speed = (random()+0.5)*2 + 15
+        self.speed = (random()+0.5)*2 #+ 15
         
     def get_text_pos(self):
         return (0,0,5)

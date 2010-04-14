@@ -100,7 +100,7 @@ class Agent(object):
     #Per is the amount to heal per tick... times is the number of ticks to heal for
     def debug(self, name, per, times):
         self.debuggers[name] = (per, times)
-        self.hud.healthBAR['text'] = "D e b u g g i n g . . ."
+        self.hud.healthBAR['text'] = "Debugging ..."
         print "Debugging %s: (%d, %d)"%(name, per, times)
     
     def do_debug(self):
@@ -124,13 +124,13 @@ class Agent(object):
             prog = self.canCollect
 
             if prog.unique_str() in self.game.programs:
+                #fails when maximum number of slots/programs is reached
                 if prog.name == "RAM" and len(self.programs) == MAX_PROGRAMS:
                     return -1, None
             
                 #if basic, have it do its effect and return
                 #fails for non-effectful gdb
-                #fails when maximum number of slots/programs is reached
-                if not prog.pick_up(self) or (prog.name == "RAM" and len(self.programs) == MAX_PROGRAMS):
+                if not prog.pick_up(self):
                     return -1, prog
                 
                 for i,p in enumerate(self.programs):
