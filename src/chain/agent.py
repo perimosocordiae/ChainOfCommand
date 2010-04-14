@@ -100,8 +100,9 @@ class Agent(object):
     #Per is the amount to heal per tick... times is the number of ticks to heal for
     def debug(self, name, per, times):
         self.debuggers[name] = (per, times)
-        self.hud.healthBAR['text'] = "Debugging ..."
-        print "Debugging %s: (%d, %d)"%(name, per, times)
+        if hasattr(self, "hud") and self.hud:
+            self.hud.healthBAR['text'] = "Debugging ..."
+            print "Debugging %s: (%d, %d)"%(name, per, times)
     
     def do_debug(self):
         origSize = len(self.debuggers)
