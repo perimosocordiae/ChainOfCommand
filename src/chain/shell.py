@@ -1,5 +1,7 @@
 import sys
 from platform import uname
+from platform import system as getOS
+from subprocess import Popen,PIPE
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
@@ -12,9 +14,9 @@ from constants import MODEL_PATH,USE_GLOW,GAME_TYPES
 
 CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
-PROMPT = "Enter a command to get started"
+PROMPT = "Enter a command to get started ('help' lists commands)"
 # generated with: figlet -f slant "Chain of Command"
-LOGO = """\n\n\n
+LOGO = """\n\n
     ________          _                ____
    / ____/ /_  ____  (_)___     ____  / __/
   / /   / __ \/ __ `/ / __ \   / __ \/ /_  
@@ -43,7 +45,7 @@ LOADINGTEXT = """In-game Controls:
 """
 
 PROGRAMS = {'rm' : 'Doubles attack power',
-            'chmod' : 'Doubles shield strength',
+            'chmod' : 'Doubles shield strength (halves damage taken)',
             '-r' : 'Increases shoot speed',
             'RAM' : 'Provides an additional program slot',
             'gdb' : 'Debugger restores health over time',
@@ -65,10 +67,18 @@ class Shell(object):
             'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
             'rm': self.rm, 'sudo': self.sudo, 'make':self.make, '!!':self.bangbang,
             'host': self.start_server, 'server': self.start_server,
-            'start': self.start_game, 'run': self.start_game, 'join': self.start_game
+            'start': self.start_game, 'run': self.start_game, 'join': self.start_game,
+            'ifconfig': self.ifconfig
         }
         # subset of commands, to get the user started
-        self.help_cmds = ['help','host','join','man','scores','quit']
+        self.help_cmds = {
+            'help' : 'List available commands',
+            'host' : 'Host a game on your computer',
+            'join' : 'Join an already hosted game',
+            'man' : 'Manual page for in-game upgrade programs',
+            'scores' : 'List the scores of the previous round',
+            'quit' : 'Exit the game and close the shell'
+        }
         self.cmd_hist = [""]
         self.cmd_pos = 0
         if USE_GLOW:
@@ -282,8 +292,9 @@ class Shell(object):
             for cmd in self.cmd_dict:
                 self.append_line("   " + cmd)
         else:
-            for cmd in self.help_cmds:
-                self.append_line("   " + cmd)
+            for (cmd,effect) in self.help_cmds.iteritems():
+                self.append_line("   " + cmd + " -- " + effect)
+        self.append_line("Enter a command by itself for usage instructions")
             
     def manual(self,cmd,arglist=[],sudo=False):
         if len(arglist) == 0:
@@ -305,6 +316,11 @@ class Shell(object):
                 self.append_line("Okay.")
             else:
                 self.append_line("What? Make it yourself.")
+        elif arglist[0] in ["clean", "realclean"]:
+            if sudo:
+                self.append_line("All done.")
+            else:
+                self.append_line("Clean it yourself!")
         else:
             self.append_line("make: *** No targets specified and no makefile found.  Stop.")
     
@@ -338,6 +354,14 @@ class Shell(object):
             self.set_prompt_str()
             self.append_line("Username changed to: %s"%self.name)
     
+    def ifconfig(self,cmd,arglist=[],sudo=False):
+        if getOS() == 'Windows': # epic hacks
+            ip = Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
+        else:
+            ip = Popen('ifconfig',stdout=PIPE).stdout.readlines()[1].split(':')[1].split()[0]
+        self.append_line("inet addr:%s..."%ip)
+        self.append_line("And that's all you need to know!")
+    
     def default(self,cmd,arglist=[],sudo=False):
         if cmd in ['emacs','gnuemacs']:
             self.append_line("Sorry, emacs is not installed")
@@ -351,6 +375,31 @@ class Shell(object):
             self.append_line("You zap a cursed wand of magic missile. It bounces! You die.")
         elif cmd in ['apt-get','aptitude']:
             self.append_line("I'm fine with the way I am, thanks.")
+        elif cmd == 'cat':
+            self.append_line("meow")
+        elif cmd == 'sleep':
+            self.append_line("zzz... Nap time over!")
+        elif cmd == 'top':
+            if sudo:
+                self.append_line("Come on, I'm ONLY running 'Chain of Command'")
+            else:
+                self.append_line("Permission denied!")
+        elif cmd in ['cmp', 'diff']:
+            self.append_line("Everybody's different in their own way.")
+        elif cmd == 'kill':
+            self.append_line("You die")
+        elif cmd == 'killall':
+            self.append_line("My God, what have you done?")
+        elif cmd == 'reboot':
+            self.append_line("System restarted... I'm fast, aren't I?")
+        elif cmd == 'touch':
+            self.append_line("That would be inappropriate")
+        elif cmd in ['cd', 'chown', 'chmod', 'chgrp', 'cp', 'mkdir', 'mv', 'tar']:
+            if sudo:
+                self.append_line("Still no")
+            else:
+                self.append_line("HELL NO")
+        
         elif sudo:
             self.append_line("sudo: %s: command not found" % cmd)
         else:
