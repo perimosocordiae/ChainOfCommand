@@ -50,9 +50,7 @@ class HUD(object):
         self.radar_background = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, color=(.871,.722,.529, 0.5), 
                                             scale=0.25, pos=(1.08, 0, -0.75))
         self.radar_background.setTransparency(TransparencyAttrib.MAlpha)
-        me = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (0,0,0), 
-                                         scale=0.05, color=(0,0,1,.8), parent=self.radar_background)
-        self.dronePoints = []
+        self.radarPoints = []
         taskMgr.doMethodLater(0.01, self.radarTask, 'radarTask')
         
         
@@ -64,6 +62,8 @@ class HUD(object):
         if hasattr(self, "radar_background") and self.radar_background:
             self.radar_background.removeNode()
         taskMgr.remove('radarTask')
+        if hasattr(self, "radarPoints") and self.radarPoints :
+            for radarPoint in self.radarPoints : radarPoint.destroy()
 
     def show_scores(self):
         #self.crosshairs.hide()
@@ -195,18 +195,25 @@ class HUD(object):
         return task.again
     
     def radarTask(self, task):
-        for dronePoint in self.dronePoints : dronePoint.destroy()
+        for radarPoint in self.radarPoints : radarPoint.destroy()
         game = self.player.game
         myPos = self.player.get_model().getPos()
         clipConstant = game.tile_size * 2 * self.player.radar_mod()
         clipConstantSquared = clipConstant * clipConstant
         scaleConstant = clipConstant/0.40
         for drone in game.drones :
-            position = game.drones[drone].get_model().getPos()
-            vectorToDrone = position-myPos
+            vectorToDrone = game.drones[drone].get_model().getPos() - myPos
             if (vectorToDrone.lengthSquared() < clipConstantSquared) :
                 vectorToDrone = -self.player.get_model().getRelativeVector(render, vectorToDrone)/scaleConstant
-                dronePoint = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (vectorToDrone.getX(),0,vectorToDrone.getY()), 
-                                         scale=0.05, color=(1,0,0,.8), parent=self.radar_background)
-                self.dronePoints.append(dronePoint)
+                radarPoint = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (vectorToDrone.getX(),0,vectorToDrone.getY()), 
+                                         scale=0.05, color=(.6,.6,.6,.8), parent=self.radar_background)
+                self.radarPoints.append(radarPoint)
+        for player in game.players :
+            vectorToPlayer = game.players[player].get_model().getPos() - myPos
+            if (vectorToPlayer.lengthSquared() < clipConstantSquared) :
+                vectorToPlayer = -self.player.get_model().getRelativeVector(render, vectorToPlayer)/scaleConstant
+                teamColor = TEAM_COLORS[game.players[player].color]
+                radarPoint = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (vectorToPlayer.getX(),0,vectorToPlayer.getY()), 
+                                         scale=0.05, color=teamColor+(0.8,), parent=self.radar_background)
+                self.radarPoints.append(radarPoint)
         return task.cont

@@ -25,5 +25,6 @@ COLOR_PATH = "%s/colors"%TEXTURE_PATH
 SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%TEXTURE_PATH
 USE_GLOW = True
+TEAM_COLORS = {'blue': (0, 0, 1), 'brown': (.80, .53, .22), 'green': (0, 1, 0), 'red': (1, 0, 0), 'yellow': (0, 1, 1)}
 
 SERVER_TICK = 0.01
