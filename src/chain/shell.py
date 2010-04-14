@@ -368,42 +368,35 @@ class Shell(object):
         self.append_line("And that's all you need to know!")
     
     def default(self,cmd,arglist=[],sudo=False):
-        if cmd in ['emacs','gnuemacs']:
-            self.append_line("Sorry, emacs is not installed")
-        elif cmd in ['vi','vim','gvim']:
-            self.append_line("Sorry, vi is not installed")
-        elif cmd in ['nano','pico','ed']:
-            self.append_line("Really, now? Poor editor choice: -5 CHA")
+        def_cmds = {'emacs': "Sorry, emacs is not installed",
+                    'vi'   : "Sorry, vi is not installed",
+                    'vim'  : "Sorry, vim is not installed",
+                    'nethack': "You zap a cursed wand of magic missile. It bounces! You die.",
+                    'cat': "meow",
+                    'sleep': "zzz... Nap time over! You awake refreshed.",
+                    'kill': "Killing is wrong!",
+                    'killall': "My God, what have you done?",
+                    'top': "Come on, I'm ONLY running 'Chain of Command'",
+                    'reboot': "System restarted... I'm fast, aren't I?",
+                    'nano': "Really, now? Poor editor choice: -5 CHA",
+                    'pico': "Really, now? Poor editor choice: -5 CHA",
+                    'ed'  : "Really, now? Poor editor choice: -5 CHA",
+                    'tar': "Aww, now I'm all sticky..."}
+        if cmd in def_cmds:
+            self.append_line(def_cmds[cmd])
         elif cmd in ['notepad','textedit','gedit']:
             self.append_line("What do I look like, a graphical user interface?")
-        elif cmd == 'nethack':
-            self.append_line("You zap a cursed wand of magic missile. It bounces! You die.")
         elif cmd in ['apt-get','aptitude']:
             self.append_line("I'm fine with the way I am, thanks.")
-        elif cmd == 'cat':
-            self.append_line("meow")
-        elif cmd == 'sleep':
-            self.append_line("zzz... Nap time over!")
-        elif cmd == 'top':
-            if sudo:
-                self.append_line("Come on, I'm ONLY running 'Chain of Command'")
-            else:
-                self.append_line("Permission denied!")
         elif cmd in ['cmp', 'diff']:
             self.append_line("Everybody's different in their own way.")
-        elif cmd == 'kill':
-            self.append_line("You die")
-        elif cmd == 'killall':
-            self.append_line("My God, what have you done?")
-        elif cmd == 'reboot':
-            self.append_line("System restarted... I'm fast, aren't I?")
-        elif cmd == 'touch':
+        elif cmd in ['touch','finger']:
             self.append_line("That would be inappropriate")
-        elif cmd in ['cd', 'chown', 'chmod', 'chgrp', 'cp', 'mkdir', 'mv', 'tar']:
+        elif cmd in ['cd', 'chown', 'chmod', 'chgrp', 'cp', 'mkdir', 'mv']:
             if sudo:
-                self.append_line("Still no")
+                self.append_line("No really. A BAD IDEA.")
             else:
-                self.append_line("HELL NO")
+                self.append_line("Mmm, I don't think that would be a good idea...")
         
         elif sudo:
             self.append_line("sudo: %s: command not found" % cmd)
