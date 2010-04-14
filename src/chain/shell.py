@@ -54,6 +54,7 @@ PROGRAMS = {'rm' : 'Doubles attack power',
 
 class Shell(object):
     def __init__(self,full):
+        self.name = uname()[1]
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
         self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
@@ -61,7 +62,7 @@ class Shell(object):
         self.cmd_dict = { 
             'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
             'help' : self.help, 'ls' : self.help, 'dir' : self.help, 'wtf': self.help,
-            'man' : self.manual,'clear' : self.clear, 'echo' : self.echo,
+            'man' : self.manual,'clear' : self.clear, 'echo' : self.echo, 'su' : self.su,
             'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
             'rm': self.rm, 'sudo': self.sudo, 'make':self.make, '!!':self.bangbang,
             'host': self.start_server, 'server': self.start_server,
@@ -104,12 +105,23 @@ class Shell(object):
             self.user_input()
     
     def user_input(self):
-        self.prompt = DirectLabel(text=">", frameSize=(-0.04,0.06,-0.03,0.084), pos=(-1.29,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
-        self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(-1.23,0,-0.97), rolloverSound=None, clickSound=None)
+        self.prompt = DirectLabel(text='', frameSize=(-0.04,0.06,-0.03,0.084), pos=(0,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
+        self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(0,0,-0.97), rolloverSound=None, clickSound=None)
+        self.set_prompt_str()
         self.screen.accept('arrow_up',self.history,[True])
         self.screen.accept('arrow_down',self.history,[False])
         self.screen.accept('tab', self.tab_completion)
         self.input.enterText("")
+    
+    def set_prompt_str(self):
+        prompt_str = "%s>"%self.name
+        self.prompt['text'] = prompt_str
+        self.prompt.setText()
+        char_width = 0.02286 # yay magic constants
+        lpos = -1.29 + char_width*(len(prompt_str)-1)
+        self.prompt.setX(lpos)
+        ipos = lpos + char_width*(len(prompt_str)+1)
+        self.input.setX(ipos)
     
     def history(self,up=True):
         if up: self.cmd_pos = max(self.cmd_pos-1,-len(self.cmd_hist)+1)
@@ -171,7 +183,7 @@ class Shell(object):
         self.output.setText('\n'.join(lines))
 
     def parse_cmd(self,str):
-        self.append_line("> %s"%str)
+        self.append_line("%s> %s"%(self.name,str))
         if str :
             self.cmd_hist.append(str)
             input = str.split()
@@ -186,16 +198,15 @@ class Shell(object):
     
     def load_finished(self):
         idx = len(LOADINGTEXT.splitlines())+1
-        name = uname()[1]
         self.overwrite_line(idx,"Loading... Done.")
-        self.overwrite_line(idx+2,"Players: (you are %s, up/down to change team)"%name)
+        self.overwrite_line(idx+2,"Players: (up/down to change team)")
         self.name_idx = idx+3
         self.overwrite_line(idx+5,"Game: (left/right to change type)")
         self.overwrite_line(idx+6,self.g.type.upper().center(60))
         for i,line in enumerate(GAMETYPES[self.g.type].splitlines()):
             self.overwrite_line(idx+7+i,line.center(60))
         self.overwrite_line(idx+9+i,"When everyone is ready, press 'b' to begin")
-        self.g.client.send("player %s"%name)
+        self.g.client.send("player %s"%self.name)
         self.screen.accept('b',self.g.client.send,['start'])
         self.screen.accept('arrow_up',self.g.client.send,['staging'])
         self.screen.accept('arrow_down',self.g.client.send,['staging'])
@@ -321,6 +332,15 @@ class Shell(object):
                 echo = str(eval(echo))
             except: pass
             self.append_line(echo)
+    
+    def su(self,cmd,arglist=[],sudo=False):
+        if len(arglist) == 0:
+            self.append_line("Usage: %s [new_username]"%cmd)
+            self.append_line("  change your username")
+        else:
+            self.name = arglist[0]
+            self.set_prompt_str()
+            self.append_line("Username changed to: %s"%self.name)
     
     def default(self,cmd,arglist=[],sudo=False):
         if cmd in ['emacs','gnuemacs']:

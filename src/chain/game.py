@@ -1,5 +1,4 @@
 from time import time
-from platform import uname
 from os import listdir
 from os.path import splitext
 import sys
@@ -86,10 +85,9 @@ class Game(object):
             player.initialize_camera()
             
     def add_local_player(self):
-        name = uname()[1]
-        print "adding local player:",name
-        self.players[name] = LocalPlayer(self,name,None,"blue")
-        self.players[name].shoot(False)
+        print "adding local player:",self.shell.name
+        self.players[self.shell.name] = LocalPlayer(self,self.shell.name,None,"blue")
+        self.players[self.shell.name].shoot(False)
             
     def add_player(self,pname):
         print "making player: %s"%pname
@@ -159,7 +157,6 @@ class Game(object):
         data = self.client.getData()
         if len(data) == 0: return task.cont
         print "handshake:",data
-        myname = uname()[1]
         for d in data:
             ds = d.split()
             if ds[0] == 'seed':
@@ -174,7 +171,7 @@ class Game(object):
             elif ds[0] == 'start':
                 print "handshake over, starting game"
                 for player in self.player_set:
-                    if player != myname: # don't add yourself
+                    if player != self.shell.name: # don't add yourself
                         self.players[player] = None
                 Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init)).start()
                 return task.done # ends task
@@ -207,5 +204,5 @@ class Game(object):
         tile.setTexture(ts, tex)
     
     def local_player(self):
-        return self.players[uname()[1]]
+        return self.players[self.shell.name]
 
