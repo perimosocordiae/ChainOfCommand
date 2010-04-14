@@ -58,7 +58,7 @@ class Shell(object):
         self.name = uname()[1]
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
-        self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
+        self.output = OnscreenText(text="\n"*28, pos=(-1.31,0.95), scale=0.06, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
         self.intro(full)
         self.cmd_dict = { 
             'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
@@ -114,8 +114,8 @@ class Shell(object):
             self.user_input()
     
     def user_input(self):
-        self.prompt = DirectLabel(text='', frameSize=(-0.04,0.06,-0.03,0.084), pos=(0,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
-        self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(0,0,-0.97), rolloverSound=None, clickSound=None)
+        self.prompt = DirectLabel(text='', frameSize=(-0.04,0.06,-0.03,0.084), pos=(0,0,-0.97), text_scale=0.06, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
+        self.input = DirectEntry(scale=0.06, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(0,0,-0.97), rolloverSound=None, clickSound=None)
         self.set_prompt_str()
         self.screen.accept('arrow_up',self.history,[True])
         self.screen.accept('arrow_down',self.history,[False])
