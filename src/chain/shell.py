@@ -1,7 +1,7 @@
 import sys
-from platform import uname
-from platform import system as getOS
+from platform import uname,system as getOS
 from subprocess import Popen,PIPE
+from itertools import izip
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
@@ -16,7 +16,7 @@ CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
 PROMPT = "Enter a command to get started ('help' lists commands)"
 # generated with: figlet -f slant "Chain of Command"
-LOGO = """\n\n
+LOGO = """\n\n\n
     ________          _                ____
    / ____/ /_  ____  (_)___     ____  / __/
   / /   / __ \/ __ `/ / __ \   / __ \/ /_  
@@ -58,7 +58,7 @@ class Shell(object):
         self.name = uname()[1]
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
-        self.output = OnscreenText(text="\n"*28, pos=(-1.31,0.95), scale=0.06, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
+        self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
         self.intro(full)
         self.cmd_dict = { 
             'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
@@ -68,7 +68,7 @@ class Shell(object):
             'rm': self.rm, 'sudo': self.sudo, 'make':self.make, '!!':self.bangbang,
             'host': self.start_server, 'server': self.start_server,
             'start': self.start_game, 'run': self.start_game, 'join': self.start_game,
-            'ifconfig': self.ifconfig
+            'ifconfig': self.ifconfig, 'ipconfig': self.ifconfig
         }
         # subset of commands, to get the user started
         self.help_cmds = {
@@ -114,8 +114,8 @@ class Shell(object):
             self.user_input()
     
     def user_input(self):
-        self.prompt = DirectLabel(text='', frameSize=(-0.04,0.06,-0.03,0.084), pos=(0,0,-0.97), text_scale=0.06, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
-        self.input = DirectEntry(scale=0.06, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(0,0,-0.97), rolloverSound=None, clickSound=None)
+        self.prompt = DirectLabel(text='', frameSize=(-0.04,0.06,-0.03,0.084), pos=(0,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
+        self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(0,0,-0.97), rolloverSound=None, clickSound=None)
         self.set_prompt_str()
         self.screen.accept('arrow_up',self.history,[True])
         self.screen.accept('arrow_down',self.history,[False])
@@ -289,13 +289,18 @@ class Shell(object):
     def help(self,cmd,arglist=[],sudo=False):
         self.append_line("Commands:")
         if sudo:
-            for cmd in self.cmd_dict:
-                self.append_line("   " + cmd)
+            cmdlst = self.cmd_dict.keys()
+            writeln = lambda cmds: self.append_line("  "+"\t\t".join(sorted(cmds,key=str.__len__)))
+            for cmds in izip(*[iter(cmdlst)]*3):
+                writeln(cmds)
+            rem = len(cmdlst)%3
+            if rem != 0:
+                writeln(cmdlst[-rem:])
         else:
             for (cmd,effect) in self.help_cmds.iteritems():
                 self.append_line("   " + cmd + " -- " + effect)
         self.append_line("Enter a command by itself for usage instructions")
-            
+
     def manual(self,cmd,arglist=[],sudo=False):
         if len(arglist) == 0:
             self.append_line("Usage: %s [program]"%cmd)
