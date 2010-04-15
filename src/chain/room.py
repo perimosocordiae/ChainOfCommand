@@ -73,6 +73,15 @@ class Room(Obstacle):
                             Point3(0,0,0), WALL_COLLIDER_MASK)
         self.walls[name] = (model, wall)
     
+    def has_point(self, pos):
+        def has_point(self, pos):
+        mypt = self.environ.getRelativePoint(render,Point3(pos[0],pos[1],pos[2]))
+        x1,x2,y1,y2,z1,z2 = self.get_bounds()
+        return mypt[0] > x1 and mypt[0] < x2 and mypt[1] > y1 and mypt[1] < y2 and mypt[2] > z1 and mypt[2] < z2
+    
+    def get_bounds(self):
+        return 0,0,0,0,0,0
+    
 class CubeRoom(Room):
     def __init__(self, name, parent, pos, rot, scale, color, holes=(0,0,0,0,0,0,0,0)):
         super(CubeRoom, self).__init__(name, parent, pos, rot, scale)
@@ -99,6 +108,9 @@ class CubeRoom(Room):
     
     def relative_rand_point(self):
         return (randint(-25,25) / 10, randint(-25,25)/10, 0)
+    
+    def get_bounds(self):
+        return -3,3,-3,3,-0.1,4
     
 class Hallway(Room):
     def __init__(self, name, parent, pos, rot, scale, color, angle):
@@ -130,7 +142,10 @@ class Hallway(Room):
         
     def relative_rand_point(self):
         return (randint(-8,8) / 10,randint(2,18)/10, 0)
-        
+    
+    def get_bounds(self):
+        return -1,1,0,2,0,2
+    
 class HallwayIntersection(Room):
     #types are: 0: dead end, 1: angle right, 2: angle left, 3: T-intersection, 4: 4-way
     def __init__(self, name, parent, pos, rot, scale, color, type):
@@ -167,6 +182,10 @@ class HallwayIntersection(Room):
         
     def relative_rand_point(self):
         return (randint(-8,8) / 10,randint(2,18)/10, 0)
+    
+    def get_bounds(self):
+        return -1,1,0,2,0,2
+    
 class Platform(Room):
     def __init__(self, name, parent, pos, rot, scale, color):
         super(Platform, self).__init__(name, parent, pos, rot, scale)
@@ -189,6 +208,9 @@ class Platform(Room):
     
     def relative_rand_point(self):
         return (randint(-8,8) / 10,randint(2,18)/10, 0)
+    
+    def get_bounds(self):
+        return -1,1,0,2,0,2
     
 class StandardHall(Hallway):
     #Assume it's a flat hallway, no pitch or roll, 1 x 2*y x 1 (y is essentially
