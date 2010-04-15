@@ -104,9 +104,9 @@ class Game(object):
     def my_team(self): # including me
         try:
             my_col = self.local_player().color
+            return (p for p in self.players.itervalues() if p.color == my_col)
         except AttributeError:
-            my_col = TEAM_COLORS.keys()[self.local_player()]
-        return (p for p in self.players.itervalues() if p.color == my_col)
+            return 0
     
     def readd_program(self,prog):
         self.programs[prog.unique_str()] = prog
