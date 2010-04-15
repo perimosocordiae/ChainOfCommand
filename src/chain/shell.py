@@ -227,6 +227,8 @@ class Shell(object):
 
     def finish_staging(self):
         idx = len(LOADINGTEXT.splitlines())+1
+        self.overwrite_line(idx+2,"Players:")
+        self.overwrite_line(idx+5,"Game:")
         self.overwrite_line(idx+9,"Starting...")
         self.screen.ignoreAll()
     

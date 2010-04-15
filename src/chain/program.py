@@ -3,7 +3,6 @@ from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import (Point3, Filename, Buffer, Shader, CollisionNode,
         CollisionTube, CollisionSphere, BitMask32, TextNode, NodePath, CollisionPolygon)
-from direct.gui.OnscreenText import OnscreenText 
 from agent import Agent
 from constants import *
 
