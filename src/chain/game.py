@@ -43,8 +43,8 @@ class Game(object):
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         [self.add_player(pname,i) for pname,i in self.players.iteritems() if pname != self.shell.name]
         self.add_local_player(self.players[self.shell.name]) # yay python and loose typing
-        self.load_env()
-        self.add_event_handler()        
+        self.add_event_handler()
+        self.load_env()        
         #Some player stuff just shouldn't be done until we have a world
         for pname in self.players:
             self.players[pname].post_environment_init()

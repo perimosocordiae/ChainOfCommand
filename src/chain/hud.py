@@ -16,9 +16,10 @@ class HUD(object):
         self.player = player
         self.font = player.game.font
         base.setFrameRateMeter(True)
-        self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(-0.025, 0, 0), scale=0.05)
+        self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(0, 0, 0), scale=0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
-        
+        self.infoHUD = OnscreenText(text="PlayerName", pos=(0,0.1), scale=HUD_SCALE, fg=HUD_FG, bg=HUD_BG, font=self.font, mayChange=True)
+        self.infoHUD.stash()
         self.bottomHUD = DirectFrame(frameSize=(-0.77,0.77,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,-0.96))
         self.programHUD = [
             OnscreenText(text=EMPTY_PROG_STR, pos=(-0.3, -0.98), scale=HUD_SCALE,
@@ -98,11 +99,17 @@ class HUD(object):
     def target(self):
         objHit,spotHit = self.player.findCrosshairHit()
         if objHit in self.player.game.drones or objHit in self.player.game.players: #turn the crosshairs red
-            self.crosshairs.setImage("%s/crosshairs_locked.tif" % TEXTURE_PATH)
+            self.infoHUD.setText(objHit)
+            self.infoHUD.unstash()
+            if objHit in self.player.game.players and self.player.game.players[objHit].color == self.player.color: #player on my team
+                self.crosshairs.setImage("%s/crosshairs_program.tif" % TEXTURE_PATH)
+            else:
+                self.crosshairs.setImage("%s/crosshairs_locked.tif" % TEXTURE_PATH)  
         elif objHit in self.player.game.programs:
             self.crosshairs.setImage("%s/crosshairs_program.tif" % TEXTURE_PATH)
         else:
             self.crosshairs.setImage("%s/crosshairs.tif" % TEXTURE_PATH)
+            self.infoHUD.stash()
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def hit(self):
@@ -141,6 +148,9 @@ class HUD(object):
         if self.bottomHUD:
             self.bottomHUD.destroy()
             self.bottomHUD = None
+        if self.infoHUD:
+            self.infoHUD.destroy()
+            self.infoHUD = None
         if self.topHUD:
             self.topHUD.destroy()
             self.topHUD = None
