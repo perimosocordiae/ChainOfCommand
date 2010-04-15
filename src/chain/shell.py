@@ -226,8 +226,13 @@ class Shell(object):
         self.overwrite_line(name_idx+4,desc.center(60))
 
     def finish_staging(self):
-        self.output.setText("Synchronizing..."+("\n"*24))
+        idx = len(LOADINGTEXT.splitlines())+1
+        self.overwrite_line(idx+9,"Starting...")
         self.screen.ignoreAll()
+    
+    def show_sync(self):
+        idx = len(LOADINGTEXT.splitlines())+1
+        self.overwrite_line(idx+9,"Synchronizing...")
             
     def main(self,port_num,ip):
         print "creating new Game object"

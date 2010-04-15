@@ -50,7 +50,6 @@ class Game(object):
             self.players[pname].post_environment_init()
         self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
         print "game initialized, synchronizing"
-        self.shell.append_line("Synchronizing...")
         self.client.send("ready")
         
     def rest_of_rest_of_init(self):
@@ -58,6 +57,7 @@ class Game(object):
         for pname in self.players:
             self.players[pname].handleEvents = True
         self.local_player().sendUpdate()
+        self.shell.output.setText("\n"*24)
         self.shell.hide_shell()
         self.network_listener.loop()
         self.drone_adder.loop()
@@ -197,7 +197,8 @@ class Game(object):
             elif ds[0] == 'start':
                 print "handshake over, starting game"
                 # don't add yourself
-                Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init)).start()
+                Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init),
+                         Func(self.shell.show_sync)).start()
             elif ds[0] == 'go':
                 self.rest_of_rest_of_init()
                 return task.done # ends task
