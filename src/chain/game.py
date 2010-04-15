@@ -102,7 +102,10 @@ class Game(object):
         self.players[pname] = Player(self,pname,None,col_str)
     
     def my_team(self): # including me
-        my_col = self.local_player().color
+        try:
+            my_col = self.local_player().color
+        except AttributeError:
+            my_col = TEAM_COLORS.keys()[self.local_player()]
         return (p for p in self.players.itervalues() if p.color == my_col)
     
     def readd_program(self,prog):
