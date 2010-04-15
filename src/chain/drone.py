@@ -132,10 +132,10 @@ class Drone(Agent):
         self.velocity.setY(tronVec.getY())
         if not self.parent.isEmpty():
             self.parent.setFluidPos(self.parent.getPos() + (self.velocity*self.speed*SERVER_TICK))
-        #Kill any pandas that somehow manage to slip through the cracks
-        if self.parent.getZ() < BOTTOM_OF_EVERYTHING:
-            self.die()
-            
+            #Kill any pandas that somehow manage to slip through the cracks
+            if self.parent.getZ() < BOTTOM_OF_EVERYTHING:
+                self.die()
+        
         if self.pose != 52 or len(self.hittables) > 0:
             self.pose += 1
             if self.pose == 65:
