@@ -32,6 +32,6 @@ GAME_TYPES = [('deathmatch',"Every man for himself, first to 5 kills wins"),
               ('timed team deathmatch',"Team vs team, highest score after 3 minutes wins"),
               ('capture the --flag',"Steal another team's flag to score"),
               ('for the hoard',"Score by bringing programs back to base"),
-              ('pwnage',"Attack another team's base to score")
-              ]
+              ('pwnage',"Attack another team's base to score"),
+              ('tutorial', "Learn how to play")]
 SERVER_TICK = 0.01

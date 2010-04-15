@@ -6,7 +6,7 @@ import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
 from pandac.PandaModules import CollisionTraverser, CollisionTube, BitMask32
 from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionPlane, Plane
-from pandac.PandaModules import Vec4, Vec3, Point3, VBase3, TextureStage
+from pandac.PandaModules import Vec4, Vec3, Point3, VBase3, TextureStage, TextNode
 from direct.gui.OnscreenText import OnscreenText
 from direct.task import Task
 from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
@@ -16,6 +16,12 @@ from drone import Drone
 from networking import Client
 from constants import *
 from level import SniperLevel,CubeLevel,Beaumont
+
+TUTORIAL_PROMPTS = ["Welcome to the tutorial for \nChain of Command\nPress b to begin\n\n",
+                    "Use the mouse to look around."
+                    """Use WASD to move around the world.\nW moves your player forwards, S backwards,
+                    A to the left, and D to the right""",
+                    "You've reached the end of our tutorial. Enjoy the game!"]
 
 class Game(object):
 
@@ -32,11 +38,13 @@ class Game(object):
         self.load_models()
         self.had_locate = False # used by Locate to figure out whether to add "Right click to scope"
         self.drone_spawner = False # indicates if I'm the assigned drone spawner
+        self.tutorial = False
     
     def rest_of_init(self):
         base.cTrav = CollisionTraverser()
         base.cTrav.setRespectPrevTransform(True)
         base.disableMouse()
+        if self.type_idx == 7: self.tutorial = True
         self.network_listener = Sequence(Wait(SERVER_TICK), Func(self.network_listen))
         [self.add_player(pname,i) for pname,i in self.players.iteritems() if pname != self.shell.name]
         self.add_local_player(self.players[self.shell.name]) # yay python and loose typing
@@ -57,7 +65,12 @@ class Game(object):
         self.shell.output.setText("\n"*24)
         self.shell.hide_shell()
         self.network_listener.loop()
-        if self.drone_spawner : self.drone_adder.loop()
+        if self.drone_spawner and not self.tutorial : self.drone_adder.loop()
+        if self.tutorial:
+            self.tutorialScreen = OnscreenText(text=TUTORIAL_PROMPTS[0], pos=(-1.31,0.75), scale=0.07, align=TextNode.ALeft, 
+                                               mayChange=True, fg=(0,1,0,0.8), font=self.shell.font)
+            self.tutorialIndex = 0;
+            self.eventHandle.accept('b', self.advance_tutorial)
         self.local_player().add_background_music()
         self.startTime = time()
         if self.type_idx % 2 == 1: # timed levels
@@ -115,11 +128,12 @@ class Game(object):
         self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])
         
     def send_drone_signal(self):
-        self.client.send("AddaDrone")
+        dronePos = self.point_for("white")
+        self.client.send("AddaDrone: %s"%dronePos)
     
-    def add_drone(self):
-        print "Adding a drone"
-        d = Drone(self)
+    def add_drone(self, pos):
+        print "Adding a drone at position",pos
+        d = Drone(self, pos=pos)
         self.drones[str(hash(d))] = d 
         self.eventHandle.addDroneHandler(d)
     
@@ -130,11 +144,32 @@ class Game(object):
         self.environ.setPos(0, 0, 0)
         
         # simply change the level based on game type, for now
-        if self.type_idx < 2: # (non-team) deathmatches
+        if self.type_idx < 2 or self.type_idx == 7: # (non-team) deathmatches
             self.level = CubeLevel(self, self.environ)
         else:
             self.level = SniperLevel(self, self.environ)
         #self.level = Beaumont(self, self.environ)
+    
+    def tutorial_append_line(self, line):
+        lines = self.tutorialScreen.getText().split('\n')
+        del lines[0] # scroll
+        lines.append(line)
+        self.tutorialScreen.setText('\n'.join(lines))
+    
+    def advance_tutorial(self):
+        self.tutorialIndex += 1
+        if self.tutorialIndex == len(TUTORIAL_PROMPTS):
+            self.game_over()
+            return
+        lines = TUTORIAL_PROMPTS[self.tutorialIndex].split('\n')
+        scrollSequence = Sequence()
+        for line in lines :
+            scrollSequence.append(Wait(1.0))
+            scrollSequence.append(Func(self.tutorial_append_line, line))
+        for i in range(len(lines), 4) :
+            scrollSequence.append(Wait(1.0))
+            scrollSequence.append(Func(self.tutorial_append_line, "\n"))
+        scrollSequence.start()
 
     def game_over(self):
         print "Game over"
@@ -233,8 +268,8 @@ class Game(object):
         if len(data) == 0: return
         for d in data:
             ds = d.split(':')
-            if len(ds) >= 1 and ds[0] == "AddaDrone": 
-                self.add_drone()
+            if len(ds) >= 2 and ds[0] == "AddaDrone":
+                self.add_drone(eval(ds[1]))
                 continue
             if len(ds) != 11: continue # maybe we should not silently ignore this?
             name,strs = ds[0],ds[1:]
