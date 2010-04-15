@@ -32,6 +32,7 @@ class Game(object):
         self.client = Client(ip,port_num)
         self.load_models()
         self.had_locate = False # used by Locate to figure out whether to add "Right click to scope"
+        self.drone_spawner = False # indicates if I'm the assigned drone spawner
     
     def rest_of_init(self):
         base.cTrav = CollisionTraverser()
@@ -45,7 +46,7 @@ class Game(object):
         #Some player stuff just shouldn't be done until we have a world
         for pname in self.players:
             self.players[pname].post_environment_init()
-        self.drone_adder = Sequence(Wait(5.0), Func(self.add_drone))
+        if self.drone_spawner : self.drone_adder = Sequence(Wait(5.0), Func(self.send_drone_signal))
         print "game initialized, synchronizing"
         self.client.send("ready")
         
@@ -57,7 +58,7 @@ class Game(object):
         self.shell.output.setText("\n"*24)
         self.shell.hide_shell()
         self.network_listener.loop()
-        self.drone_adder.loop()
+        if self.drone_spawner : self.drone_adder.loop()
         self.local_player().add_background_music()
         self.startTime = time() # reset the start and end times
         self.endTime = self.startTime + self.gameLength
@@ -99,8 +100,12 @@ class Game(object):
     def readd_program(self,prog):
         self.programs[prog.unique_str()] = prog
         self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])
+        
+    def send_drone_signal(self):
+        self.client.send("AddaDrone")
     
     def add_drone(self):
+        print "Adding a drone"
         d = Drone(self)
         self.drones[str(hash(d))] = d 
         self.eventHandle.addDroneHandler(d)
@@ -169,6 +174,8 @@ class Game(object):
             if ds[0] == 'seed':
                 self.rand_seed = int(ds[1])
                 seed(self.rand_seed)
+            elif ds[0] == 'DroneSpawner':
+                self.drone_spawner = True
             elif ds[0] == 'player':
                 if ds[1] not in self.players:
                     self.players[ds[1]] = 0 # default color index == blue?
@@ -214,6 +221,9 @@ class Game(object):
         if len(data) == 0: return
         for d in data:
             ds = d.split(':')
+            if len(ds) >= 1 and ds[0] == "AddaDrone": 
+                self.add_drone()
+                continue
             if len(ds) != 9: continue # maybe we should not silently ignore this?
             name,strs = ds[0],ds[1:]
             pos,rot,vel,hpr,anim,firing,collecting,dropping = map(eval,strs)

@@ -72,6 +72,7 @@ class Server(NetworkBase):
                 assert d not in self.player_set
                 self.player_set.add(d)
                 for p in self.player_set: self.broadcast(p)
+                if (len(self.player_set) == 1) : self.broadcast('DroneSpawner')
             elif ds[0] == 'unreg':
                 pd = 'player %s'%ds[1]
                 assert pd in self.player_set
