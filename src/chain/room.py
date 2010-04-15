@@ -74,7 +74,6 @@ class Room(Obstacle):
         self.walls[name] = (model, wall)
     
     def has_point(self, pos):
-        def has_point(self, pos):
         mypt = self.environ.getRelativePoint(render,Point3(pos[0],pos[1],pos[2]))
         x1,x2,y1,y2,z1,z2 = self.get_bounds()
         return mypt[0] > x1 and mypt[0] < x2 and mypt[1] > y1 and mypt[1] < y2 and mypt[2] > z1 and mypt[2] < z2
