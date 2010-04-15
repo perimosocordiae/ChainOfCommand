@@ -106,7 +106,7 @@ class Game(object):
             my_col = self.local_player().color
             return (p for p in self.players.itervalues() if p.color == my_col)
         except AttributeError:
-            return 0
+            return []
     
     def readd_program(self,prog):
         self.programs[prog.unique_str()] = prog
