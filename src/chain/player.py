@@ -269,11 +269,8 @@ class Player(Agent):
         pass
     
     def my_team(self): # including me
-        try:
-            my_col = self.color
-            return (p for p in self.game.players.itervalues() if p.color == my_col)
-        except AttributeError:
-            return []
+        my_col = self.color
+        return (p for p in self.game.players.itervalues() if hasattr(p,'color') and p.color == my_col)
         
     def score(self):
         if self.game.type_idx < 2: # non-team matches
