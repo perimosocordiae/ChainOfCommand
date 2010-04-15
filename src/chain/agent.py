@@ -189,6 +189,9 @@ class Agent(object):
     def die(self):
         print "Agent is dead"
     
+    def show_locate_hint(self):
+        return
+    
     def is_dead(self):
         return self.health <= 0
 

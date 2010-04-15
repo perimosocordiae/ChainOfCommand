@@ -496,6 +496,12 @@ class LocalPlayer(Player):
     def add_kill(self, objKilled):
         super(LocalPlayer, self).add_kill(objKilled)
         self.hud.add_kill()
+        
+    def show_locate_hint(self):
+        self.hint = OnscreenText(text="Right click to scope", fg=(1,1,1,1), pos=(0,0), 
+                                 scale=0.15, font=self.game.font)
+        Sequence(Wait(3.0), Func(self.hint.destroy)).start()
+        self.game.had_locate = True
     
     def setup_camera(self):
         super(LocalPlayer,self).setup_camera()

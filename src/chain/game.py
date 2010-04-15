@@ -31,6 +31,7 @@ class Game(object):
         self.end_sequence = None
         self.client = Client(ip,port_num)
         self.load_models()
+        self.had_locate = False # used by Locate to figure out whether to add "Right click to scope"
     
     def rest_of_init(self):
         base.cTrav = CollisionTraverser()

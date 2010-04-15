@@ -3,6 +3,7 @@ from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import (Point3, Filename, Buffer, Shader, CollisionNode,
         CollisionTube, CollisionSphere, BitMask32, TextNode, NodePath, CollisionPolygon)
+from direct.gui.OnscreenText import OnscreenText 
 from agent import Agent
 from constants import *
 
@@ -270,6 +271,10 @@ class Locate(Achievement):
     def scope_zoom_mod(self, d):
         return d * 2
     
+    def add_effect(self, agent):
+        if not self.game.had_locate :
+            agent.show_locate_hint()
+        
 class Ls(Achievement):
     def __init__(self, game, room, pos=None):
         super(Ls, self).__init__(game, room, 'ls', "Radar * 1.5", BASE_SCALE, pos)
