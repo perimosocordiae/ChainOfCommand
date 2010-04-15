@@ -15,15 +15,15 @@ from player import Player,LocalPlayer
 from drone import Drone
 from networking import Client
 from constants import *
-from level import *
+from level import SniperLevel,CubeLevel,Beaumont
 
 class Game(object):
 
-    def __init__(self,ip,port_num,shell,tile_size=100, tower_size=16, gameLength=180):
-        self.shell = shell
-        self.players, self.programs,self.drones,self.obstacles,self.startPoints = {},{},{},{},{}
-        self.tile_size, self.tower_size, self.gameLength = tile_size, tower_size, gameLength
-        self.type_idx = 0 # index into GAME_TYPES, can be changed from the staging shell
+    def __init__(self,ip,port_num,shell,tile_size=100):
+        self.shell, self.tile_size = shell, tile_size
+        self.players, self.programs,self.drones = {},{},{}
+        self.gameLength = 180 # 3 minutes
+        self.type_idx = 1 # index into GAME_TYPES, can be changed from the staging shell
         
         #The size of a cube
         num_tiles = 3
@@ -38,10 +38,6 @@ class Game(object):
         base.cTrav.setRespectPrevTransform(True)
         base.disableMouse()
         self.network_listener = Sequence(Wait(SERVER_TICK), Func(self.network_listen))
-        self.startTime = time()
-        self.endTime = self.startTime + self.gameLength
-        self.gameTime = self.endTime - time()
-        self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         [self.add_player(pname,i) for pname,i in self.players.iteritems() if pname != self.shell.name]
         self.add_local_player(self.players[self.shell.name]) # yay python and loose typing
         self.add_event_handler()
@@ -53,7 +49,7 @@ class Game(object):
         print "game initialized, synchronizing"
         self.client.send("ready")
         
-    def rest_of_rest_of_init(self):
+    def synced_init(self):
         print "starting for real"
         for pname in self.players:
             self.players[pname].handleEvents = True
@@ -65,7 +61,8 @@ class Game(object):
         self.local_player().add_background_music()
         self.startTime = time() # reset the start and end times
         self.endTime = self.startTime + self.gameLength
-        self.local_player().hud.start_timer()  
+        if self.gameLength > 0:
+            self.local_player().hud.start_timer()  
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
@@ -201,7 +198,7 @@ class Game(object):
                 Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init),
                          Func(self.shell.show_sync)).start()
             elif ds[0] == 'go':
-                self.rest_of_rest_of_init()
+                self.synced_init()
                 return task.done # ends task
         return task.cont
     

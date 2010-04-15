@@ -19,15 +19,19 @@ TERMINAL_VELOCITY = -1200.0
 #agent-y things
 STARTING_HEALTH = 100
 
-MODEL_PATH = "../../bammodels"
+MODEL_PATH = "../../bammodels" #"../../models"
 TEXTURE_PATH = "../../textures"
 COLOR_PATH = "%s/colors"%TEXTURE_PATH
 SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%TEXTURE_PATH
 USE_GLOW = True
 TEAM_COLORS = {'blue': (0, 0, 1), 'brown': (.80, .53, .22), 'green': (0, 1, 0), 'red': (1, 0, 0), 'yellow': (0, 1, 1)}
-GAME_TYPES = [('deathmatch',"Kill each other and AI drones"),
-              ('team deathmatch',"Fight with your friends against the other teams"),
-              ('capture the flag',"Steal another team's -flag to score")
+GAME_TYPES = [('deathmatch',"Every man for himself, first to 5 kills wins"),
+              ('team deathmatch',"Team vs team, first to 15 kills wins"),
+              ('timed deathmatch',"Every man for himself, highest score after 3 minutes wins"),
+              ('timed team deathmatch',"Team vs team, highest score after 3 minutes wins"),
+              ('capture the --flag',"Steal another team's flag to score"),
+              ('for the hoard',"Score by bringing programs back to base"),
+              ('pwnage',"Attack another team's base to score")
               ]
 SERVER_TICK = 0.01

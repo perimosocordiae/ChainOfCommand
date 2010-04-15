@@ -103,7 +103,7 @@ class Program(Agent):
         text = TextNode(self.name + 'Desc')
         text.setText(desc)
         text.setTextColor(0, 0, 0, 1)
-        text.setFont(self.game.font)
+        text.setFont(self.game.shell.font)
         text.setAlign(TextNode.ACenter)
         text.setFrameColor(0, 0, 0, 1)
         text.setFrameAsMargin(0, 0, 0, 0)
@@ -265,7 +265,7 @@ class DashR(Achievement):
     
 class Locate(Achievement):
     def __init__(self, game, room, pos=None):
-        super(Locate, self).__init__(game, room, 'locate', "Scope Zoom * 2", BASE_SCALE, pos)
+        super(Locate, self).__init__(game, room, 'locate', "Scope Zoom x 2", BASE_SCALE, pos)
         
     def scope_zoom_mod(self, d):
         return d * 2
@@ -276,7 +276,7 @@ class Locate(Achievement):
         
 class Ls(Achievement):
     def __init__(self, game, room, pos=None):
-        super(Ls, self).__init__(game, room, 'ls', "Radar * 1.5", BASE_SCALE, pos)
+        super(Ls, self).__init__(game, room, 'ls', "Radar x 1.5", BASE_SCALE, pos)
     
     def radar_mod(self, r):
         return r * 1.5

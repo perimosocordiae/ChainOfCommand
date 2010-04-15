@@ -14,7 +14,7 @@ HUD_FG, HUD_BG = (0, 0, 0, 0.8), (1, 1, 1, 0.8)
 class HUD(object):
     def __init__(self,player):
         self.player = player
-        self.font = player.game.font
+        self.font = player.game.shell.font
         base.setFrameRateMeter(True)
         self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(0, 0, 0), scale=0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)

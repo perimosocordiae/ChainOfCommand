@@ -1,5 +1,4 @@
 from room import *
-from math import sin, cos, radians
 from program import *
 from random import choice
 

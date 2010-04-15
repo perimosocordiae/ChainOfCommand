@@ -111,7 +111,7 @@ class Player(Agent):
         self.respawn()
         
     def spawn(self,pt=None,_=None):
-        if self.game.gameTime > 0 and not self.tron.isEmpty():
+        if not self.tron.isEmpty(): # and self.game.gameTime > 0
             self.show()
             self.handleEvents = True
             self.health = STARTING_HEALTH
@@ -499,7 +499,7 @@ class LocalPlayer(Player):
         
     def show_locate_hint(self):
         self.hint = OnscreenText(text="Right click to scope", fg=(1,1,1,1), pos=(0,0), 
-                                 scale=0.15, font=self.game.font)
+                                 scale=0.15, font=self.game.shell.font)
         Sequence(Wait(3.0), Func(self.hint.destroy)).start()
         self.game.had_locate = True
     
@@ -511,13 +511,8 @@ class LocalPlayer(Player):
                              inputState.watch('moveright', 'd', 'd-up')]
         taskMgr.add(self.updateCameraTask, "updateCameraTask")
     
-    #def setup_shooting(self):
-    #    inputState.watch('shoot', 'mouse1', 'mouse1-up')
-    
     def updateShotTask(self, task):
-        #self.shoot()
         self.shooting = True
-        #self.sendUpdate()
         return task.again
         
     #Task to move the camera

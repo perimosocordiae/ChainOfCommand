@@ -234,11 +234,11 @@ class Shell(object):
     
     def show_sync(self):
         idx = len(LOADINGTEXT.splitlines())+1
-        self.overwrite_line(idx+9,"Synchronizing...")
+        self.overwrite_line(idx+9,"Synchronizing watches...")
             
     def main(self,port_num,ip):
         print "creating new Game object"
-        self.g = Game(ip,port_num,self,100.0,16.0,120)
+        self.g = Game(ip,port_num,self,100.0)
 
     #### HERE THERE BE SHELL COMMANDS ####
     
