@@ -408,6 +408,7 @@ class LocalPlayer(Player):
     
     def respawn(self):
         print "respawning"
+        self.sendUpdate()
         Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn), Wait(1.0),
                  Func(self.hud.hide_scores), Func(self.hud.destroy_gray), Func(self.toggle_god)).start()
     
