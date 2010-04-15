@@ -57,7 +57,7 @@ class Game(object):
         self.shell.output.setText("\n"*24)
         self.shell.hide_shell()
         self.network_listener.loop()
-        if self.drone_spawner : self.drone_adder.loop()
+        #if self.drone_spawner : self.drone_adder.loop() no drones temporarily
         self.local_player().add_background_music()
         self.startTime = time()
         if self.type_idx % 2 == 1: # timed levels
