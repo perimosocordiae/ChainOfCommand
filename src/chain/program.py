@@ -247,6 +247,10 @@ class Flag(Achievement):
     def reappear(self, pos):
         super(Flag, self).reappear(pos)
         self.load_texture()
+        for color,base in self.game.level.bases.iteritems():
+            if color != self.color and base.has_point(pos):
+                self.game.ctf_scores[color] += 1
+                break
     
     def load_texture(self):
         tex = loader.loadTexture("%s/%s_flag.jpg"%(TEXTURE_PATH, self.color))

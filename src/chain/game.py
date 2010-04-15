@@ -68,6 +68,8 @@ class Game(object):
         else: # untimed levels
             self.gameLength = -1
             self.fragLimit = [5,15,3,3][self.type_idx/2]
+        if self.type_idx == 4: # CTF
+            self.ctf_scores = dict(p.color,0 for p in self.players.itervalues())
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
