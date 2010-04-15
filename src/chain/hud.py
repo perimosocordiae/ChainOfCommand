@@ -235,7 +235,7 @@ class HUD(object):
             if (vectorToDrone.lengthSquared() < clipConstantSquared) :
                 vectorToDrone = -self.player.get_model().getRelativeVector(render, vectorToDrone)/scaleConstant
                 radarPoint = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (vectorToDrone.getX(),0,vectorToDrone.getY()), 
-                                         scale=0.05, color=(.6,.6,.6,.8), parent=self.radar_background)
+                                         scale=0.05, color=(0,0,0,.8), parent=self.radar_background)
                 self.radarPoints.append(radarPoint)
         for player in game.players :
             vectorToPlayer = game.players[player].get_model().getPos() - myPos
