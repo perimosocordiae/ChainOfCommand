@@ -25,7 +25,7 @@ COLOR_PATH = "%s/colors"%TEXTURE_PATH
 SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%TEXTURE_PATH
 USE_GLOW = True
-TEAM_COLORS = {'blue': (0, 0, 1), 'brown': (.80, .53, .22), 'green': (0, 1, 0), 'red': (1, 0, 0), 'yellow': (1, 1, 0)}
+TEAM_COLORS = {'blue': (0, 0, 1), 'brown': (0.80, 0.53, 0.22), 'green': (0, 1, 0), 'red': (1, 0, 0), 'yellow': (1, 1, 0)}
 GAME_TYPES = [('deathmatch',"Every man for himself, first to 5 kills wins"),
               ('timed deathmatch',"Every man for himself, highest score after 3 minutes wins"),
               ('team deathmatch',"Team vs team, first to 15 kills wins"),

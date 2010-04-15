@@ -50,7 +50,7 @@ class HUD(object):
         self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(0.51,0,0.96), scale=0.04)
         self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.timer = OnscreenText(text="Time:", pos=(0,0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
+        self.timer = OnscreenText(text="", pos=(0,0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
         
     def setup_radar(self):
         print "setup radar"

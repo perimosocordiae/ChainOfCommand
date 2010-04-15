@@ -64,14 +64,24 @@ class Program(Agent):
         self.model.setScale(self.scale)
         self.model.reparentTo(render)
         self.model.setPos(Point3(self.pos[0], self.pos[1], self.pos[2] + 10))
-        text = TextNode("Name")
-        text.setText("%s" % self.name)
-        text.setFont(self.game.shell.font)
-        text.setTextColor(0,0,0,1)
-        textNodePath = self.model.attachNewNode(text)
-        textNodePath.setScale(0.5)
-        textNodePath.setPos(-1,0,0)
-        
+        if self.name != "RAM":
+            textFront = TextNode("NameFront")
+            textFront.setText("%s" % self.name)
+            textFront.setTextColor(1,0,0,1)
+            textFront.setFont(self.game.shell.font)
+            textFront.setAlign(TextNode.ACenter)
+            textNodeFront = self.model.attachNewNode(textFront)
+            textNodeFront.setScale(3.4 / len(self.name))
+            textNodeFront.setPos(-0.42/len(self.name),-0.14,-0.6/len(self.name))
+            textBack = TextNode("NameFront")
+            textBack.setText("%s" % self.name)
+            textBack.setTextColor(1,0,0,1)
+            textBack.setFont(self.game.shell.font)
+            textBack.setAlign(TextNode.ACenter)
+            textNodeBack = self.model.attachNewNode(textBack)
+            textNodeBack.setScale(3.4 / len(self.name))
+            textNodeBack.setPos(0.42/len(self.name),0.119,-0.6/len(self.name))
+            textNodeBack.setHpr(180,0,0)
         
     def get_model(self):
         return self.model
@@ -240,7 +250,7 @@ class Achievement(Program):
 
 class Flag(Achievement):
     def __init__(self, game, room, color, pos=None):
-        super(Flag, self).__init__(game, room, '--flag', "  ", BASE_SCALE, pos)
+        super(Flag, self).__init__(game, room, '--flag', "%s flag" % color, BASE_SCALE, pos)
         self.color = color
         self.load_texture()
     
