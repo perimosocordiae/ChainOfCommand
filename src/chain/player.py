@@ -256,9 +256,13 @@ class Player(Agent):
             self.stats[key] = 1
         else:
             self.stats[key] += 1
+        if self.score() >= self.game.fragLimit:
+            self.game.game_over()
     
-    def killcount(self):
-        return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
+    def score(self):
+        if self.game.type_idx < 2: # non-team matches
+            return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
+        return sum(p.stats.get('Player_kill',0) for p in self.game.my_team())
     
     def hit(self, amt=0):
         if self.invincible: return False

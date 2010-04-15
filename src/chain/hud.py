@@ -43,7 +43,7 @@ class HUD(object):
         self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, text="", text_scale=0.12, text_font=self.font, frameColor=HUD_BG, sortOrder=2)
         self.healthBAR.setSx(0.57)
         self.healthBAR.setTransparency(TransparencyAttrib.MAlpha)
-        self.killHUD = OnscreenText(text="Kills:%d" % player.killcount(), pos=(-0.39, 0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
+        self.killHUD = OnscreenText(text="Score:%d" % player.score(), pos=(-0.39, 0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
         self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(0.43,0,0.96), scale=0.04)
         self.musicHUD.setImage(image="%s/music_on.png" % TEXTURE_PATH)
         self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
@@ -75,10 +75,10 @@ class HUD(object):
         #self.crosshairs.hide()
         try: self.score_screen.destroy()
         except: pass
-        players = reversed(sorted(self.player.game.players.values(), key=lambda p: p.killcount()))
-        score_str = "\n".join(["%s:\t\t%d"%(p.name,p.killcount()) for p in players])
+        players = reversed(sorted(self.player.game.players.values(), key=lambda p: p.score()))
+        score_str = "\n".join(["%s:\t\t%d"%(p.name,p.score()) for p in players])
         #self.score_screen = OnscreenText(text="Kills: \n"+score_str,bg=(1,1,1,0.8),pos=(0,0.75))
-        self.score_screen = DirectLabel(text="Kills: \n"+score_str, pos=(-0.1,0,0.75), frameColor=HUD_BG, text_fg=HUD_FG, text_font=self.font, scale=HUD_SCALE, sortOrder=4)
+        self.score_screen = DirectLabel(text="Scores: \n"+score_str, pos=(-0.1,0,0.75), frameColor=HUD_BG, text_fg=HUD_FG, text_font=self.font, scale=HUD_SCALE, sortOrder=4)
                                         
     def hide_scores(self):
         #self.crosshairs.show()
@@ -154,7 +154,7 @@ class HUD(object):
             txt.setX(txt.getPos()[0] - 0.15)
         
     def add_kill(self):
-        self.killHUD.setText("Kills:%d" % self.player.killcount())
+        self.killHUD.setText("Score:%d" % self.player.score())
     
     def destroy_HUD(self): 
         for programDisp in self.programHUD : programDisp.destroy() 

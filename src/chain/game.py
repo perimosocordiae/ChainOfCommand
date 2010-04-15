@@ -22,8 +22,7 @@ class Game(object):
     def __init__(self,ip,port_num,shell,tile_size=100):
         self.shell, self.tile_size = shell, tile_size
         self.players, self.programs,self.drones = {},{},{}
-        self.gameLength = 180 # 3 minutes
-        self.type_idx = 1 # index into GAME_TYPES, can be changed from the staging shell
+        self.type_idx = 2 # index into GAME_TYPES, can be changed from the staging shell
         
         #The size of a cube
         num_tiles = 3
@@ -60,10 +59,15 @@ class Game(object):
         self.network_listener.loop()
         if self.drone_spawner : self.drone_adder.loop()
         self.local_player().add_background_music()
-        self.startTime = time() # reset the start and end times
-        self.endTime = self.startTime + self.gameLength
-        if self.gameLength > 0:
-            self.local_player().hud.start_timer()  
+        self.startTime = time()
+        if self.type_idx % 2 == 1: # timed levels
+            self.gameLength = 180 # 3 minutes
+            self.fragLimit = 9999
+            self.endTime = self.startTime + self.gameLength
+            self.local_player().hud.start_timer()
+        else: # untimed levels
+            self.gameLength = -1
+            self.fragLimit = [5,15,3,3][self.type_idx/2]
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
@@ -96,7 +100,11 @@ class Game(object):
         print "making player: %s"%pname
         col_str = TEAM_COLORS.keys()[col_idx]
         self.players[pname] = Player(self,pname,None,col_str)
-        
+    
+    def my_team(self): # including me
+        my_col = self.local_player().color
+        return (p for p in self.players.itervalues() if p.color == my_col)
+    
     def readd_program(self,prog):
         self.programs[prog.unique_str()] = prog
         self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])
@@ -117,12 +125,11 @@ class Game(object):
         self.environ.setPos(0, 0, 0)
         
         # simply change the level based on game type, for now
-        if GAME_TYPES[self.type_idx][0] == 'deathmatch':
+        if self.type_idx < 2: # (non-team) deathmatches
             self.level = CubeLevel(self, self.environ)
-        elif GAME_TYPES[self.type_idx][0] == 'team deathmatch':
-            self.level = SniperLevel(self, self.environ)
         else:
-            self.level = Beaumont(self, self.environ)
+            self.level = SniperLevel(self, self.environ)
+        #self.level = Beaumont(self, self.environ)
 
     def game_over(self):
         print "Game over"

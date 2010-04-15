@@ -61,6 +61,7 @@ class CubeLevel(Level):
         super(CubeLevel, self).__init__(game, parent)
         self.rooms["Cube_Room"] = CubeRoom("Cube_Room", self.parent, (0,0,0),
                         (0,0,0), 1.0, "white", holes=(0,0,0,0,0,0,0,0))
+        self.default_environment()
         
 class BasicBaseLevel(Level):
     def __init__(self, game, parent, hallwayAngle = 20):
