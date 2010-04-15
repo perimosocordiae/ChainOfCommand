@@ -304,6 +304,7 @@ class Player(Agent):
         self.tron.setH(rot.getX())
         self.get_camera().setP(rot.getY())
         super(Player,self).hit(damage)
+        self.stats['damage_taken'] += damage
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage):
         self.move_to(pos,rot,vel,hpr,damage)
