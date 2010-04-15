@@ -88,6 +88,7 @@ class Player(Agent):
             if 'donthitthis' in pickedObj: continue
             #if '_wall' in pickedObj: continue
             if '_pusher' in pickedObj: continue
+            if pickedObj in self.game.players and self.game.players[pickedObj].get_model().isHidden(): continue
             if pickedObj != self.name and pickedObj != "%s_wall_donthitthis"%self.name: break
         return pickedObj, pickedSpot
     
@@ -321,10 +322,9 @@ class Player(Agent):
         self.get_camera().setP(rot.getY())
         if damage > 0:
             super(Player,self).hit(damage,damager)
-        self.stats['damage_taken'] += damage
-        if self.is_dead() and damager in self.game.players:
-            self.game.players[damager].add_kill(self)
-                
+            self.stats['damage_taken'] += damage
+            if self.is_dead() and damager in self.game.players:
+                self.game.players[damager].add_kill(self)
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager):
         self.move_to(pos,rot,vel,hpr,damage,damager)
