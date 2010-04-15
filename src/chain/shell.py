@@ -154,7 +154,6 @@ class Shell(object):
         self.input.destroy()
         self.prompt.destroy()
         self.screen.ignoreAll()
-        self.keep_last_line = False
         
     def hide_shell(self):
         self.output.stash()
@@ -210,18 +209,26 @@ class Shell(object):
         self.overwrite_line(idx+2,"Players: (up/down to change team)")
         self.overwrite_line(idx+5,"Game: (left/right to change type)")
         self.overwrite_line(idx+9,"When everyone is ready, press 'b' to begin")
+        self.overwrite_line(idx+10,"To go back to the shell, press 'x'")
         self.g.client.send("player %s"%self.name)
         self.screen.accept('b',self.g.client.send,['start'])
+        self.screen.accept('x',self.exit_staging)
         self.screen.accept('arrow_up',   self.g.client.send,['staging %s color +'%self.name])
         self.screen.accept('arrow_down', self.g.client.send,['staging %s color -'%self.name])
         self.screen.accept('arrow_right',self.g.client.send,['staging %s type +'%self.name])
         self.screen.accept('arrow_left', self.g.client.send,['staging %s type -'%self.name])
     
+    def exit_staging(self):
+        self.g.client.send('unreg %s'%self.name)
+        self.screen.ignoreAll()
+        self.user_input()
+        self.append_line("Welcome back!")
+    
     def refresh_staging(self):
         player_names = ("%s (%d)"%(n,t) for n,t in self.g.players.iteritems())
         type,desc = GAME_TYPES[self.g.type_idx]
         name_idx = len(LOADINGTEXT.splitlines())+4
-        self.overwrite_line(name_idx,"\t".join(player_names).center(60))
+        self.overwrite_line(name_idx," | ".join(player_names).center(60))
         self.overwrite_line(name_idx+3,type.upper().center(60))
         self.overwrite_line(name_idx+4,desc.center(60))
 
@@ -229,7 +236,8 @@ class Shell(object):
         idx = len(LOADINGTEXT.splitlines())+1
         self.overwrite_line(idx+2,"Players:")
         self.overwrite_line(idx+5,"Game:")
-        self.overwrite_line(idx+9,"Starting...")
+        self.overwrite_line(idx+9,"Starting game...")
+        self.overwrite_line(idx+10,"")
         self.screen.ignoreAll()
     
     def show_sync(self):
@@ -327,7 +335,7 @@ class Shell(object):
                 self.append_line("Okay.")
             else:
                 self.append_line("What? Make it yourself.")
-        elif arglist[0] in ["clean", "realclean"]:
+        elif len(arglist) > 0 and arglist[0] in ["clean", "realclean"]:
             if sudo:
                 self.append_line("All done.")
             else:

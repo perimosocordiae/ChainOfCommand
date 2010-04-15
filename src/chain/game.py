@@ -173,11 +173,18 @@ class Game(object):
                 if ds[1] not in self.players:
                     self.players[ds[1]] = 0 # default color index == blue?
                     self.shell.refresh_staging()
+            elif ds[0] == 'unreg':
+                if ds[1] in self.players:
+                    del self.players[ds[1]]
+                    if ds[1] == self.shell.name:
+                        self.client.close_connection()
+                        return task.done
+                    else:
+                        self.shell.refresh_staging()
             elif ds[0] == 'staging':
                 assert ds[1] in self.players
                 assert len(ds) == 4
                 if ds[2] == 'color':
-                    print ds[1],' (should be) changing color:',ds[3]
                     if ds[3] == '+':
                         i = self.players[ds[1]]+1
                         self.players[ds[1]] = i if i < len(TEAM_COLORS) else 0
@@ -194,7 +201,6 @@ class Game(object):
                 self.shell.refresh_staging()
             elif ds[0] == 'start':
                 print "handshake over, starting game"
-                # don't add yourself
                 Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init),
                          Func(self.shell.show_sync)).start()
             elif ds[0] == 'go':

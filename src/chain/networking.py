@@ -3,7 +3,6 @@ from direct.distributed.PyDatagramIterator import PyDatagramIterator
 from direct.task.Task import Task
 from pandac.PandaModules import *
 from time import time,sleep
-from random import choice
 
 # adapted from http://www.panda3d.org/phpbb2/viewtopic.php?t=4881
 
@@ -38,7 +37,7 @@ class Server(NetworkBase):
         self.backlog = backlog
         self.cListener = QueuedConnectionListener(self.cManager, 0)
         self.activeConnections = []
-        self.player_list = set()
+        self.player_set = set()
         self.ready_players = 0
         self.rand_seed = int(time())
         self.__connect(self.port, self.backlog)
@@ -68,22 +67,26 @@ class Server(NetworkBase):
                 
         # republish messages
         for d in self.getData():
-            if d.split()[0] == 'player':
-                assert d not in self.player_list
-                    #d += choice(list('!@#$%^&*'))
-                self.player_list.add(d)
-                for p in self.player_list: self.broadcast(p)
+            ds = d.split()
+            if ds[0] == 'player':
+                assert d not in self.player_set
+                self.player_set.add(d)
+                for p in self.player_set: self.broadcast(p)
+            elif ds[0] == 'unreg':
+                pd = 'player %s'%ds[1]
+                assert pd in self.player_set
+                self.player_set.remove(pd)
+                self.broadcast(d)
             elif d == 'ready': 
                 self.ready_players += 1
-                if self.ready_players == len(self.player_list): 
+                if self.ready_players == len(self.player_set): 
                     # reset this game's data, so we're ready for the next one
-                    self.player_list.clear()
+                    self.player_set.clear()
                     self.ready_players = 0
                     self.rand_seed = int(time())
                     self.broadcast('go')
             else:
                 self.broadcast(d)
-        #self.broadcast('time: %s'%time())
         return Task.cont
     
     def __tskDisconnectPolling(self, task):
