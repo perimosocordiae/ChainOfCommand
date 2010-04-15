@@ -265,10 +265,7 @@ class Player(Agent):
         return sum(p.stats.get('Player_kill',0) for p in self.game.my_team())
     
     def hit(self, amt=0):
-        if self.invincible: return False
-        succ=super(Player, self).hit(amt)
-        if succ: self.stats['damage_taken'] += amt
-        return succ
+        pass
     
     def drop(self, i):
         succ=super(Player, self).drop(i)
@@ -302,13 +299,14 @@ class Player(Agent):
                 self.laserSound.setVolume(0.3/pow(distanceToCamera, 2))
             self.laserSound.play()
     
-    def move_to(self,pos,rot,vel,hpr):
+    def move_to(self,pos,rot,vel,hpr,damage):
         self.tron.setFluidPos(pos)
         self.tron.setH(rot.getX())
         self.get_camera().setP(rot.getY())
+        super(Player,self).hit(damage)
     
-    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
-        self.move_to(pos,rot,vel,hpr)
+    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage):
+        self.move_to(pos,rot,vel,hpr,damage)
         #print hpr
         if anim == 'start':  self.StartMovingAnim()
         elif anim == 'stop': self.StopMovingAnim()
@@ -329,12 +327,13 @@ class LocalPlayer(Player):
         self.scopeZoomed = False
         self.dropping = -1
         self.hud = HUD(self)
+        self.current_damage_taken = 0
         #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
         #self.game.network_listener.loop()
     
-    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping):
-        super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping)
+    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage):
+        super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping,damage)
         newP = self.get_camera().getP() + hpr.getY() 
         newP = max(min(newP, 80), -80)
         self.get_camera().setP(newP)
@@ -345,7 +344,7 @@ class LocalPlayer(Player):
             #we dropped it - now we're not dropping anything
             self.dropping = -1
     
-    def move_to(self,pos,rot,vel,hpr):
+    def move_to(self,pos,rot,vel,hpr,damage):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
         
@@ -477,7 +476,10 @@ class LocalPlayer(Player):
         self.dropping = i
     
     def hit(self, amt=0):
-        if not super(LocalPlayer, self).hit(amt): return
+        if self.invincible: return False
+        if not super(Player, self).hit(amt): return
+        self.stats['damage_taken'] += amt
+        self.current_damage_taken += amt
         if LocalPlayer.sounds['grunt'].getTime() == 0.0 : LocalPlayer.sounds['grunt'].play()
         print "Hit"
         self.hud.hit()
@@ -547,8 +549,9 @@ class LocalPlayer(Player):
         pos = self.tron.getPos() + (self.velocity * SERVER_TICK)
         rot = Point3(self.tron.getH(), self.get_camera().getP(), 0)+self.hpr
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send(':'.join([self.name,str(pos),str(rot),str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping)]))
+        self.game.client.send(':'.join([self.name,str(pos),str(rot),str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping),str(self.current_damage_taken)]))
         self.shooting = False
+        self.current_damage_taken = 0
     
     def get_xy_velocity(self, cmds):
         new_vel = Vec2(0, 0)
