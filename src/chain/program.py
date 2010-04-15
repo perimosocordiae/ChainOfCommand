@@ -260,6 +260,7 @@ class Flag(Achievement):
         for color,base in self.game.level.bases.iteritems():
             if color != self.color and base.has_point(pos):
                 self.game.ctf_scores[color] += 1
+                self.game.add_point_for(color)
                 break
     
     def load_texture(self):

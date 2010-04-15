@@ -254,10 +254,16 @@ class Player(Agent):
         key = objKilled.__class__.__name__+'_kill'
         if not key in self.stats:
             self.stats[key] = 1
+            self.add_point()
         else:
             self.stats[key] += 1
+            self.add_point()
         if self.score() >= self.game.fragLimit:
             self.game.game_over()
+    
+    def add_point(self):
+        #do nothing in base class - this does HUD stuff
+        pass
     
     def score(self):
         if self.game.type_idx < 2: # non-team matches
@@ -517,8 +523,11 @@ class LocalPlayer(Player):
             self.programs.append(None)
             self.hud.add_slot()
         
-    def add_kill(self, objKilled):
-        super(LocalPlayer, self).add_kill(objKilled)
+    #def add_kill(self, objKilled):
+    #    super(LocalPlayer, self).add_kill(objKilled)
+    #    self.hud.add_kill()
+        
+    def add_point(self):
         self.hud.add_kill()
         
     def show_locate_hint(self):
