@@ -446,16 +446,22 @@ class LocalPlayer(Player):
         d = BASE_CAMERA_FOCAL_LENGTH
         for p in ifilter(lambda p: p != None, self.programs):
             d = p.scope_zoom_mod(d)
-        self.get_camera_lens().setFocalLength(d)
-        #if d > 0 and not self.scopeZoomed:
-            #self.get_camera_lens().setFocalLength(d)
-            #self.scopeZoomed = True
-        #else:
-            #self.get_camera_lens().setFocalLength(BASE_CAMERA_FOCAL_LENGTH)
-            #self.scopeZoomed = False
+        if d > BASE_CAMERA_FOCAL_LENGTH:
+            self.get_camera_lens().setFocalLength(d)
+            self.hud.scopeScreen.unstash()
     
     def scopeZoomOff(self):
         self.get_camera_lens().setFocalLength(BASE_CAMERA_FOCAL_LENGTH)
+        if hasattr(self, "hud") and self.hud.scopeScreen:
+            self.hud.scopeScreen.stash()
+    
+    def show_scopehairs(self):
+        if hasattr(self, "hud") and self.hud.scopehairs:
+            self.hud.scopehairs.unstash()
+        
+    def hide_scopehairs(self):
+        if hasattr(self, "hud") and self.hud.scopehairs:
+            self.hud.scopehairs.stash()
     
     def collectOn(self):
         self.collecting = True
@@ -498,9 +504,8 @@ class LocalPlayer(Player):
         self.hud.add_kill()
         
     def show_locate_hint(self):
-        self.hint = OnscreenText(text="Right click to scope", fg=(1,1,1,1), pos=(0,0), 
-                                 scale=0.15, font=self.game.shell.font)
-        Sequence(Wait(3.0), Func(self.hint.destroy)).start()
+        self.locate_hint = OnscreenText(text="Right click to scope", pos=(0,0.1), scale=0.06, fg=(0,0,0,0.8), bg=(1,1,1,0.8), font=self.hud.font)
+        Sequence(Wait(3.0), Func(self.locate_hint.destroy)).start()
         self.game.had_locate = True
     
     def setup_camera(self):

@@ -114,7 +114,7 @@ class Shell(object):
     
     def user_input(self):
         self.prompt = DirectLabel(text='', frameSize=(-0.04,0.06,-0.03,0.084), pos=(0,0,-0.97), text_scale=0.07, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), text_font=self.font)
-        self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,1), width=36, pos=(0,0,-0.97), rolloverSound=None, clickSound=None)
+        self.input = DirectEntry(scale=0.07, command=self.parse_cmd, focus=1, entryFont=self.font, frameColor=(0,0,0,1), text_fg=(1,1,1,0.8), width=36, pos=(0,0,-0.97), rolloverSound=None, clickSound=None)
         self.set_prompt_str()
         self.screen.accept('arrow_up',self.history,[True])
         self.screen.accept('arrow_down',self.history,[False])

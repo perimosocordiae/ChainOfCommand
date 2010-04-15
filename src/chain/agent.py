@@ -6,6 +6,7 @@ from constants import *
 
 #Constants
 MAX_PROGRAMS = 5
+BASE_CAMERA_FOCAL_LENGTH = 1.39951908588
 
 class Agent(object):
 
@@ -96,6 +97,12 @@ class Agent(object):
     
     def remove_radar(self):
         pass
+    
+    def show_scopehairs(self):
+        return
+    
+    def hide_scopehairs(self):
+        return
     
     #Per is the amount to heal per tick... times is the number of ticks to heal for
     def debug(self, name, per, times):
@@ -221,4 +228,3 @@ class Agent(object):
         for p in ifilter(lambda p: p != None, self.programs):
             a = p.rapid_fire_mod(a)
         return a
-    

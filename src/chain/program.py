@@ -63,6 +63,14 @@ class Program(Agent):
         self.model.setScale(self.scale)
         self.model.reparentTo(render)
         self.model.setPos(Point3(self.pos[0], self.pos[1], self.pos[2] + 10))
+        text = TextNode("Name")
+        text.setText("%s" % self.name)
+        text.setFont(self.game.shell.font)
+        text.setTextColor(0,0,0,1)
+        textNodePath = self.model.attachNewNode(text)
+        textNodePath.setScale(0.5)
+        textNodePath.setPos(-1,0,0)
+        
         
     def get_model(self):
         return self.model
@@ -271,9 +279,13 @@ class Locate(Achievement):
         return d * 2
     
     def add_effect(self, agent):
+        agent.show_scopehairs()
         if not self.game.had_locate :
             agent.show_locate_hint()
         
+    def remove_effect(self, agent):
+        agent.hide_scopehairs()        
+    
 class Ls(Achievement):
     def __init__(self, game, room, pos=None):
         super(Ls, self).__init__(game, room, 'ls', "Radar x 1.5", BASE_SCALE, pos)

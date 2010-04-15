@@ -16,8 +16,11 @@ class HUD(object):
         self.player = player
         self.font = player.game.shell.font
         base.setFrameRateMeter(True)
-        self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(0, 0, 0), scale=0.05)
+        self.crosshairs = OnscreenImage(image="%s/crosshairs.tif" % TEXTURE_PATH, pos=(0,0,0), scale=0.05)
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
+        self.scopehairs = OnscreenImage(image="%s/scopehairs.png" % TEXTURE_PATH, pos=(0,0,0), scale=0.035)
+        self.scopehairs.setTransparency(TransparencyAttrib.MAlpha)
+        self.scopehairs.stash()
         self.infoHUD = OnscreenText(text="PlayerName", pos=(0,0.1), scale=HUD_SCALE, fg=HUD_FG, bg=HUD_BG, font=self.font, mayChange=True)
         self.infoHUD.stash()
         self.bottomHUD = DirectFrame(frameSize=(-0.77,0.77,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,-0.96))
@@ -33,6 +36,9 @@ class HUD(object):
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         self.grayScreen = None
+        self.scopeScreen = DirectFrame(frameSize=(1.34,-1.34,1,-1), pos=(0,0,0), frameColor=(0,0,0,0), image="%s/scope_screen.png" % TEXTURE_PATH, image_scale=(1.34,1,1), sortOrder=4)
+        self.scopeScreen.setTransparency(TransparencyAttrib.MAlpha)
+        self.scopeScreen.stash()
         self.topHUD = DirectFrame(frameSize=(-0.57,0.57,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,0.96))
         self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, text="", text_scale=0.12, text_font=self.font, frameColor=HUD_BG, sortOrder=2)
         self.healthBAR.setSx(0.57)
@@ -53,7 +59,6 @@ class HUD(object):
         self.radar_background.setTransparency(TransparencyAttrib.MAlpha)
         self.radarPoints = []
         taskMgr.doMethodLater(0.01, self.radarTask, 'radarTask')
-        
         
     def start_timer(self):
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
@@ -78,7 +83,7 @@ class HUD(object):
     def hide_scores(self):
         #self.crosshairs.show()
         try: self.score_screen.destroy()
-        except: pass
+        except: pass        
     
     def toggle_background_music(self):
         if base.musicManager.getActive():
@@ -103,14 +108,23 @@ class HUD(object):
             self.infoHUD.unstash()
             if objHit in self.player.game.players and self.player.game.players[objHit].color == self.player.color: #player on my team
                 self.crosshairs.setImage("%s/crosshairs_program.tif" % TEXTURE_PATH)
+                if not self.scopehairs.isStashed():
+                    self.scopehairs.setImage("%s/scopehairs_program.png" % TEXTURE_PATH)
             else:
-                self.crosshairs.setImage("%s/crosshairs_locked.tif" % TEXTURE_PATH)  
+                self.crosshairs.setImage("%s/crosshairs_locked.tif" % TEXTURE_PATH)
+                if not self.scopehairs.isStashed():
+                    self.scopehairs.setImage("%s/scopehairs_locked.png" % TEXTURE_PATH)  
         elif objHit in self.player.game.programs:
             self.crosshairs.setImage("%s/crosshairs_program.tif" % TEXTURE_PATH)
+            if not self.scopehairs.isStashed():
+                self.scopehairs.setImage("%s/scopehairs_program.png" % TEXTURE_PATH)
         else:
             self.crosshairs.setImage("%s/crosshairs.tif" % TEXTURE_PATH)
+            if not self.scopehairs.isStashed():
+                self.scopehairs.setImage("%s/scopehairs.png" % TEXTURE_PATH)
             self.infoHUD.stash()
         self.crosshairs.setTransparency(TransparencyAttrib.MAlpha)
+        self.scopehairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def hit(self):
         self.flashRed.start() # flash the screen red
@@ -142,9 +156,14 @@ class HUD(object):
     def add_kill(self):
         self.killHUD.setText("Kills:%d" % self.player.killcount())
     
-    def destroy_HUD(self):
-        self.crosshairs.destroy() 
+    def destroy_HUD(self): 
         for programDisp in self.programHUD : programDisp.destroy() 
+        if self.crosshairs:
+            self.crosshairs.destroy()
+            self.crosshairs = None
+        if self.scopehairs:
+            self.scopehairs.destroy()
+            self.scopehairs = None
         if self.bottomHUD:
             self.bottomHUD.destroy()
             self.bottomHUD = None
@@ -190,7 +209,7 @@ class HUD(object):
     
     def destroy_gray(self):
         self.grayScreen.destroy()
-        self.grayScreen = None
+        self.grayScreen = None        
     
     def timerTask(self, task):
         game = self.player.game
