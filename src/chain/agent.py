@@ -185,7 +185,7 @@ class Agent(object):
     def set_glow(self, glow):
         return
     
-    def hit(self,amt):
+    def hit(self,amt,hitter=None):
         if self.is_dead(): return False# semi-hack
         self.health -= amt/self.shield()
         self.flashSequence.start()        

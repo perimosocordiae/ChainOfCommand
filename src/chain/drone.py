@@ -139,7 +139,7 @@ class Drone(Agent):
             self.pose += 1
             if self.pose == 65:
                 for tron in self.hittables.itervalues():
-                    tron.hit(self.damage())
+                    tron.hit(self.damage(),self.name)
             elif self.pose == 73:
                 self.pose = 52
             self.model.pose("sword", self.pose)
