@@ -263,7 +263,9 @@ class Player(Agent):
         if self.game.type_idx < 2: # non-team matches
             return self.stats.get('LocalPlayer_kill',0)+self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
         if self.game.type_idx == 4: # ctf
-            return self.game.ctf_scores[self.color]
+            try:
+                return self.game.ctf_scores[self.color]
+            except: return 0
         # team matches
         return sum(p.stats.get('LocalPlayer_kill',0)+p.stats.get('Player_kill',0) for p in self.game.my_team())
     
