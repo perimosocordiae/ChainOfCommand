@@ -68,7 +68,7 @@ class Game(object):
         if self.drone_spawner and not self.tutorial : self.drone_adder.loop()
         if self.tutorial:
             self.tutorialScreen = OnscreenText(text=TUTORIAL_PROMPTS[0], pos=(-1.31,0.75), scale=0.07, align=TextNode.ALeft, 
-                                               mayChange=True, fg=(0,1,0,0.8), font=self.shell.font)
+                                               mayChange=True, fg=(0,1,0,0.8), bg=(0,0,0,0.8), font=self.shell.font)
             self.tutorialIndex = 0;
             self.eventHandle.accept('b', self.advance_tutorial)
         self.local_player().add_background_music()
@@ -130,9 +130,9 @@ class Game(object):
         dronePos = self.point_for("white")
         self.client.send("AddaDrone: %s"%dronePos)
     
-    def add_drone(self, pos):
+    def add_drone(self, pos, speed=10):
         print "Adding a drone at position",pos
-        d = Drone(self, pos=pos)
+        d = Drone(self, speed=speed, pos=pos)
         self.drones[str(hash(d))] = d 
         self.eventHandle.addDroneHandler(d)
     
@@ -167,7 +167,7 @@ class Game(object):
         for line in lines :
             scrollSequence.append(Wait(1.0))
             scrollSequence.append(Func(self.tutorial_append_line, line))
-        for i in range(len(lines), 4) :
+        for i in range(len(lines)-1, 4) :
             scrollSequence.append(Wait(1.0))
             scrollSequence.append(Func(self.tutorial_append_line, "\n"))
         scrollSequence.start()

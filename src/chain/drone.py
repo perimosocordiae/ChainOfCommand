@@ -11,13 +11,14 @@ from constants import *
 CHASE_SCALE = 1.0
 
 class Drone(Agent):
-    def __init__(self,game,pos=None):
+    # drone speed is set in game::add_drone()
+    def __init__(self,game,speed,pos=None):
         super(Drone,self).__init__(game,str(hash(self)))
         if not pos: pos = game.point_for("white")
         self.hittables = {}
         self.parent.setPos(pos[0],pos[1],pos[2] + self.get_origin_height())
         self.setup_collider()
-        self.speed = 10
+        self.speed = speed
         
     def get_text_pos(self):
         return (0,0,5)
