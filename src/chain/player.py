@@ -111,6 +111,8 @@ class Player(Agent):
         self.stats['deaths'] += 1
         print "%s died!"%self.name
         self.respawn()
+        if hasattr(self, "hud") and self.hud:
+            self.hud.add_kill()
         
     def spawn(self,pt=None,_=None):
         if not self.tron.isEmpty(): # and self.game.gameTime > 0
