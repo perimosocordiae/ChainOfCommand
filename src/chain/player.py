@@ -1,5 +1,4 @@
 from math import sin, cos, radians,  pi, sqrt
-from random import randint
 from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
@@ -104,7 +103,10 @@ class Player(Agent):
     def die(self):
         self.hide()
         self.handleEvents = False
-        self.drop(randint(0,len(self.programs)-1)) # drop a random program
+        for i in range(len(self.programs)):
+            if self.programs[i]:
+                self.drop(i)
+                break
         self.stats['deaths'] += 1
         print "%s died!"%self.name
         self.respawn()
