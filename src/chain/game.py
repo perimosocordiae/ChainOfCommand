@@ -53,7 +53,7 @@ class Game(object):
         #Some player stuff just shouldn't be done until we have a world
         for pname in self.players:
             self.players[pname].post_environment_init()
-        self.drone_adder = Sequence(Wait(5.0), Func(self.send_drone_signal))
+        self.drone_adder = Sequence(Wait(20.0), Func(self.send_drone_signal))
         print "game initialized, synchronizing"
         self.client.send("ready")
         
@@ -73,7 +73,8 @@ class Game(object):
             self.eventHandle.accept('b', self.advance_tutorial)
         self.local_player().add_background_music()
         self.startTime = time()
-        if self.type_idx % 2 == 1: # timed levels
+        #if self.type_idx % 2 == 1: # timed levels
+        if self.type_idx in [1,3,5]: # timed levels
             self.gameLength = 180 # 3 minutes
             self.fragLimit = 9999
             self.endTime = self.startTime + self.gameLength
@@ -164,6 +165,8 @@ class Game(object):
     def advance_tutorial(self):
         self.tutorialIndex += 1
         if self.tutorialIndex == len(TUTORIAL_PROMPTS):
+            self.tutorialScreen.destroy()
+            self.tutorialScreen = None
             self.game_over()
             return
         lines = TUTORIAL_PROMPTS[self.tutorialIndex].split('\n')
@@ -180,6 +183,8 @@ class Game(object):
         print "Game over"
         p = self.local_player()
         p.hide()
+        if self.tutorial and self.tutorialScreen : self.tutorialScreen.destroy()
+        self.tutorial = False
         p.handleEvents = False
         p.invincible = True
         p.hud.display_gray()

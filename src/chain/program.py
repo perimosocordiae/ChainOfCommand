@@ -198,6 +198,7 @@ class Debug(Basic):
         if player.health < player.get_max_health(): # no effect if full health
             super(Debug, self).pick_up(player)
         else:
+            player.show_debug_hint()
             print "Already at full health"
         return False
 

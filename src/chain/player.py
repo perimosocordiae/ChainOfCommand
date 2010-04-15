@@ -280,6 +280,9 @@ class Player(Agent):
     def hit(self, amt=0, hitter=None):
         pass
     
+    def show_debug_hint(self):
+        return
+    
     def drop(self, i):
         succ=super(Player, self).drop(i)
         if succ: self.stats['drops'] += 1
@@ -349,6 +352,7 @@ class LocalPlayer(Player):
         self.damager = None
         #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
+        self.debug_hint = None
         #self.game.network_listener.loop()
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager):
@@ -536,6 +540,15 @@ class LocalPlayer(Player):
         self.locate_hint = OnscreenText(text="Right click to scope", pos=(0,0.1), scale=0.06, fg=(0,0,0,0.8), bg=(1,1,1,0.8), font=self.hud.font)
         Sequence(Wait(3.0), Func(self.locate_hint.destroy)).start()
         self.game.had_locate = True
+        
+    def show_debug_hint(self):
+        if self.debug_hint == None :
+            self.debug_hint = OnscreenText(text="Already at full health", pos=(0,0.1), scale=0.06, fg=(0,0,0,0.8), bg=(1,1,1,0.8), font=self.hud.font)
+            Sequence(Wait(3.0), Func(self.destroy_debug_hint)).start()
+            
+    def destroy_debug_hint(self):
+        self.debug_hint.destroy()
+        self.debug_hint = None
     
     def setup_camera(self):
         super(LocalPlayer,self).setup_camera()
