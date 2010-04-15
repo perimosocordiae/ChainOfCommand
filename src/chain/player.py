@@ -307,7 +307,7 @@ class Player(Agent):
             super(Player,self).hit(damage,damager)
         self.stats['damage_taken'] += damage
         if self.is_dead() and damager in self.game.players:
-            self.game.players[damager].stats['Player_kill'] += 1
+            self.game.players[damager].add_kill(self)
                 
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager):
