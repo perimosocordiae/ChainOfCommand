@@ -59,7 +59,7 @@ class Program(Agent):
         #self.pusher.stash()
     
     def load_model(self):
-        self.model = loader.loadModel("%s/%s%s.egg" % (MODEL_PATH, self.prefix, self.name))
+        self.model = loader.loadModel("%s/%s%s.bam" % (MODEL_PATH, self.prefix, self.name))
         self.model.setScale(self.scale)
         self.model.reparentTo(render)
         self.model.setPos(Point3(self.pos[0], self.pos[1], self.pos[2] + 10))

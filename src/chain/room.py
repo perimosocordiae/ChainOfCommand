@@ -49,12 +49,12 @@ class Room(Obstacle):
         if total >= divisor:
             rotation = (6-(total//divisor)) % 4
             if rotation % 2 == 1:
-                egg = "L_wall.egg"
+                egg = "L_wall.bam"
             else:
-                egg = "Reverse_L_wall.egg"
+                egg = "Reverse_L_wall.bam"
         else:
             rotation = 0
-            egg = "white_wall.egg"
+            egg = "white_wall.bam"
         model = make_tile(parent,egg,color,pos,(0,0,90 * rotation))
         if total >= divisor:
             wall = LWall(name, model, Point3(1,0,1), Point3(-1,0,1),
@@ -65,7 +65,7 @@ class Room(Obstacle):
         self.walls[name] = (model,wall)
     
     def addRightTriangle(self, name, parent, pos, color):
-        model = make_tile(parent,"right_triangle.egg",color,pos,(0,0,0))
+        model = make_tile(parent,"right_triangle.bam",color,pos,(0,0,0))
         wall = TriangleWall(name, model, Point3(2,0,0), Point3(0,2,0),
                             Point3(0,0,0), WALL_COLLIDER_MASK)
         self.walls[name] = (model, wall)
@@ -86,10 +86,10 @@ class CubeRoom(Room):
             self.addWallSection("wall_%s_3"%i, wall, (-2,3,z), color, 1, total)
             
         #Now add the floor & ceiling
-        self.walls["floor"] = (make_tile(self.environ,"white_floor.egg",color,(0,0,0),(0,0,0),3.0),
+        self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,0,0),(0,0,0),3.0),
                 QuadWall("floor", self.environ, Point3(3,3,0), Point3(-3,3,0),
                          Point3(-3,-3,0), Point3(3,-3,0), FLOOR_COLLIDER_MASK))
-        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,0,4),(0,180,0),3.0),
+        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.bam",color,(0,0,4),(0,180,0),3.0),
                 QuadWall("ceiling", self.environ, Point3(3,-3,4), Point3(-3,-3,4),
                          Point3(-3,3,4), Point3(3,3,4), WALL_COLLIDER_MASK))
         
@@ -118,10 +118,10 @@ class Hallway(Room):
         self.addWallSection("wall_2_1", wall, (-1,1,1), color)
         
         #Add the floor & ceiling
-        self.walls["floor"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,0),(0,0,0),1.0),
+        self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
                 QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
                          Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
-        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,2),(0,180,0),1.0),
+        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,2),(0,180,0),1.0),
                 QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
                          Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
         
@@ -155,10 +155,10 @@ class HallwayIntersection(Room):
                 
         
         #Add the floor & ceiling
-        self.walls["floor"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,0),(0,0,0),1.0),
+        self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
                 QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
                          Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
-        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,2),(0,180,0),1.0),
+        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,2),(0,180,0),1.0),
                 QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
                          Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
         
@@ -169,10 +169,10 @@ class Platform(Room):
         super(Platform, self).__init__(name, parent, pos, rot, scale)
         
         #Add the floor & ceiling
-        self.walls["floor"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,0),(0,0,0),1.0),
+        self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
                 QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
                          Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
-        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.egg",color,(0,1,-1),(0,225,0),(1.0,sqrt(2),sqrt(2))),
+        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,-1),(0,225,0),(1.0,sqrt(2),sqrt(2))),
                 QuadWall("ceiling", self.environ, Point3(1,0,-2), Point3(-1,0,-2),
                          Point3(-1,2,0), Point3(1,2,0), WALL_COLLIDER_MASK))
         

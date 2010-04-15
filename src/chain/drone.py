@@ -41,7 +41,7 @@ class Drone(Agent):
     def load_model(self):
         self.parent = render.attachNewNode("%s_Parent"%str(hash(self)))
         
-        self.model = Actor.Actor("../../models/cyborg_newer.egg", {"sword": "../../models/cyborg_swing_sword.egg"})
+        self.model = Actor.Actor("%s/cyborg_newer.bam"%MODEL_PATH, {"sword": "%s/cyborg_swing_sword.bam"%MODEL_PATH})
         self.model.reparentTo(self.parent)
         #self.model.setScale(max(0.01,random()*2))
         self.model.setScale(0.7)

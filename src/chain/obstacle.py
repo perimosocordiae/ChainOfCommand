@@ -68,7 +68,7 @@ class LWall(Obstacle):
 class Tower(Obstacle):
     
     def __init__(self, parent, x,y,h):
-        self.tower = loader.loadModel("%s/capacitor.egg"%MODEL_PATH)
+        self.tower = loader.loadModel("%s/capacitor.bam"%MODEL_PATH)
         self.tower.reparentTo(parent)
         self.tower.setScale(h  / 4, h / 4, h)
         self.tower.setPos(Point3(x,y,0))
@@ -114,7 +114,7 @@ class Box(Obstacle):
 class RAMSlot(Obstacle):
     
     def __init__(self, name, parent, pos, scale, hpr):
-        self.slot = loader.loadModel("%s/DDR2_slot.egg"%MODEL_PATH)
+        self.slot = loader.loadModel("%s/DDR2_slot.bam"%MODEL_PATH)
         self.slot.reparentTo(parent)
         self.slot.setScale(scale)
         self.slot.setHpr(hpr)
@@ -128,7 +128,7 @@ class RAMSlot(Obstacle):
 
 class CopperWire(Obstacle):
     def __init__(self, name, parent, pos, hpr, scale):
-        self.wire = loader.loadModel("%s/copper_wire.egg"%MODEL_PATH)
+        self.wire = loader.loadModel("%s/copper_wire.bam"%MODEL_PATH)
         self.name = name
         ts = TextureStage('ts')
         ts.setMode(TextureStage.MGlow)

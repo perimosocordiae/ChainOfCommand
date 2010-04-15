@@ -32,7 +32,7 @@ class Projectile(object):
         
 class Laser(Projectile):
     def __init__(self):
-        self.load_model("%s/laser.egg"%MODEL_PATH)
+        self.load_model("%s/laser.bam"%MODEL_PATH)
         self.tex = loader.loadTexture("%s/laser_Cube.tga"%TEXTURE_PATH)
         self.model.setTexture(self.tex)
         self.ts = TextureStage('ts')

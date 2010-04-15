@@ -46,7 +46,7 @@ class Player(Agent):
         #self.spawn(startPos, False)
     
     def post_environment_init(self):
-        self.spawn()
+        self.spawn(None, False)
         
     def setup_color(self,col_str):
         self.color = col_str
@@ -152,7 +152,7 @@ class Player(Agent):
         
     def load_model(self):
         #glowShader=Shader.load("%s/glowShader.sha"%MODEL_PATH)
-        self.tron = Actor.Actor("%s/tron" % MODEL_PATH, {"running":"%s/tron_anim_updated" % MODEL_PATH})
+        self.tron = Actor.Actor("%s/tron.bam" % MODEL_PATH, {"running":"%s/tron_anim_updated.bam" % MODEL_PATH})
         self.tron.reparentTo(render)
         self.tron.setScale(0.4, 0.4, 0.4)
         self.tron.setHpr(0, 0, 0)
@@ -381,10 +381,12 @@ class LocalPlayer(Player):
         Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn), Wait(1.0),
                  Func(self.hud.hide_scores), Func(self.hud.destroy_gray), Func(self.toggle_god)).start()
     
-    def spawn(self,startPos=None):
+    def spawn(self,startPos=None,update=True):
         super(LocalPlayer,self).spawn(startPos)
         if hasattr(self, "hud") and self.hud:
             self.hud.heal()
+        if update:
+            self.sendUpdate()
 
     @staticmethod
     def setup_sounds():

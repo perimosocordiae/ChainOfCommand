@@ -19,7 +19,7 @@ TERMINAL_VELOCITY = -1200.0
 #agent-y things
 STARTING_HEALTH = 100
 
-MODEL_PATH = "../../models"
+MODEL_PATH = "../../bammodels"
 TEXTURE_PATH = "../../textures"
 COLOR_PATH = "%s/colors"%TEXTURE_PATH
 SOUND_PATH = "../../sounds"

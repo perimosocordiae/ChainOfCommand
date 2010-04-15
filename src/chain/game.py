@@ -69,7 +69,7 @@ class Game(object):
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
         # just load all the eggs in the MODEL_PATH
-        models = filter(lambda p: splitext(p)[-1] == '.egg', listdir(MODEL_PATH))
+        models = filter(lambda p: splitext(p)[-1] == '.bam', listdir(MODEL_PATH))
         print "loading models now:",models
         loader.loadModel(map(lambda p: "%s/%s"%(MODEL_PATH,p), models), callback=self.load_callback)
     
@@ -220,7 +220,7 @@ class Game(object):
         base.cTrav.traverse(render)
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):
-        tile = loader.loadModel("%s/white_floor.egg"%MODEL_PATH)
+        tile = loader.loadModel("%s/white_floor.bam"%MODEL_PATH)
         tile.reparentTo(parent)
         tile.setScale(scale, scale, scale)
         tile.setPos(pos)
