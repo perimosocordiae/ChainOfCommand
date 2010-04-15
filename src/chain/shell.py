@@ -1,4 +1,3 @@
-import sys
 from platform import uname,system as getOS
 from subprocess import Popen,PIPE
 from itertools import izip
@@ -265,7 +264,7 @@ class Shell(object):
             self.append_line("Server active, use 'join %d localhost' to connect"%port)
             
     def quit(self,cmd,arglist=[],sudo=False):
-        Sequence(Func(self.append_line,"Bye!"),Wait(0.75),Func(sys.exit)).start()
+        Sequence(Func(self.append_line,"Bye!"),Wait(0.75),Func(taskMgr.stop)).start()
     
     def sudo(self,cmd,arglist=[],sudo=False):
         if len(arglist) == 0:
