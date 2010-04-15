@@ -556,7 +556,7 @@ class LocalPlayer(Player):
         pos = self.tron.getPos() + (self.velocity * SERVER_TICK)
         rot = Point3(self.tron.getH(), self.get_camera().getP(), 0)+self.hpr
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send(':'.join([self.name,str(pos),str(rot),str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping),str(self.current_damage_taken),str(self.damager)]))
+        self.game.client.send(':'.join([self.name,str(pos),str(rot),str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping),str(self.current_damage_taken),'"%s"'%self.damager]))
         self.shooting = False
         self.current_damage_taken = 0
         self.damager = None
