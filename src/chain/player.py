@@ -88,7 +88,7 @@ class Player(Agent):
             if 'donthitthis' in pickedObj: continue
             #if '_wall' in pickedObj: continue
             if '_pusher' in pickedObj: continue
-            if pickedObj in self.game.players and self.game.players[pickedObj].get_model().isHidden(): continue
+            #if pickedObj in self.game.players and self.game.players[pickedObj].get_model().isHidden(): continue
             if pickedObj != self.name and pickedObj != "%s_wall_donthitthis"%self.name: break
         return pickedObj, pickedSpot
     
@@ -268,6 +268,13 @@ class Player(Agent):
         #do nothing in base class - this does HUD stuff
         pass
     
+    def my_team(self): # including me
+        try:
+            my_col = self.color
+            return (p for p in self.game.players.itervalues() if p.color == my_col)
+        except AttributeError:
+            return []
+        
     def score(self):
         if self.game.type_idx < 2: # non-team matches
             return self.stats.get('LocalPlayer_kill',0)+self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
@@ -276,7 +283,7 @@ class Player(Agent):
                 return self.game.ctf_scores[self.color]
             except: return 0
         # team matches
-        return sum(p.stats.get('LocalPlayer_kill',0)+p.stats.get('Player_kill',0) for p in self.game.my_team())
+        return sum(p.stats.get('LocalPlayer_kill',0)+p.stats.get('Player_kill',0) for p in self.my_team())
     
     def hit(self, amt=0, hitter=None):
         pass

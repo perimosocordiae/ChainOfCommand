@@ -117,13 +117,6 @@ class Game(object):
         col_str = TEAM_COLORS.keys()[col_idx]
         self.players[pname] = Player(self,pname,None,col_str)
     
-    def my_team(self): # including me
-        try:
-            my_col = self.local_player().color
-            return (p for p in self.players.itervalues() if p.color == my_col)
-        except AttributeError:
-            return []
-    
     def add_point_for(self, color):
         for p in self.players.itervalues():
             if p.color == color:
