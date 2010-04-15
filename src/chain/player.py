@@ -261,8 +261,8 @@ class Player(Agent):
     
     def score(self):
         if self.game.type_idx < 2: # non-team matches
-            return self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
-        return sum(p.stats.get('Player_kill',0) for p in self.game.my_team())
+            return self.stats.get('LocalPlayer_kill',0)+self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
+        return sum(p.stats.get('LocalPlayer_kill',0)+p.stats.get('Player_kill',0) for p in self.game.my_team())
     
     def hit(self, amt=0, hitter=None):
         pass
