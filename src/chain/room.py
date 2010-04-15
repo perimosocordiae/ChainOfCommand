@@ -41,8 +41,11 @@ class Room(Obstacle):
     def relative_rand_point(self):
         return (0,0,0)
     
-    def add_program(self,game,ptype):
-        prog = ptype(game, self)
+    def add_program(self,game,ptype,color=None):
+        if color:
+            prog = ptype(game, self, color)
+        else:
+            prog = ptype(game, self)
         game.readd_program(prog)
     
     def addWallSection(self, name, parent, pos, color, divisor=1, total=0):

@@ -57,7 +57,7 @@ class Player(Agent):
     
     def setup_collider(self):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
-        self.pusher = self.attach_collision_node("%s_wall" % self.name, CollisionSphere(0, 0, 0, 12), WALL_COLLIDER_MASK)
+        self.pusher = self.attach_collision_node("%s_wall_donthitthis" % self.name, CollisionSphere(0, 0, 0, 12), WALL_COLLIDER_MASK)
         #self.pusher.show()
     
     def get_text_pos(self):
@@ -83,14 +83,13 @@ class Player(Agent):
         if self.collisionQueue.getNumEntries() == 0: return "",""
         # This is so we get the closest object
         self.collisionQueue.sortEntries()
-        
         for i in range(self.collisionQueue.getNumEntries()):
             pickedObj = self.collisionQueue.getEntry(i).getIntoNodePath().getName()
             pickedSpot = self.collisionQueue.getEntry(i).getSurfacePoint(render)
             if 'donthitthis' in pickedObj: continue
             #if '_wall' in pickedObj: continue
             if '_pusher' in pickedObj: continue
-            if not (self.name in pickedObj): break
+            if pickedObj != self.name and pickedObj != "%s_wall_donthitthis"%self.name: break
         return pickedObj, pickedSpot
     
     def set_laser_glow(self, glow):
@@ -222,7 +221,6 @@ class Player(Agent):
         if not self.handleEvents: return
         #first get a ray coming from the camera and see what it first collides with
         objHit,spotHit = self.findCrosshairHit()
-        #print objHit
         if objHit in self.game.drones:
             d = self.game.drones[objHit]
             if not d.is_dead():
@@ -241,7 +239,9 @@ class Player(Agent):
                     self.add_kill(p)
         elif objHit in self.game.players:
             p = self.game.players[objHit]
-            if not p.is_dead():
+            #for friendly fire, use this instead of the if below:
+            #if not (p.is_dead() or p.color == self.color)
+            if not p.is_dead(): 
                 p.hit(self.damage())
                 print "hit %s for %d damage" % (objHit, self.damage() / p.shield())
                 if p.is_dead():

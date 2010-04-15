@@ -2,7 +2,8 @@ from direct.task import Task
 from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from pandac.PandaModules import (Point3, Filename, Buffer, Shader, CollisionNode,
-        CollisionTube, CollisionSphere, BitMask32, TextNode, NodePath, CollisionPolygon)
+        CollisionTube, CollisionSphere, BitMask32, TextNode, NodePath, CollisionPolygon,
+        TextureStage)
 from agent import Agent
 from constants import *
 
@@ -236,6 +237,31 @@ class Achievement(Program):
         return
     def remove_effect(self, agent):
         return
+
+class Flag(Achievement):
+    def __init__(self, game, room, color, pos=None):
+        super(Flag, self).__init__(game, room, '--flag', "  ", BASE_SCALE, pos)
+        self.color = color
+        self.load_texture()
+    
+    def reappear(self, pos):
+        super(Flag, self).reappear(pos)
+        self.load_texture()
+    
+    def load_texture(self):
+        tex = loader.loadTexture("%s/%s_flag.jpg"%(TEXTURE_PATH, self.color))
+        ts = TextureStage('ts')
+        ts.setMode(TextureStage.MReplace)
+        self.model.setTexture(ts, tex)
+    
+    def damage_mod(self, d):
+        return d * 0.1 # double the player's damage
+    
+    def shield_mod(self, s):
+        return s * 1.5
+    
+    def rapid_fire_mod(self, a):
+        return a * 4 # 4x the shooting delay
     
 class Rm(Achievement):
     def __init__(self, game, room, pos=None):

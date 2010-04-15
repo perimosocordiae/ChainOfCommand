@@ -80,6 +80,9 @@ class BasicBaseLevel(Level):
         self.rooms["Red_Base"] = CubeRoom("Red_Base", self.parent, (0,-basey,basez),
                     (0,0,0), (1.0,0.25,1.0), "red", holes=(10,0,0,0,0,0,0,0))
         self.bases["red"] = self.rooms["Red_Base"]
+        self.default_environment()
+        self.rooms["Blue_Base"].add_program(self.game, Flag, "blue")
+        self.rooms["Red_Base"].add_program(self.game, Flag, "red")
         
 class SniperLevel(Level):
     def __init__(self, game, parent, team1="blue", team2="red"):
@@ -121,7 +124,9 @@ class SniperLevel(Level):
         self.default_environment()
         self.rooms["%s_Platform"%t1].add_program(self.game, Locate)
         self.rooms["%s_Platform"%t2].add_program(self.game, Locate)
-
+        self.rooms["%s_Base"%t1].add_program(self.game, Flag, team1)
+        self.rooms["%s_Base"%t2].add_program(self.game, Flag, team2)
+        
 class Beaumont(Level):
     def __init__(self, game, parent, team1="blue", team2="red"):
         super(Beaumont, self).__init__(game, parent)
