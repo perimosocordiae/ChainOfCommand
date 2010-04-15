@@ -9,7 +9,7 @@ from pandac.PandaModules import TextNode, Thread
 from direct.interval.IntervalGlobal import Func, Sequence,Wait
 from networking import Server
 from game import Game
-from constants import MODEL_PATH,USE_GLOW,GAME_TYPES
+from constants import MODEL_PATH,USE_GLOW,GAME_TYPES,TEAM_COLORS
 
 CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
@@ -225,7 +225,7 @@ class Shell(object):
         self.append_line("Welcome back!")
     
     def refresh_staging(self):
-        player_names = ("%s (%d)"%(n,t) for n,t in self.g.players.iteritems())
+        player_names = ("%s (%s)"%(n,TEAM_COLORS.keys()[t]) for n,t in self.g.players.iteritems())
         type,desc = GAME_TYPES[self.g.type_idx]
         name_idx = len(LOADINGTEXT.splitlines())+4
         self.overwrite_line(name_idx," | ".join(player_names).center(60))
