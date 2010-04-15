@@ -45,7 +45,7 @@ class Game(object):
         #Some player stuff just shouldn't be done until we have a world
         for pname in self.players:
             self.players[pname].post_environment_init()
-        if self.drone_spawner : self.drone_adder = Sequence(Wait(5.0), Func(self.send_drone_signal))
+        self.drone_adder = Sequence(Wait(5.0), Func(self.send_drone_signal))
         print "game initialized, synchronizing"
         self.client.send("ready")
         
@@ -57,7 +57,7 @@ class Game(object):
         self.shell.output.setText("\n"*24)
         self.shell.hide_shell()
         self.network_listener.loop()
-        #if self.drone_spawner : self.drone_adder.loop() no drones temporarily
+        if self.drone_spawner : self.drone_adder.loop()
         self.local_player().add_background_music()
         self.startTime = time()
         if self.type_idx % 2 == 1: # timed levels

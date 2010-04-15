@@ -72,7 +72,6 @@ class Server(NetworkBase):
                 assert d not in self.player_set
                 self.player_set.add(d)
                 for p in self.player_set: self.broadcast(p)
-                if (len(self.player_set) == 1) : self.broadcast('DroneSpawner')
             elif ds[0] == 'unreg':
                 pd = 'player %s'%ds[1]
                 assert pd in self.player_set
@@ -81,6 +80,7 @@ class Server(NetworkBase):
             elif d == 'ready': 
                 self.ready_players += 1
                 if self.ready_players == len(self.player_set): 
+                    self.send('DroneSpawner', self.activeConnections[0])
                     # reset this game's data, so we're ready for the next one
                     self.player_set.clear()
                     self.ready_players = 0
