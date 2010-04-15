@@ -130,7 +130,8 @@ class Drone(Agent):
         self.handleGravity()
         self.velocity.setX(tronVec.getX())
         self.velocity.setY(tronVec.getY())
-        self.parent.setFluidPos(self.parent.getPos() + (self.velocity*self.speed*SERVER_TICK))
+        if not self.parent.isEmpty():
+            self.parent.setFluidPos(self.parent.getPos() + (self.velocity*self.speed*SERVER_TICK))
         #Kill any pandas that somehow manage to slip through the cracks
         if self.parent.getZ() < BOTTOM_OF_EVERYTHING:
             self.die()

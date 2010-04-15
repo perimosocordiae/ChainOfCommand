@@ -82,7 +82,8 @@ class Agent(object):
                 damage = (-z_vel + SAFE_FALL) * FALL_DAMAGE_MULTIPLIER
                 self.hit(damage)
             floorZ = self.floorQueue.getEntry(0).getSurfacePoint(render).getZ()
-            if not self.get_model().isEmpty() : self.get_model().setZ(floorZ + self.get_origin_height())
+            if not self.get_model().isEmpty():
+                self.get_model().setZ(floorZ + self.get_origin_height())
             self.velocity.setZ(0)
     
     def jump(self):
