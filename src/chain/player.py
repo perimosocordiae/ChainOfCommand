@@ -303,7 +303,8 @@ class Player(Agent):
         self.tron.setFluidPos(pos)
         self.tron.setH(rot.getX())
         self.get_camera().setP(rot.getY())
-        super(Player,self).hit(damage)
+        if damage > 0:
+            super(Player,self).hit(damage)
         self.stats['damage_taken'] += damage
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage):

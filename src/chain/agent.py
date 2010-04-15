@@ -125,7 +125,8 @@ class Agent(object):
             for name in toDelete:
                 del self.debuggers[name]
             if len(self.debuggers) == 0:
-                self.hud.healthBAR['text'] = ""
+                if hasattr(self, "hud") and self.hud and self.hud.healthBAR:
+                    self.hud.healthBAR['text'] = ""
     
     def collect(self):
         if self.canCollect:
