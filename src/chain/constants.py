@@ -11,10 +11,10 @@ DRONE_PUSHER_MASK = BitMask32.bit(2)
 PROGRAM_PUSHER_MASK = BitMask32.bit(8)
 
 #gravity-related
-GRAVITATIONAL_CONSTANT = -80 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
-SAFE_FALL = -800.0 #fall velocity after which damage is induced
-FALL_DAMAGE_MULTIPLIER = 0.2 #How much to damage Tron per 1 over safe fall
-TERMINAL_VELOCITY = -1200.0
+GRAVITATIONAL_CONSTANT = -30 # = -9.81 m/s^2 in theory! (not necessarily in computer world, but it's what's familiar)
+SAFE_FALL = -200.0 #fall velocity after which damage is induced
+FALL_DAMAGE_MULTIPLIER = 0.6 #How much to damage Tron per 1 over safe fall
+TERMINAL_VELOCITY = -300.0
 
 #agent-y things
 STARTING_HEALTH = 100
@@ -34,4 +34,4 @@ GAME_TYPES = [('deathmatch',"Every man for himself, first to 5 kills wins"),
               ('for the hoard',"Score by bringing programs back to base"),
               ('pwnage',"Attack another team's base to score"),
               ('tutorial', "Learn how to play")]
-SERVER_TICK = 0.01
+SERVER_TICK = 0.08

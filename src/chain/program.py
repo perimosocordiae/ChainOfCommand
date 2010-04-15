@@ -60,11 +60,11 @@ class Program(Agent):
         #self.pusher.stash()
     
     def load_model(self):
-        self.model = loader.loadModel("%s/%s%s.bam" % (MODEL_PATH, self.prefix, self.name))
+        self.model = loader.loadModel("%s/%s.bam" % (MODEL_PATH, self.prefix))
         self.model.setScale(self.scale)
         self.model.reparentTo(render)
         self.model.setPos(Point3(self.pos[0], self.pos[1], self.pos[2] + 10))
-        if self.name != "RAM":
+        if not self.name in ["RAM",'gdb','--flag']:
             textFront = TextNode("NameFront")
             textFront.setText("%s" % self.name)
             textFront.setTextColor(1,0,0,1)
@@ -80,7 +80,7 @@ class Program(Agent):
             textBack.setAlign(TextNode.ACenter)
             textNodeBack = self.model.attachNewNode(textBack)
             textNodeBack.setScale(3.4 / len(self.name))
-            textNodeBack.setPos(0.42/len(self.name),0.119,-0.6/len(self.name))
+            textNodeBack.setPos(0.42/len(self.name),0.122,-0.6/len(self.name))
             textNodeBack.setHpr(180,0,0)
         
     def get_model(self):
@@ -169,7 +169,7 @@ class Basic(Program):
     
 class RAM(Basic):
     def __init__(self, game, room, pos=None, scale=4.0):
-        super(RAM, self).__init__(game, room, 'RAM', "Add Program Slot", scale, pos)
+        super(RAM, self).__init__(game, room, 'RAM', "Add Program Slot", scale, pos,'RAM')
         self.desc.setZ(0.5)
         self.desc.setScale(0.1)
     
@@ -206,7 +206,7 @@ class Debug(Basic):
 
 class Gdb(Debug):
     def __init__(self, game, room, pos=None):
-        super(Gdb, self).__init__(game, room, 'gdb', "Restore Health", BASE_SCALE, pos, 'terminal_window_')
+        super(Gdb, self).__init__(game, room, 'gdb', "Restore Health", BASE_SCALE, pos, 'terminal_window_gdb')
 
 #***************************** ACHIEVEMENT PROGRAMS *****************************
 
@@ -214,7 +214,7 @@ class Gdb(Debug):
 class Achievement(Program):
     
     def __init__(self, game, room, name, desc, scale, pos):
-         super(Achievement, self).__init__(game, room, name, 'terminal_window_', desc, scale, pos)
+         super(Achievement, self).__init__(game, room, name, 'terminal_window', desc, scale, pos)
          self.description = desc
         
     def reappear(self, pos):
@@ -223,7 +223,7 @@ class Achievement(Program):
         #self.model.unstash()
         #self.collider.unstash()
         #self.pusher.unstash()
-        self.model.setPos(pos)
+        self.model.setPos((pos[0],pos[1],pos[2] + 5))
         #self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         #self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
         #self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
@@ -261,6 +261,7 @@ class Flag(Achievement):
             if color != self.color and base.has_point(pos):
                 self.game.ctf_scores[color] += 1
                 self.game.add_point_for(color)
+                self.game.level.readd_flag(self)
                 break
     
     def load_texture(self):

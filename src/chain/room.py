@@ -81,6 +81,10 @@ class Room(Obstacle):
     def get_bounds(self):
         return 0,0,0,0,0,0
     
+    def readd_flag(self, flag):
+        pos = render.getRelativePoint(self.environ,Point3(0,0,0))
+        flag.model.setPos(Point3(pos[0],pos[1],pos[2] + 5))
+    
 class CubeRoom(Room):
     def __init__(self, name, parent, pos, rot, scale, color, holes=(0,0,0,0,0,0,0,0)):
         super(CubeRoom, self).__init__(name, parent, pos, rot, scale)

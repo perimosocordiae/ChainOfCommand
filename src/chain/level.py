@@ -55,6 +55,12 @@ class Level(Obstacle):
         else:
             #no rooms available - the best we can do is the origin
             return (0,0,0)
+    
+    def readd_flag(self, flag):
+        if flag:
+            color = flag.color
+            if color in self.bases and self.bases[color]:
+                self.bases[color].readd_flag(flag) 
         
 class CubeLevel(Level):
     def __init__(self, game, parent):
