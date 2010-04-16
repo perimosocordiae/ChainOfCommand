@@ -305,4 +305,4 @@ class Game(object):
     
     def local_player(self):
         return self.players[self.shell.name]
-
+ 
