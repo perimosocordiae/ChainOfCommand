@@ -13,7 +13,6 @@ from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
-from networking import Client
 from constants import *
 from level import SniperLevel,CubeLevel,Beaumont
 
@@ -32,7 +31,7 @@ TUTORIAL_PROMPTS = ["Welcome to the tutorial for \nChain of Command\nPress b to 
 
 class Game(object):
 
-    def __init__(self,ip,port_num,shell,tile_size=100):
+    def __init__(self,client,shell,tile_size=100):
         self.shell, self.tile_size = shell, tile_size
         self.players, self.programs,self.drones = {},{},{}
         self.type_idx = 2 # index into GAME_TYPES, can be changed from the staging shell
@@ -41,7 +40,7 @@ class Game(object):
         num_tiles = 3
         self.map_size = (self.tile_size * num_tiles) / 8.0
         self.end_sequence = None
-        self.client = Client(ip,port_num)
+        self.client = client
         self.load_models()
         self.had_locate = False # used by Locate to figure out whether to add "Right click to scope"
         self.drone_spawner = False # indicates if I'm the assigned drone spawner

@@ -120,8 +120,7 @@ class Client(NetworkBase):
         self.host = host
         self.timeout = timeout
         self.server_conn = None # By default, we are not connected
-        while not self.__connect(self.host, self.port, self.timeout):
-            sleep(0.01)
+        self.__connect(self.host, self.port, self.timeout)
         self.__startPolling()
         
     def __connect(self, host, port, timeout=3000):
@@ -129,9 +128,8 @@ class Client(NetworkBase):
         self.server_conn = self.cManager.openTCPClientConnection(host, port, timeout)
         if self.server_conn:
             self.cReader.addConnection(self.server_conn)  # receive messages from server
-            return True
         else:
-            return False
+            raise EnvironmentError()
     
     def __startPolling(self):
         taskMgr.add(self.__tskDisconnectPolling, "clientDisconnectTask", -39)

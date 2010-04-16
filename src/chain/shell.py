@@ -6,8 +6,8 @@ from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
 from direct.filter.CommonFilters import CommonFilters
 from pandac.PandaModules import TextNode, Thread
-from direct.interval.IntervalGlobal import Func, Sequence,Wait
-from networking import Server
+from direct.interval.IntervalGlobal import Func, Sequence, Wait
+from networking import Server, Client
 from game import Game
 from constants import MODEL_PATH,USE_GLOW,GAME_TYPES,TEAM_COLORS
 
@@ -244,9 +244,9 @@ class Shell(object):
         idx = len(LOADINGTEXT.splitlines())+1
         self.overwrite_line(idx+9,"Synchronizing watches...")
             
-    def main(self,port_num,ip):
+    def main(self, client):
         print "creating new Game object"
-        self.g = Game(ip,port_num,self,100.0)
+        self.g = Game(client,self,100.0)
 
     #### HERE THERE BE SHELL COMMANDS ####
     
@@ -254,7 +254,20 @@ class Shell(object):
         if len(arglist) < 2:
             self.append_line("Usage: %s [port_num] [host_ip]"%cmd)
             self.append_line("  join the specified server, to get the game started")
-        else:
+        else:               
+            try :
+                port = int(arglist[0])
+            except ValueError:
+                self.append_line("Error: Invalid format for port number")
+                return
+            if not self.ip_validator(arglist[1]) :
+                self.append_line("Error: Invalid format for IP address")
+                return 
+            try :
+                client = Client(arglist[1],int(arglist[0]))
+            except EnvironmentError :
+                self.append_line("Error: Can't find a host on that IP and port")
+                return
             loadingScreen = Sequence(Func(self.hide_inputs))#,Func(self.output.setText,""))
             for line in LOADINGTEXT.splitlines():
                 loadingScreen.append(Func(self.append_line, line))
@@ -264,19 +277,36 @@ class Shell(object):
             for _ in range(23 - len(LOADINGTEXT.splitlines())):
                 loadingScreen.append(Func(self.append_line, ""))
                 loadingScreen.append(Wait(0.05))
-            loadingScreen.append(Func(self.main,int(arglist[0]),arglist[1]))
+            loadingScreen.append(Func(self.main, client))
             loadingScreen.start()
+            
+    def ip_validator(self, is_this_an_ip) :
+        if is_this_an_ip == 'localhost' : return True
+        sections = is_this_an_ip.split('.')
+        if len(sections) != 4 : return False
+        for section in sections :
+            try :
+                sectionNum = int(section)
+            except ValueError:
+                return False
+            if sectionNum < 0 or sectionNum > 255 : 
+                return False
+        return True  
     
     def start_server(self,cmd,arglist=[],sudo=False):
         if len(arglist) != 1:
             self.append_line("Usage: %s [port_num]"%cmd)
             self.append_line("  start a server on this machine")
         else:
-            port = int(arglist[0])
+            try :
+                port = int(arglist[0])
+            except ValueError:
+                self.append_line("Error: Invalid format for port number")
+                return
             str = "vigorously " if sudo else ""
             self.append_line("Starting server %son port %d..."%(str,port))
             Server(port)
-            self.append_line("Server active, use 'join %d localhost' to connect"%port)
+            self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
             
     def quit(self,cmd,arglist=[],sudo=False):
         Sequence(Func(self.append_line,"Bye!"),Wait(0.75),Func(taskMgr.stop)).start()
@@ -374,12 +404,14 @@ class Shell(object):
             self.append_line("Username changed to: %s"%self.name)
     
     def ifconfig(self,cmd,arglist=[],sudo=False):
-        if getOS() == 'Windows': # epic hacks
-            ip = Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
-        else:
-            ip = Popen('ifconfig',stdout=PIPE).stdout.readlines()[1].split(':')[1].split()[0]
-        self.append_line("inet addr:%s..."%ip)
+        self.append_line("inet addr:%s..."%self.get_IP())
         self.append_line("And that's all you need to know!")
+        
+    def get_IP(self):
+        if getOS() == 'Windows': # epic hacks
+            return Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
+        else:
+            return Popen('ifconfig',stdout=PIPE).stdout.readlines()[1].split(':')[1].split()[0]
     
     def default(self,cmd,arglist=[],sudo=False):
         def_cmds = {'emacs': "Sorry, emacs is not installed",
