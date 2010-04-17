@@ -199,10 +199,10 @@ class HUD(object):
         base.setFrameRateMeter(False) 
     
     def flash_red(self):
-        if not self.redScreen:
+        if (not self.redScreen) and (self.player.health > 0):
             self.redScreen = OnscreenImage(image="%s/red_screen.png" % TEXTURE_PATH, pos=(0, 0, 0), scale=(2, 1, 1))
             self.redScreen.setTransparency(TransparencyAttrib.MAlpha)
-        else:
+        elif self.redScreen:
             self.redScreen.destroy()
             self.redScreen = None
             
