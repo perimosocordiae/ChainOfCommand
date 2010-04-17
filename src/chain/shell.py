@@ -213,10 +213,10 @@ class Shell(object):
         self.g.client.send("player %s"%self.name)
         self.screen.accept('b',self.g.client.send,['start'])
         self.screen.accept('x',self.exit_staging)
-        self.screen.accept('arrow_up',   self.g.client.send,['staging %s color +'%self.name])
-        self.screen.accept('arrow_down', self.g.client.send,['staging %s color -'%self.name])
-        self.screen.accept('arrow_right',self.g.client.send,['staging %s type +'%self.name])
-        self.screen.accept('arrow_left', self.g.client.send,['staging %s type -'%self.name])
+        self.screen.accept('arrow_up', self.g.send_color_change, [1])
+        self.screen.accept('arrow_down', self.g.send_color_change, [-1])
+        self.screen.accept('arrow_right', self.g.send_type_change, [1])
+        self.screen.accept('arrow_left', self.g.send_type_change, [-1])
     
     def exit_staging(self):
         self.g.client.send('unreg %s'%self.name)
@@ -264,7 +264,7 @@ class Shell(object):
                 self.append_line("Error: Invalid format for IP address")
                 return 
             try :
-                client = Client(arglist[1],int(arglist[0]))
+                client = Client(arglist[1],port)
             except EnvironmentError :
                 self.append_line("Error: Can't find a host on that IP and port")
                 return

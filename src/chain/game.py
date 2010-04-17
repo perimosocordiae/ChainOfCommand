@@ -45,6 +45,7 @@ class Game(object):
         self.had_locate = False # used by Locate to figure out whether to add "Right click to scope"
         self.drone_spawner = False # indicates if I'm the assigned drone spawner
         self.tutorial = False
+        self.newKid = True
     
     def rest_of_init(self):
         base.cTrav = CollisionTraverser()
@@ -222,6 +223,12 @@ class Game(object):
         base.enableMouse()
         base.cTrav = None
     
+    def send_type_change(self, change):
+        self.client.send('staging %s type %d'%(self.shell.name, (self.type_idx+change) % len(GAME_TYPES)))
+    
+    def send_color_change(self, change):
+        self.client.send('staging %s color %d'%(self.shell.name, (self.players[self.shell.name]+change) % len(TEAM_COLORS)))
+    
     def handshakeTask(self,task):
         data = self.client.getData()
         if len(data) == 0: return task.cont
@@ -231,12 +238,23 @@ class Game(object):
             if ds[0] == 'seed':
                 self.rand_seed = int(ds[1])
                 seed(self.rand_seed)
-            elif ds[0] == 'DroneSpawner':
-                self.drone_spawner = True
+            elif ds[0] == 'special': # for a specific player
+                assert len(ds) >= 3
+                dataCopy = list(ds)
+                del dataCopy[len(dataCopy)-1]
+                del dataCopy[0] # 'special'
+                if self.shell.name in " ".join(dataCopy) : # if I'm the intended recipient
+                    if ds[len(ds) - 1] == 'DroneSpawner' :
+                        self.drone_spawner = True
+                    elif ds[len(ds) - 1] == 'echo_gametype' :
+                        self.send_type_change(0)
+                    elif self.newKid and 'append_name' in ds[len(ds) - 1] :
+                        self.shell.name += ds[len(ds) - 1].split(':')[1]
             elif ds[0] == 'player':
                 if ds[1] not in self.players:
                     self.players[ds[1]] = 0 # default color index == blue?
                     self.shell.refresh_staging()
+                if self.newKid : self.newKid = False
             elif ds[0] == 'unreg':
                 if ds[1] in self.players:
                     del self.players[ds[1]]
@@ -249,20 +267,14 @@ class Game(object):
                 assert ds[1] in self.players
                 assert len(ds) == 4
                 if ds[2] == 'color':
-                    if ds[3] == '+':
-                        i = self.players[ds[1]]+1
-                        self.players[ds[1]] = i if i < len(TEAM_COLORS) else 0
-                    else:
-                        i = self.players[ds[1]]-1
-                        self.players[ds[1]] = i if i >= 0 else len(TEAM_COLORS)-1
+                    self.players[ds[1]] = int(ds[3])
                 elif ds[2] == 'type':
-                    if ds[3] == '+':
-                        i = self.type_idx+1
-                        self.type_idx = i if i < len(GAME_TYPES) else 0
-                    else:
-                        i = self.type_idx-1
-                        self.type_idx = i if i >= 0 else len(GAME_TYPES)-1
+                    self.type_idx = int(ds[3])
                 self.shell.refresh_staging()
+            elif ds[0] == 'echo':
+                assert len(ds) == 2
+                if ds[1] == 'lobbyinfo' :
+                    self.send_color_change(0)
             elif ds[0] == 'start':
                 print "handshake over, starting game"
                 Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init),
@@ -304,4 +316,3 @@ class Game(object):
     
     def local_player(self):
         return self.players[self.shell.name]
- 

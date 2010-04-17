@@ -3,6 +3,7 @@ from direct.distributed.PyDatagramIterator import PyDatagramIterator
 from direct.task.Task import Task
 from pandac.PandaModules import *
 from time import time,sleep
+from random import choice
 
 # adapted from http://www.panda3d.org/phpbb2/viewtopic.php?t=4881
 
@@ -69,9 +70,20 @@ class Server(NetworkBase):
         for d in self.getData():
             ds = d.split()
             if ds[0] == 'player':
-                assert d not in self.player_set
-                self.player_set.add(d)
+                append = ''
+                while (d+append) in self.player_set :
+                    append += choice(list('!@#$%^&*'))
+                if append != '' :
+                    dataCopy = list(ds)
+                    del dataCopy[0] # get rid of 'player'
+                    self.broadcast('special %s append_name:%s'%(" ".join(dataCopy), append))
+                if len(self.player_set) > 0 :
+                    randomPlayer = self.getRandomPlayer()
+                self.player_set.add(d+append)
                 for p in self.player_set: self.broadcast(p)
+                if len(self.player_set) > 1 :
+                    self.broadcast('echo lobbyinfo')
+                    self.broadcast('special %s echo_gametype'%randomPlayer)
             elif ds[0] == 'unreg':
                 pd = 'player %s'%ds[1]
                 assert pd in self.player_set
@@ -79,8 +91,8 @@ class Server(NetworkBase):
                 self.broadcast(d)
             elif d == 'ready': 
                 self.ready_players += 1
-                if self.ready_players == len(self.player_set): 
-                    self.send('DroneSpawner', self.activeConnections[0])
+                if self.ready_players == len(self.player_set):
+                    self.broadcast('special %s DroneSpawner'%self.getRandomPlayer())
                     # reset this game's data, so we're ready for the next one
                     self.player_set.clear()
                     self.ready_players = 0
@@ -113,6 +125,14 @@ class Server(NetworkBase):
     def getClients(self):
         # return a list of all activeConnections
         return self.activeConnections
+    
+    def getRandomPlayer(self):
+        if len(self.player_set) < 1 : return
+        randomPlayer = self.player_set.pop() # there's probably a better way to do this...
+        self.player_set.add(randomPlayer)
+        words = randomPlayer.split()
+        del words[0] # get rid of 'player' at the start
+        return " ".join(words)
 
 class Client(NetworkBase):
     def __init__(self, host, port, timeout=3000):
