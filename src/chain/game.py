@@ -16,17 +16,16 @@ from drone import Drone
 from constants import *
 from level import SniperLevel,CubeLevel,Beaumont
 
-TUTORIAL_PROMPTS = ["Welcome to the tutorial for \nChain of Command\nPress b to begin\n\n",
+TUTORIAL_PROMPTS = ["Welcome to the tutorial for \nChain of Command.\nPress c to continue.\n\n",
                     "Use the mouse to look around.",
-                    "Use WASD to move around the world.\nW moves your player forwards.\nS moves your player backwards.\nA moves your player left.\nD moves your players right",
-                    "Press spacebar to jump.\n(Watch your height. Falling causes damage)",
-                    "Press f or use the scroll wheel to change your perspective.",
-                    "Left click to shoot",
-                    "Right click to use your scope zoom.\n(If you have the proper program)",
+                    "Use WASD to move around the world.\nW moves your player forwards.\nS moves your player backwards.\nA moves your player left.\nD moves your player right.",
+                    "Left click to shoot.",
                     "Press e to pick up programs.\nYou can see your collected programs at the bottom of the screen.\nPress the number keys to drop a program.",
+                    "Press spacebar to jump.\n(Watch your height. Falling causes damage.)",
                     "At the top of the screen is your health bar and game info.",
-                    "Press n to toggle sound effects.\nPress m to toggle background music.",
-                    "Press tab to see the current scores.\nPress p to pause the game.",                   
+                    "Press tab to see the current scores.\nPress p to pause the game.",
+                    "Press f or use the scroll wheel to change your perspective.",
+                    "Press n to toggle sound effects.\nPress m to toggle background music.",              
                     "You've reached the end of our tutorial. Enjoy the game!"]
 
 class Game(object):
@@ -74,10 +73,10 @@ class Game(object):
         self.network_listener.loop()
         if self.drone_spawner and not self.tutorial : self.drone_adder.loop()
         if self.tutorial:
-            self.tutorialScreen = OnscreenText(text=TUTORIAL_PROMPTS[0], pos=(-1.31,0.75), scale=0.05, align=TextNode.ALeft, 
+            self.tutorialScreen = OnscreenText(text=TUTORIAL_PROMPTS[0], pos=(-1.31,0.75), scale=0.07, align=TextNode.ALeft, 
                                                mayChange=True, bg=(0,0,0,0.8), fg=(0,1,0,0.8), font=self.shell.font, wordwrap=35)
             self.tutorialIndex = 0;
-            self.eventHandle.accept('b', self.advance_tutorial)
+            self.eventHandle.accept('c', self.advance_tutorial)
         self.local_player().add_background_music()
         self.startTime = time()
         #if self.type_idx % 2 == 1: # timed levels
@@ -173,10 +172,10 @@ class Game(object):
         lines = TUTORIAL_PROMPTS[self.tutorialIndex].split('\n')
         scrollSequence = Sequence()
         for line in lines :
-            scrollSequence.append(Wait(1.0))
+            scrollSequence.append(Wait(.5))
             scrollSequence.append(Func(self.tutorial_append_line, line))
         for i in range(len(lines)-1, 4) :
-            scrollSequence.append(Wait(1.0))
+            scrollSequence.append(Wait(.5))
             scrollSequence.append(Func(self.tutorial_append_line, ""))
         scrollSequence.start()
 
