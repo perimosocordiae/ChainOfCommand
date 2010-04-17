@@ -71,9 +71,6 @@ class Server(NetworkBase):
             ds = d[0].split()
             if ds[0] == 'player':
                 append = ''
-                if d[0]+append in self.player_dict:
-                    print self.player_dict[d[0]+append].getAddress().getIpString()
-                    print d[1].getAddress().getIpString()
                 while (d[0]+append) in self.player_dict :
                     if self.player_dict[d[0]+append].getAddress().getIpString() == '0.0.0.0' :
                         removeThis = self.player_dict[d[0]+append]
