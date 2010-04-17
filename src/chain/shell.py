@@ -259,9 +259,11 @@ class Shell(object):
                 port = int(arglist[0])
             except ValueError:
                 self.append_line("Error: Invalid format for port number")
+                self.square_bracket_checker(arglist[0])
                 return
             if not self.ip_validator(arglist[1]) :
                 self.append_line("Error: Invalid format for IP address")
+                self.square_bracket_checker(arglist[1])
                 return 
             try :
                 client = Client(arglist[1],port)
@@ -302,11 +304,16 @@ class Shell(object):
                 port = int(arglist[0])
             except ValueError:
                 self.append_line("Error: Invalid format for port number")
+                self.square_bracket_checker(arglist[0])
                 return
             str = "vigorously " if sudo else ""
             self.append_line("Starting server %son port %d..."%(str,port))
             Server(port)
             self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
+            
+    def square_bracket_checker(self, argToCheck):
+        if '[' in argToCheck and ']' in argToCheck :
+            self.append_line("Parameters shouldn't have square brackets around them")
             
     def quit(self,cmd,arglist=[],sudo=False):
         Sequence(Func(self.append_line,"Bye!"),Wait(0.75),Func(taskMgr.stop)).start()

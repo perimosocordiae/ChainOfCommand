@@ -408,6 +408,9 @@ class LocalPlayer(Player):
             self.hud.display_gray()
             self.hud.show_scores()
             self.hud.add_kill()
+            if self.hud.redScreen :
+                self.hud.redScreen.destroy()
+                self.hud.redScreen = None
     
     def respawn(self):
         print "respawning"

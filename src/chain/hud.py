@@ -191,6 +191,9 @@ class HUD(object):
         if self.grayScreen:
             self.grayScreen.destroy()
             self.grayScreen = None
+        if self.redScreen:
+            self.redScreen.destroy()
+            self.redScreen = None
         self.hide_scores()
         self.destroy_radar()
         base.setFrameRateMeter(False) 

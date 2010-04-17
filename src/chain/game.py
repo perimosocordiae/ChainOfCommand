@@ -16,7 +16,7 @@ from drone import Drone
 from constants import *
 from level import SniperLevel,CubeLevel,Beaumont
 
-TUTORIAL_PROMPTS = ["Welcome to the tutorial for \nChain of Command.\nPress c to continue.\n\n",
+TUTORIAL_PROMPTS = ["Welcome to the tutorial for \nChain of Command.\nPress c to continue.\n\n\n",
                     "Use the mouse to look around.",
                     "Use WASD to move around the world.\nW moves your player forwards.\nS moves your player backwards.\nA moves your player left.\nD moves your player right.",
                     "Left click to shoot.",
@@ -26,7 +26,8 @@ TUTORIAL_PROMPTS = ["Welcome to the tutorial for \nChain of Command.\nPress c to
                     "Press tab to see the current scores.\nPress p to pause the game.",
                     "Press f or use the scroll wheel to change your perspective.",
                     "Press n to toggle sound effects.\nPress m to toggle background music.",              
-                    "You've reached the end of our tutorial. Enjoy the game!"]
+                    "You've reached the end of our tutorial. Enjoy the game!\nPress Esc to exit the tutorial."]
+TUTORIAL_CONTINUE = 'Press c to continue.'
 
 class Game(object):
 
@@ -76,6 +77,7 @@ class Game(object):
             self.tutorialScreen = OnscreenText(text=TUTORIAL_PROMPTS[0], pos=(-1.31,0.75), scale=0.07, align=TextNode.ALeft, 
                                                mayChange=True, bg=(0,0,0,0.8), fg=(0,1,0,0.8), font=self.shell.font, wordwrap=35)
             self.tutorialIndex = 0;
+            self.tutorial_scrolling = False
             self.eventHandle.accept('c', self.advance_tutorial)
         self.local_player().add_background_music()
         self.startTime = time()
@@ -163,27 +165,35 @@ class Game(object):
             self.tutorialScreen.setText('\n'.join(lines))
     
     def advance_tutorial(self):
+        if self.tutorialIndex >= len(TUTORIAL_PROMPTS)-1: return
+        if self.tutorial_scrolling : return
         self.tutorialIndex += 1
-        if self.tutorialIndex == len(TUTORIAL_PROMPTS):
-            self.tutorialScreen.destroy()
-            self.tutorialScreen = None
-            self.game_over()
-            return
         lines = TUTORIAL_PROMPTS[self.tutorialIndex].split('\n')
-        scrollSequence = Sequence()
+        scrollSequence = Sequence(Func(self.toggle_scrolling))
         for line in lines :
-            scrollSequence.append(Wait(.5))
+            scrollSequence.append(Wait(.4))
             scrollSequence.append(Func(self.tutorial_append_line, line))
-        for i in range(len(lines)-1, 4) :
-            scrollSequence.append(Wait(.5))
+        if self.tutorialIndex < len(TUTORIAL_PROMPTS)-1:
+            scrollSequence.append(Func(self.tutorial_append_line, TUTORIAL_CONTINUE))
+        else:
             scrollSequence.append(Func(self.tutorial_append_line, ""))
+        for i in range(len(lines)+1, 6) :
+            scrollSequence.append(Wait(.4))
+            scrollSequence.append(Func(self.tutorial_append_line, ""))
+        scrollSequence.append(Wait(1.2))
+        scrollSequence.append(Func(self.toggle_scrolling))
         scrollSequence.start()
+    
+    def toggle_scrolling(self):
+        self.tutorial_scrolling = not self.tutorial_scrolling
 
     def game_over(self):
         print "Game over"
         p = self.local_player()
         p.hide()
-        if self.tutorial and self.tutorialScreen : self.tutorialScreen.destroy()
+        if self.tutorial :
+            self.tutorialScreen.destroy()
+            self.tutorialScreen = None
         self.tutorial = False
         p.handleEvents = False
         p.invincible = True
