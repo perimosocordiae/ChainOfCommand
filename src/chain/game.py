@@ -263,7 +263,7 @@ class Game(object):
                     else:
                         self.shell.refresh_staging()
             elif ds[0] == 'staging':
-                assert ds[1] in self.players
+                if ds[1] not in self.players : continue
                 assert len(ds) == 4
                 if ds[2] == 'color':
                     self.players[ds[1]] = int(ds[3])
