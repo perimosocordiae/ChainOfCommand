@@ -45,7 +45,6 @@ class Game(object):
         self.had_locate = False # used by Locate to figure out whether to add "Right click to scope"
         self.drone_spawner = False # indicates if I'm the assigned drone spawner
         self.tutorial = False
-        self.newKid = True
     
     def rest_of_init(self):
         base.cTrav = CollisionTraverser()
@@ -241,29 +240,24 @@ class Game(object):
     def handshakeTask(self,task):
         data = self.client.getData()
         if len(data) == 0: return task.cont
-        print "handshake:",data
+        tempData = list()
         for d in data:
+            tempData.append(d[0])
+        print "handshake:",tempData
+        for d in tempData:
             ds = d.split()
             if ds[0] == 'seed':
                 self.rand_seed = int(ds[1])
                 seed(self.rand_seed)
-            elif ds[0] == 'special': # for a specific player
-                assert len(ds) >= 3
-                dataCopy = list(ds)
-                del dataCopy[len(dataCopy)-1]
-                del dataCopy[0] # 'special'
-                if self.shell.name in " ".join(dataCopy) : # if I'm the intended recipient
-                    if ds[len(ds) - 1] == 'DroneSpawner' :
-                        self.drone_spawner = True
-                    elif ds[len(ds) - 1] == 'echo_gametype' :
-                        self.send_type_change(0)
-                    elif self.newKid and 'append_name' in ds[len(ds) - 1] :
-                        self.shell.name += ds[len(ds) - 1].split(':')[1]
+            elif ds[0] == 'append_name':
+                assert len(ds) == 2
+                self.shell.name += ds[1]
+            elif ds[0] == 'DroneSpawner':
+                self.drone_spawner = True
             elif ds[0] == 'player':
                 if ds[1] not in self.players:
                     self.players[ds[1]] = 0 # default color index == blue?
                     self.shell.refresh_staging()
-                if self.newKid : self.newKid = False
             elif ds[0] == 'unreg':
                 if ds[1] in self.players:
                     del self.players[ds[1]]
@@ -284,6 +278,8 @@ class Game(object):
                 assert len(ds) == 2
                 if ds[1] == 'lobbyinfo' :
                     self.send_color_change(0)
+                elif ds[1] == 'gametype' :
+                    self.send_type_change(0)
             elif ds[0] == 'start':
                 print "handshake over, starting game"
                 Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init),
@@ -298,7 +294,7 @@ class Game(object):
         data = self.client.getData()
         if len(data) == 0: return
         for d in data:
-            ds = d.split(':')
+            ds = d[0].split(':')
             if len(ds) >= 2 and ds[0] == "AddaDrone":
                 self.add_drone(eval(ds[1]))
                 continue

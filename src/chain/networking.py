@@ -29,7 +29,7 @@ class NetworkBase(object): # abstract base class for the client and server class
             # Check the return value; if we were threaded, someone else could have
             # snagged this data before we did
             if self.cReader.getData(datagram):
-                data.append(self.__processData(datagram))
+                data.append((self.__processData(datagram), datagram.getConnection()))
         return data
 
 class Server(NetworkBase):
@@ -38,7 +38,7 @@ class Server(NetworkBase):
         self.backlog = backlog
         self.cListener = QueuedConnectionListener(self.cManager, 0)
         self.activeConnections = []
-        self.player_set = set()
+        self.player_dict = dict()
         self.ready_players = 0
         self.rand_seed = int(time())
         self.__connect(self.port, self.backlog)
@@ -68,38 +68,39 @@ class Server(NetworkBase):
                 
         # republish messages
         for d in self.getData():
-            ds = d.split()
+            ds = d[0].split()
             if ds[0] == 'player':
                 append = ''
-                while (d+append) in self.player_set :
+                while (d[0]+append) in self.player_dict and self.player_dict[d[0]+append] != d[1] :
                     append += choice(list('!@#$%^&*'))
                 if append != '' :
                     dataCopy = list(ds)
                     del dataCopy[0] # get rid of 'player'
-                    self.broadcast('special %s append_name:%s'%(" ".join(dataCopy), append))
-                if len(self.player_set) > 0 :
-                    randomPlayer = self.getRandomPlayer()
-                self.player_set.add(d+append)
-                for p in self.player_set: self.broadcast(p)
-                if len(self.player_set) > 1 :
+                    self.send('append_name %s'%append, d[1])
+                    #self.broadcast('special %s append_name:%s'%(" ".join(dataCopy), append))
+                if len(self.player_dict) > 0 :
+                    firstPlayer = self.getFirstPlayer()
+                self.player_dict[d[0]+append] = d[1]
+                for p in self.player_dict: self.broadcast(p)
+                if len(self.player_dict) > 1 :
                     self.broadcast('echo lobbyinfo')
-                    self.broadcast('special %s echo_gametype'%randomPlayer)
+                    self.send('echo gametype', self.player_dict[firstPlayer])
             elif ds[0] == 'unreg':
                 pd = 'player %s'%ds[1]
-                assert pd in self.player_set
-                self.player_set.remove(pd)
-                self.broadcast(d)
-            elif d == 'ready': 
+                assert pd in self.player_dict
+                del self.player_dict[pd]
+                self.broadcast(d[0])
+            elif d[0] == 'ready': 
                 self.ready_players += 1
-                if self.ready_players == len(self.player_set):
-                    self.broadcast('special %s DroneSpawner'%self.getRandomPlayer())
+                if self.ready_players == len(self.player_dict):
+                    self.send('DroneSpawner', self.player_dict[self.getFirstPlayer()])
                     # reset this game's data, so we're ready for the next one
-                    self.player_set.clear()
+                    self.player_dict.clear()
                     self.ready_players = 0
                     self.rand_seed = int(time())
                     self.broadcast('go')
             else:
-                self.broadcast(d)
+                self.broadcast(d[0])
         return Task.cont
     
     def __tskDisconnectPolling(self, task):
@@ -126,13 +127,9 @@ class Server(NetworkBase):
         # return a list of all activeConnections
         return self.activeConnections
     
-    def getRandomPlayer(self):
-        if len(self.player_set) < 1 : return
-        randomPlayer = self.player_set.pop() # there's probably a better way to do this...
-        self.player_set.add(randomPlayer)
-        words = randomPlayer.split()
-        del words[0] # get rid of 'player' at the start
-        return " ".join(words)
+    def getFirstPlayer(self):
+        if len(self.player_dict) < 1 : return
+        else: return self.player_dict.keys()[0]
 
 class Client(NetworkBase):
     def __init__(self, host, port, timeout=3000):
