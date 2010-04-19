@@ -85,7 +85,6 @@ class Server(NetworkBase):
                     dataCopy = list(ds)
                     del dataCopy[0] # get rid of 'player'
                     self.send('append_name %s'%append, d[1])
-                    #self.broadcast('special %s append_name:%s'%(" ".join(dataCopy), append))
                 if len(self.player_dict) > 0 :
                     firstPlayer = self.getFirstPlayer()
                 self.player_dict[d[0]+append] = d[1]

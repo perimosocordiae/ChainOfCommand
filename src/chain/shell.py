@@ -430,6 +430,7 @@ class Shell(object):
                     'kill': "Killing is wrong!",
                     'killall': "My God, what have you done?",
                     'top': "Come on, I'm ONLY running 'Chain of Command'",
+                    'ps': "Come on, I'm ONLY running 'Chain of Command'",
                     'reboot': "System restarted... I'm fast, aren't I?",
                     'nano': "Really, now? Poor editor choice: -5 CHA",
                     'pico': "Really, now? Poor editor choice: -5 CHA",
