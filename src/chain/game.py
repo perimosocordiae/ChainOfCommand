@@ -80,7 +80,6 @@ class Game(object):
             self.eventHandle.accept('c', self.advance_tutorial)
         self.local_player().add_background_music()
         self.startTime = time()
-        #if self.type_idx % 2 == 1: # timed levels
         if self.type_idx in [1,3,5]: # timed levels
             self.gameLength = 180 # 3 minutes
             self.fragLimit = 9999
@@ -140,7 +139,7 @@ class Game(object):
     def add_drone(self, pos, speed=10):
         print "Adding a drone at position",pos
         d = Drone(self, speed=speed, pos=pos)
-        self.drones[str(hash(d))] = d 
+        self.drones[d.name] = d 
         self.eventHandle.addDroneHandler(d)
     
     def load_env(self):

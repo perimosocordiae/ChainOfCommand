@@ -524,7 +524,7 @@ class LocalPlayer(Player):
         self.stats['damage_taken'] += amt
         if LocalPlayer.sounds['grunt'].getTime() == 0.0 : LocalPlayer.sounds['grunt'].play()
         print "Hit"
-        self.hud.hit()
+        self.hud.hit(hitter)
     
     def heal(self, amt=0):
         super(LocalPlayer, self).heal(amt)
