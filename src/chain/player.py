@@ -242,7 +242,8 @@ class Player(Agent):
                 if p.is_dead():
                     print "Oh no, you blew up a program!"
                     self.add_kill(p)
-        elif objHit in self.game.players:
+        elif objHit == self.game.shell.name:
+            #Only hit the local player
             p = self.game.players[objHit]
             #for friendly fire, use this instead of the if below:
             #if not (p.is_dead() or p.color == self.color)
@@ -327,9 +328,11 @@ class Player(Agent):
         self.tron.setH(rot.getX())
         self.get_camera().setP(rot.getY())
         if damage > 0:
+            print "Taking ", damage, " damage"
             super(Player,self).hit(damage,damager)
             self.stats['damage_taken'] += damage
             if self.is_dead() and damager in self.game.players:
+                print "Dying"
                 self.game.players[damager].add_kill(self)
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager):
@@ -403,6 +406,8 @@ class LocalPlayer(Player):
             self.tron.hide()
         
     def die(self):
+        print "About to die", self.handleEvents, self.current_damage_taken
+        self.sendUpdate()
         super(LocalPlayer,self).die()
         if hasattr(self, "hud") and self.hud:
             self.hud.display_gray()
@@ -510,10 +515,13 @@ class LocalPlayer(Player):
     
     def hit(self, amt=0, hitter=None):
         if self.invincible: return False
-        if not super(Player, self).hit(amt,hitter): return
         self.damager = hitter
-        self.stats['damage_taken'] += amt
         self.current_damage_taken += amt
+        if not super(Player, self).hit(amt,hitter):
+            self.damager = None
+            self.current_damage_taken = 0
+            return
+        self.stats['damage_taken'] += amt
         if LocalPlayer.sounds['grunt'].getTime() == 0.0 : LocalPlayer.sounds['grunt'].play()
         print "Hit"
         self.hud.hit()

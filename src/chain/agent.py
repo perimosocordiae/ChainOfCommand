@@ -189,7 +189,7 @@ class Agent(object):
     def hit(self,amt,hitter=None):
         if self.is_dead(): return False# semi-hack
         self.health -= amt/self.shield()
-        self.flashSequence.start()        
+        self.flashSequence.start()
         if self.health <= 0:
             self.health = 0 # hax
             self.die()
