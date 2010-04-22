@@ -130,18 +130,22 @@ class HUD(object):
     def hit(self, hitter=None):
         if hitter:
             hitterPos = None
+            itsaDrone = False
             if hitter in self.player.game.drones :
                 hitterPos = self.player.game.drones[hitter].get_model().getPos()
-            if hitter in self.player.game.players :
+                itsaDrone = True
+            elif hitter in self.player.game.players :
                 hitterPos = self.player.game.players[hitter].get_model().getPos()
             if hitterPos:
                 vectorToHitter = hitterPos - self.player.get_model().getPos()
                 vectorToHitter = -self.player.get_model().getRelativeVector(render, vectorToHitter)
                 vectorToHitter.setZ(0.0)
                 vectorToHitter.normalize()
+                if itsaDrone : vectorToHitter = -vectorToHitter
+                vectorToHitter = vectorToHitter/3.0
                 rotation = degrees(atan(vectorToHitter.getX()/vectorToHitter.getY()))
                 if vectorToHitter.getY() < 0 : rotation += 180
-                hitArc = OnscreenImage(image="%s/white_arc.png" % TEXTURE_PATH, pos = (vectorToHitter.getX()/3.0,0,vectorToHitter.getY()/3.0), 
+                hitArc = OnscreenImage(image="%s/white_arc.png" % TEXTURE_PATH, pos = (vectorToHitter.getX(),0,vectorToHitter.getY()), 
                             color=(1,0,0,0.5),scale=(0.20, 1, 0.05))
                 hitArc.setR(rotation);
                 hitArc.setTransparency(TransparencyAttrib.MAlpha)
