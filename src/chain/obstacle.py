@@ -130,18 +130,36 @@ class CopperWire(Obstacle):
     def __init__(self, name, parent, pos, hpr, scale):
         self.wire = loader.loadModel("%s/copper_wire.bam"%MODEL_PATH)
         self.name = name
-        ts = TextureStage('ts')
-        ts.setMode(TextureStage.MGlow)
-        glow = loader.loadTexture("%s/all_glow.jpg"%TEXTURE_PATH)
-        self.wire.setTexture(ts, glow)
+        self.ts = TextureStage('ts')
+        self.ts.setMode(TextureStage.MGlow)
+        self.glow = loader.loadTexture("%s/all_glow.jpg"%TEXTURE_PATH)
+        self.wire.setTexture(self.ts, self.glow)
         self.wire.reparentTo(parent)
         #it's a plane - z scale is erroneous
         self.wire.setScale(scale[0], scale[1], 1.0)
         self.wire.setPos(pos)
         self.wire.setHpr(hpr)
-        
+    
+    def set_glow(self, useGlow):
+        if useGlow:
+            self.wire.setTexture(self.ts, self.glow)
+        else:
+            self.wire.clearTexture(self.ts)
+    
     def destroy(self):
         self.wire.removeNode()
+        
+class SouthBridge(Obstacle):
+    def __init__(self, name, parent, pos, hpr, scale):
+        self.model = loader.loadModel("%s/south_bridge.bam"%MODEL_PATH)
+        self.name = name
+        self.model.reparentTo(parent)
+        self.model.setScale(scale)
+        self.model.setPos(pos)
+        self.model.setHpr(hpr)
+        
+    def destroy(self):
+        self.model.removeNode()
         
 def make_tile(parent,modelFile,color,pos, hpr=(0,0,0), scale=1.0):
     tile = loader.loadModel("%s/%s"%(MODEL_PATH, modelFile))

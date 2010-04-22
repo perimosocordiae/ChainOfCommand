@@ -1,0 +1,169 @@
+<CoordinateSystem> { Z-up }
+
+<Comment> { "Egg laid by Chicken for Blender, version R85" }
+
+<Material> Material.001 {
+  <Scalar> diffr {0.800000011921}
+  <Scalar> diffg {0.800000011921}
+  <Scalar> diffb {0.800000011921}
+  <Scalar> specr {0.25}
+  <Scalar> specg {0.25}
+  <Scalar> specb {0.25}
+  <Scalar> shininess {12.5}
+}
+<Texture> south_bridge_Cube.jpg {
+  "../textures/south_bridge_Cube.jpg"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR }
+  <Scalar> magfilter { LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Group> Cube {
+  <VertexPool> Cube {
+    <Vertex> 0 {
+      1.0 0.999999940395 -0.0499896630645
+      <UV>  { 0.030299 0.877964 }
+    }
+    <Vertex> 1 {
+      1.0 -1.0 -0.0499896630645
+      <UV>  { 0.128197 0.869950 }
+    }
+    <Vertex> 2 {
+      -1.00000011921 -0.999999821186 -0.0499896630645
+      <UV>  { 0.126588 0.970699 }
+    }
+    <Vertex> 3 {
+      -0.999999642372 1.00000035763 -0.0499896630645
+      <UV>  { 0.025970 0.976094 }
+    }
+    <Vertex> 4 {
+      1.00000047684 0.999999463558 0.0500298365951
+      <UV>  { 0.999979 0.818027 }
+    }
+    <Vertex> 5 {
+      -0.999999940395 1.0 0.0500298365951
+      <UV>  { 0.189785 0.818027 }
+    }
+    <Vertex> 6 {
+      -1.00000035763 -0.999999642372 0.0500298365951
+      <UV>  { 0.189785 0.007834 }
+    }
+    <Vertex> 7 {
+      0.999999344349 -1.00000059605 0.0500298365951
+      <UV>  { 0.999979 0.007833 }
+    }
+    <Vertex> 8 {
+      1.0 0.999999940395 -0.0499896630645
+      <UV>  { 0.030299 0.877964 }
+    }
+    <Vertex> 9 {
+      1.00000047684 0.999999463558 0.0500298365951
+      <UV>  { 0.010625 0.859016 }
+    }
+    <Vertex> 10 {
+      0.999999344349 -1.00000059605 0.0500298365951
+      <UV>  { 0.147890 0.853854 }
+    }
+    <Vertex> 11 {
+      1.0 -1.0 -0.0499896630645
+      <UV>  { 0.128197 0.869950 }
+    }
+    <Vertex> 12 {
+      1.0 -1.0 -0.0499896630645
+      <UV>  { 0.128197 0.869950 }
+    }
+    <Vertex> 13 {
+      0.999999344349 -1.00000059605 0.0500298365951
+      <UV>  { 0.147890 0.853854 }
+    }
+    <Vertex> 14 {
+      -1.00000035763 -0.999999642372 0.0500298365951
+      <UV>  { 0.140786 0.984374 }
+    }
+    <Vertex> 15 {
+      -1.00000011921 -0.999999821186 -0.0499896630645
+      <UV>  { 0.126588 0.970699 }
+    }
+    <Vertex> 16 {
+      -1.00000011921 -0.999999821186 -0.0499896630645
+      <UV>  { 0.126588 0.970699 }
+    }
+    <Vertex> 17 {
+      -1.00000035763 -0.999999642372 0.0500298365951
+      <UV>  { 0.140786 0.984374 }
+    }
+    <Vertex> 18 {
+      -0.999999940395 1.0 0.0500298365951
+      <UV>  { 0.010625 0.996378 }
+    }
+    <Vertex> 19 {
+      -0.999999642372 1.00000035763 -0.0499896630645
+      <UV>  { 0.025970 0.976094 }
+    }
+    <Vertex> 20 {
+      1.00000047684 0.999999463558 0.0500298365951
+      <UV>  { 0.010625 0.859016 }
+    }
+    <Vertex> 21 {
+      1.0 0.999999940395 -0.0499896630645
+      <UV>  { 0.030299 0.877964 }
+    }
+    <Vertex> 22 {
+      -0.999999642372 1.00000035763 -0.0499896630645
+      <UV>  { 0.025970 0.976094 }
+    }
+    <Vertex> 23 {
+      -0.999999940395 1.0 0.0500298365951
+      <UV>  { 0.010625 0.996378 }
+    }
+  }
+  <Polygon> {
+    <TRef> { south_bridge_Cube.jpg }
+    <MRef> { Material.001 }
+    <Normal> { 0.000000 0.000000 -1.000000
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 0 1 2 3 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <TRef> { south_bridge_Cube.jpg }
+    <MRef> { Material.001 }
+    <Normal> { 0.000000 -0.000000 1.000000
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 4 5 6 7 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <TRef> { south_bridge_Cube.jpg }
+    <MRef> { Material.001 }
+    <Normal> { 1.000000 -0.000000 0.000001
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 8 9 10 11 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <TRef> { south_bridge_Cube.jpg }
+    <MRef> { Material.001 }
+    <Normal> { -0.000000 -1.000000 -0.000002
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 12 13 14 15 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <TRef> { south_bridge_Cube.jpg }
+    <MRef> { Material.001 }
+    <Normal> { -1.000000 0.000000 -0.000003
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 16 17 18 19 <Ref> { Cube } }
+  }
+  <Polygon> {
+    <TRef> { south_bridge_Cube.jpg }
+    <MRef> { Material.001 }
+    <Normal> { 0.000000 1.000000 0.000004
+    }
+    <Scalar> alpha { OFF }
+    <VertexRef> { 20 21 22 23 <Ref> { Cube } }
+  }
+}

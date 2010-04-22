@@ -14,6 +14,10 @@ class Room(Obstacle):
         self.environ.setScale(scale)
         self.environ.setPos(pos)
         self.environ.setHpr(rot)
+        self.add_copper_wires()
+    
+    def add_copper_wires(self):
+        pass
     
     def add_wall(self, name, model, parent, p1, p2, p3, p4, colliderMask):
         self.walls[name] = (model, QuadWall(name, parent, p1, p2, p3, p4, colliderMask))
@@ -100,6 +104,7 @@ class CubeRoom(Room):
             total = total % 5
             self.addWallSection("wall_%s_3"%i, wall, (-2,3,z), color, 1, total)
             
+            
         #Now add the floor & ceiling
         self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,0,0),(0,0,0),3.0),
                 QuadWall("floor", self.environ, Point3(3,3,0), Point3(-3,3,0),
@@ -108,6 +113,9 @@ class CubeRoom(Room):
                 QuadWall("ceiling", self.environ, Point3(3,-3,4), Point3(-3,-3,4),
                          Point3(-3,3,4), Point3(3,3,4), WALL_COLLIDER_MASK))
         
+    def add_copper_wires(self):
+        self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,0,0.01), (0,0,0),(0.2,2.5))
+        self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0,0,0.01), (0,0,0),(2.5,0.2))
     
     def relative_rand_point(self):
         return (randint(-25,25) / 10, randint(-25,25)/10, 0)
@@ -149,6 +157,9 @@ class Hallway(Room):
     def get_bounds(self):
         return -1,1,0,2,0,2
     
+    def add_copper_wires(self):
+        self.obstacles['wire'] = CopperWire("wire", self.environ, (0,1,0), (0,0,0.02),(0.2,1))
+    
 class HallwayIntersection(Room):
     #types are: 0: dead end, 1: angle right, 2: angle left, 3: T-intersection, 4: 4-way
     def __init__(self, name, parent, pos, rot, scale, color, type):
@@ -174,7 +185,7 @@ class HallwayIntersection(Room):
                     wall.setH(270)
                     self.addWallSection("wall_3_1", wall, (-1,1,1), color)
                 
-        
+        self.add_wires(type)
         #Add the floor & ceiling
         self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
                 QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
@@ -188,6 +199,24 @@ class HallwayIntersection(Room):
     
     def get_bounds(self):
         return -1,1,0,2,0,2
+    
+    def add_wires(self, type):
+        if type == 4:
+            #4-way intersection - add full y wire
+            self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,1,0.02), (0,0,0),(0.2,1))
+        else:
+            self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,0.5,0.02), (0,0,0),(0.2,0.5))
+        
+        if type >= 3:
+            #T or 4-way - use full length x wire
+            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0,0,0.02), (0,0,0),(1,0.2))
+        elif type == 2:
+            #angle left
+            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (-0.5,0,0.02), (0,0,0),(0.5,0.2))
+        elif type == 1:
+            #angle right
+            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0.5,0,0.02), (0,0,0),(0.5,0.2))
+        #else it's a dead end - no x wire
     
 class Platform(Room):
     def __init__(self, name, parent, pos, rot, scale, color):
