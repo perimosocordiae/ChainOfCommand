@@ -379,6 +379,8 @@ class LocalPlayer(Player):
     def move_to(self,pos,rot,vel,hpr,damage,damager):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
+        if self.tron.getZ() < BOTTOM_OF_EVERYTHING:
+            self.die()
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()

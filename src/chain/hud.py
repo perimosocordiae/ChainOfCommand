@@ -234,8 +234,9 @@ class HUD(object):
             self.grayScreen = DirectFrame(frameSize=(-1.34,1.34,-1,1), frameColor=HUD_FG, sortOrder=3)
     
     def destroy_gray(self):
-        self.grayScreen.destroy()
-        self.grayScreen = None        
+        if self.grayScreen:
+            self.grayScreen.destroy()
+            self.grayScreen = None        
     
     def timerTask(self, task):
         game = self.player.game
