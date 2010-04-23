@@ -20,6 +20,13 @@ class Level(Obstacle):
         self.obstacles.clear()
         self.bases.clear()
     
+    def create_ln_at(self, pos, ln):
+        for room in self.rooms.itervalues():
+            if room.has_point(pos):
+                room.create_ln_at(pos, ln)
+                return
+        #next room
+    
     def default_environment(self):
         #Sets up the good old classic 5 sticks of RAM, 5 capacitors, 4 of each program
         #Notes: 1. Requires room called "Cube_Room"
@@ -133,6 +140,8 @@ class SniperLevel(Level):
         self.rooms["%s_Platform"%t2].add_program(self.game, Locate)
         self.rooms["%s_Base"%t1].add_program(self.game, Flag, team1)
         self.rooms["%s_Base"%t2].add_program(self.game, Flag, team2)
+        for i in range(1,10):
+            self.rooms["Cube_Room"].add_program(self.game, Ln)
         
 class Beaumont(Level):
     def __init__(self, game, parent, team1="blue", team2="red"):

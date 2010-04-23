@@ -130,8 +130,13 @@ class CopperWire(Obstacle):
     def __init__(self, name, parent, pos, hpr, scale):
         self.wire = loader.loadModel("%s/copper_wire.bam"%MODEL_PATH)
         self.name = name
+        ts = TextureStage('ts')
+        ts.setMode(TextureStage.MReplace)
+        ts.setSort(5)
+        self.wire.setTexture(ts, loader.loadTexture("%s/copper_wire.tga"%TEXTURE_PATH))
         self.ts = TextureStage('ts')
         self.ts.setMode(TextureStage.MGlow)
+        self.ts.setSort(10)
         self.glow = loader.loadTexture("%s/all_glow.jpg"%TEXTURE_PATH)
         self.wire.setTexture(self.ts, self.glow)
         self.wire.reparentTo(parent)

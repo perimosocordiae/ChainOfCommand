@@ -17,6 +17,13 @@ class Room(Obstacle):
         self.add_copper_wires()
     
     def add_copper_wires(self):
+        return None
+    
+    def create_ln_at(self, pos, ln):
+        mypt = self.environ.getRelativePoint(render,Point3(pos[0],pos[1],pos[2]))
+        self.create_ln_at_my(mypt, ln)
+    
+    def create_ln_at_my(self, pos, ln):
         pass
     
     def add_wall(self, name, model, parent, p1, p2, p3, p4, colliderMask):
@@ -52,7 +59,7 @@ class Room(Obstacle):
             prog = ptype(game, self)
         game.readd_program(prog)
     
-    def addWallSection(self, name, parent, pos, color, divisor=1, total=0):
+    def addWallSection(self, name, parent, pos, color, divisor=1, total=0, addWire=False):
         if total >= divisor:
             rotation = (6-(total//divisor)) % 4
             if rotation % 2 == 1:
@@ -66,6 +73,13 @@ class Room(Obstacle):
         if total >= divisor:
             wall = LWall(name, model, Point3(1,0,1), Point3(-1,0,1),
                     Point3(-1,0,-1), Point3(1,0,-1), WALL_COLLIDER_MASK)
+            if rotation == 1:
+                #hole on the bottom - add a copper wire
+                self.obstacles["%s_wire"%name] = CopperWire("%s_wire"%name, model,
+                                        (0.998,-1.5,-0.5), (0,0,-90), (0.1,1.5,1))
+            elif rotation == 0:
+                self.obstacles["%s_wire"%name] = CopperWire("%s_wire"%name, model,
+                                        (0.5,-1.5,-.998), (0,0,0), (0.1,1.5,1))
         else:
             wall = QuadWall(name, model, Point3(1,0,1), Point3(-1,0,1),
                     Point3(-1,0,-1), Point3(1,0,-1), WALL_COLLIDER_MASK)
@@ -93,17 +107,17 @@ class CubeRoom(Room):
     def __init__(self, name, parent, pos, rot, scale, color, holes=(0,0,0,0,0,0,0,0)):
         super(CubeRoom, self).__init__(name, parent, pos, rot, scale)
         for i in range(8):
+            addWire = (i < 4)
             h = (i * 90) % 360
             z = ((i // 4) * 2) + 1
             wall = self.environ.attachNewNode("wall_%s"%i)
             wall.setH(h)
             total = holes[i]
-            self.addWallSection("wall_%s_1"%i, wall, (2,3,z), color, 25, total)
+            self.addWallSection("wall_%s_1"%i, wall, (2,3,z), color, 25, total, addWire)
             total = total % 25
-            self.addWallSection("wall_%s_2"%i, wall, (0,3,z), color, 5, total)
+            self.addWallSection("wall_%s_2"%i, wall, (0,3,z), color, 5, total, addWire)
             total = total % 5
-            self.addWallSection("wall_%s_3"%i, wall, (-2,3,z), color, 1, total)
-            
+            self.addWallSection("wall_%s_3"%i, wall, (-2,3,z), color, 1, total, addWire)
             
         #Now add the floor & ceiling
         self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,0,0),(0,0,0),3.0),
@@ -114,8 +128,8 @@ class CubeRoom(Room):
                          Point3(-3,3,4), Point3(3,3,4), WALL_COLLIDER_MASK))
         
     def add_copper_wires(self):
-        self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,0,0.01), (0,0,0),(0.2,2.5))
-        self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0,0,0.01), (0,0,0),(2.5,0.2))
+        self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,0,0.001), (0,0,0),(0.2,3))
+        self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0,0,0.001), (0,0,0),(3,0.2))
     
     def relative_rand_point(self):
         return (randint(-25,25) / 10, randint(-25,25)/10, 0)
@@ -123,6 +137,16 @@ class CubeRoom(Room):
     def get_bounds(self):
         return -3,3,-3,3,-0.1,4
     
+    def create_ln_at_my(self, pos, ln):
+        if abs(pos[0]) < abs(pos[1]):
+            ln.wire.wire.setPos(pos[0] / 2.0, pos[1], 0.001)
+            ln.wire.wire.setScale(abs(pos[0] / 2.0), 0.1, 1)
+        else:
+            ln.wire.wire.setPos(pos[0], pos[1] / 2.0, 0.001)
+            ln.wire.wire.setScale(0.1, abs(pos[0] / 2.0), 1)
+        ln.wire.wire.reparentTo(self.environ)
+        ln.wire.wire.show()
+            
 class Hallway(Room):
     def __init__(self, name, parent, pos, rot, scale, color, angle):
         super(Hallway, self).__init__(name, parent, pos, rot, scale)
@@ -158,7 +182,13 @@ class Hallway(Room):
         return -1,1,0,2,0,2
     
     def add_copper_wires(self):
-        self.obstacles['wire'] = CopperWire("wire", self.environ, (0,1,0), (0,0,0.02),(0.2,1))
+        self.obstacles['wire'] = CopperWire("wire", self.environ, (0,1,0.001), (0,0,0),(0.2,1))
+    
+    def create_ln_at_my(self, pos, ln):
+        ln.wire.wire.setPos(pos[0] / 2.0, pos[1], 0.001)
+        ln.wire.wire.setScale(abs(pos[0] / 2.0), 0.1, 1)
+        ln.wire.wire.reparentTo(self.environ)
+        ln.wire.wire.show()
     
 class HallwayIntersection(Room):
     #types are: 0: dead end, 1: angle right, 2: angle left, 3: T-intersection, 4: 4-way
@@ -203,21 +233,27 @@ class HallwayIntersection(Room):
     def add_wires(self, type):
         if type == 4:
             #4-way intersection - add full y wire
-            self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,1,0.02), (0,0,0),(0.2,1))
+            self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,1,0.001), (0,0,0),(0.2,1))
         else:
-            self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,0.5,0.02), (0,0,0),(0.2,0.5))
+            self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,0.5,0.001), (0,0,0),(0.2,0.5))
         
         if type >= 3:
             #T or 4-way - use full length x wire
-            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0,0,0.02), (0,0,0),(1,0.2))
+            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0,0,0.001), (0,0,0),(1,0.2))
         elif type == 2:
             #angle left
-            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (-0.5,0,0.02), (0,0,0),(0.5,0.2))
+            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (-0.5,0,0.001), (0,0,0),(0.5,0.2))
         elif type == 1:
             #angle right
-            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0.5,0,0.02), (0,0,0),(0.5,0.2))
+            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0.5,0,0.001), (0,0,0),(0.5,0.2))
         #else it's a dead end - no x wire
     
+    def create_ln_at_my(self, pos, ln):
+        ln.wire.wire.setPos(pos[0] / 2.0, pos[1], 0.001)
+        ln.wire.wire.setScale(abs(pos[0] / 2.0), 0.1, 1)
+        ln.wire.wire.reparentTo(self.environ)
+        ln.wire.wire.show()
+        
 class Platform(Room):
     def __init__(self, name, parent, pos, rot, scale, color):
         super(Platform, self).__init__(name, parent, pos, rot, scale)
@@ -244,6 +280,15 @@ class Platform(Room):
     def get_bounds(self):
         return -1,1,0,2,0,2
     
+    def add_copper_wires(self):
+        self.obstacles['wire'] = CopperWire("wire", self.environ, (0,1,0.001), (0,0,0),(0.2,1))
+    
+    def create_ln_at_my(self, pos, ln):
+        ln.wire.wire.setPos(pos[0] / 2.0, pos[1], 0.001)
+        ln.wire.wire.setScale(abs(pos[0] / 2.0), 0.1, 1)
+        ln.wire.wire.reparentTo(self.environ)
+        ln.wire.wire.show()
+        
 class StandardHall(Hallway):
     #Assume it's a flat hallway, no pitch or roll, 1 x 2*y x 1 (y is essentially
     #half of the hallway's length, width==height==1), with a standard, unique name

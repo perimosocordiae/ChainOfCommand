@@ -6,6 +6,7 @@ from pandac.PandaModules import (Point3, Filename, Buffer, Shader, CollisionNode
         TextureStage)
 from agent import Agent
 from constants import *
+from obstacle import CopperWire
 
 BASE_SCALE = 2
 DESCRIPTION_SCALE = 0.2
@@ -342,3 +343,19 @@ class Ls(Achievement):
     def remove_effect(self, agent):
         print "remove radar"
         agent.remove_radar()
+
+class Ln(Achievement):
+    def __init__(self, game, room, pos=None):
+        super(Ln, self).__init__(game, room, 'ln', "Move the Link to the South Bridge", BASE_SCALE, pos)
+        self.wire = CopperWire("ln_wire", render, (0,0,0), (0,0,0), (0,0,0))
+    
+    def die(self):
+        super(Ln, self).die()
+        self.wire.destroy()
+        self.wire = None
+    
+    def add_effect(self, agent):
+        self.wire.wire.hide()
+    
+    def remove_effect(self, agent):
+        self.game.level.create_ln_at(agent.get_model().getPos(), self)
