@@ -1,6 +1,8 @@
 from platform import uname,system as getOS
 from subprocess import Popen,PIPE
 from itertools import izip
+from pickle import load,dump
+from re import match
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText 
@@ -11,6 +13,7 @@ from networking import Server, Client
 from game import Game
 from constants import MODEL_PATH,USE_GLOW,GAME_TYPES,TEAM_COLORS
 
+SCOREFILE = 'hiscores.pyz'
 CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
 PROMPT = "Enter a command to get started ('help' lists commands)"
@@ -55,6 +58,10 @@ PROGRAMS = {'rm' : 'Doubles attack power',
 class Shell(object):
     def __init__(self,full):
         self.name = uname()[1]
+        try:
+            self.hiscores = load(open(SCOREFILE))
+        except:
+            self.hiscores = {}
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
         self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
@@ -137,18 +144,24 @@ class Shell(object):
         self.input.enterText(self.cmd_hist[self.cmd_pos])
     
     def tab_completion(self):
-        currentInput = self.input.get()
-        if len(currentInput) == 0: return
+        words = self.input.get().split()
+        if len(words) == 0: return
+        currentInput = words.pop(-1)
         valids = [cmd for cmd in self.cmd_dict if cmd.startswith(currentInput)]
-        if len(valids) == 0: return
+        if len(valids) == 0 or currentInput in valids: return
+        if len(valids) == 1:
+            words.append(valids[0])
+            self.input.enterText(' '.join(words))
+            return
         # look for max common substring
         for i in range(len(currentInput),min(len(s) for s in valids)):
             if len(set(s[i] for s in valids)) > 1: break
         else: # got to the end of the minstr
-            i += 1 
+            i += 1
         if len(valids) > 1:
             self.append_line(' '.join(valids))
-        self.input.enterText(valids[0][:i])
+        words.append(valids[0][:i])
+        self.input.enterText(' '.join(words))
     
     def hide_inputs(self):
         self.input.destroy()
@@ -163,13 +176,30 @@ class Shell(object):
         self.screen.unstash()
         self.output.unstash()
         self.game_recap(stats_list)
-        
+    
+    def update_hiscores(self,name,is_winner,stats):
+        if name not in self.hiscores:
+            self.hiscores[name] = {}
+        mystats = self.hiscores[name]
+        if 'wins' in mystats:
+            mystats['wins'] += 1 if is_winner else 0
+        else:
+            mystats['wins'] = 1 if is_winner else 0
+        for k,s in stats.iteritems():
+            if k in mystats:
+                mystats[k] += int(s)
+            else:
+                mystats[k] = int(s)
+        dump(self.hiscores,open(SCOREFILE,'w'),-1) # write out high scores
+    
     def game_recap(self,stats_list):
+        self.update_hiscores(*((s for s in stats_list if s[0]==self.name).next()))
         textType = Sequence(Func(self.append_line,"Game recap:"))
-        for p in stats_list: # for now
+        for name,is_winner,stats in stats_list:
             textType.append(Wait(0.5))
-            textType.append(Func(self.append_line,"  Player %s"%p[0]))
-            for k,s in sorted(p[1].iteritems()):
+            winstr = "won" if is_winner else "lost"
+            textType.append(Func(self.append_line,"  Player %s (%s)"%(name,winstr)))
+            for k,s in sorted(stats.iteritems()):
                 textType.append(Func(self.append_line,"    %s = %d"%(k,int(s))))
                 textType.append(Wait(0.1))
         textType.append(Func(self.user_input))
@@ -202,7 +232,19 @@ class Shell(object):
         self.cmd_pos = 0
         self.input.enterText("")
         self.input.setFocus()
+        
+    def square_bracket_checker(self, argToCheck):
+        if match(r"\[.*\]",argToCheck) is not None:
+            self.append_line("Parameters shouldn't have square brackets around them")
     
+    def ip_validator(self, is_this_an_ip) :
+        if is_this_an_ip == 'localhost' : return True
+        m = match(r"(\d+)\.(\d+)\.(\d+)\.(\d+)",is_this_an_ip)
+        if not m or len(m.groups()) != 4: return False
+        for section in m.groups():
+            if not 1 <= len(section) <= 3: return False
+        return True
+            
     def load_finished(self):
         idx = len(LOADINGTEXT.splitlines())+1
         self.overwrite_line(idx,"Loading... Done.")
@@ -281,19 +323,6 @@ class Shell(object):
                 loadingScreen.append(Wait(0.05))
             loadingScreen.append(Func(self.main, client))
             loadingScreen.start()
-            
-    def ip_validator(self, is_this_an_ip) :
-        if is_this_an_ip == 'localhost' : return True
-        sections = is_this_an_ip.split('.')
-        if len(sections) != 4 : return False
-        for section in sections :
-            try :
-                sectionNum = int(section)
-            except ValueError:
-                return False
-            if sectionNum < 0 or sectionNum > 255 : 
-                return False
-        return True  
     
     def start_server(self,cmd,arglist=[],sudo=False):
         if len(arglist) != 1:
@@ -311,12 +340,10 @@ class Shell(object):
             Server(port)
             self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
             
-    def square_bracket_checker(self, argToCheck):
-        if '[' in argToCheck and ']' in argToCheck :
-            self.append_line("Parameters shouldn't have square brackets around them")
-            
     def quit(self,cmd,arglist=[],sudo=False):
-        Sequence(Func(self.append_line,"Bye!"),Wait(0.75),Func(taskMgr.stop)).start()
+        Sequence(Func(self.append_line,"Saving scores..."),Wait(0.5),
+                 Func(self.append_line,"Done."),Wait(0.5),
+                 Func(taskMgr.stop)).start()
     
     def sudo(self,cmd,arglist=[],sudo=False):
         if len(arglist) == 0:
@@ -364,7 +391,25 @@ class Shell(object):
             self.append_line("Error: no such program: %s"%arglist[0])
             
     def scores(self,cmd,arglist=[],sudo=False):
-        self.append_line("High scores not yet implemented")
+        if len(self.hiscores) == 0:
+            self.append_line("No high scores found. Play a few games and check back later!")
+            return
+        if sudo and len(arglist) > 0 and arglist[0] == 'clear':
+            self.append_line("Clearing high scores list")
+            self.hiscores = {}
+            return
+        statnames = ['wins','deaths','Player_kill','Drone_kill','damage_taken']
+        playnames = self.hiscores.keys()
+        maxpname = max(max(len(n) for n in playnames),5)
+        self.append_line("Name%s| %s"%(" "*(maxpname-4)," ".join(statnames)))
+        for p in sorted(self.hiscores,key=lambda k:self.hiscores[k]['wins']):
+            stats = []
+            for k in statnames:
+                if k in self.hiscores[p]:
+                    stats.append(str(self.hiscores[p][k]).center(len(k)))
+                else:
+                    stats.append('0'.center(len(k)))
+            self.append_line("%s| %s"%(p.ljust(maxpname)," ".join(stats)))
     
     def make(self,cmd,arglist=[],sudo=False):
         if ' '.join(arglist) == "me a sandwich":

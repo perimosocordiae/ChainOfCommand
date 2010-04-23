@@ -199,11 +199,13 @@ class Game(object):
         p.hud.show_scores()
         taskMgr.remove('timerTask')
         if not self.end_sequence:
+            winning_score = max(p.score() for p in self.players.itervalues())
+            stats = [(p.name, p.score()==winning_score, p.stats) for p in self.players.itervalues()]
             self.end_sequence = Sequence(Wait(5),
                      Func(self.kill_everything),
-                     Func(self.shell.resume_shell,[(p.name,p.stats) for p in self.players.itervalues()]))
+                     Func(self.shell.resume_shell,stats))
             self.end_sequence.start()
-                
+    
     def kill_everything(self):
         base.enableMusic(False)
         base.enableSoundEffects(False)
