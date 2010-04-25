@@ -195,7 +195,7 @@ class Game(object):
         self.tutorial = False
         p.handleEvents = False
         p.invincible = True
-        p.hud.display_gray()
+        p.hud.display_gray("Process Terminated.")
         p.hud.show_scores()
         taskMgr.remove('timerTask')
         if not self.end_sequence:

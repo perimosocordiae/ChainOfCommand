@@ -129,10 +129,6 @@ class Server(NetworkBase):
         # Broadcast data out to all activeConnections
         for con in self.activeConnections:
             self.send(data, con)
-        
-    def getClients(self):
-        # return a list of all activeConnections
-        return self.activeConnections
     
     def getFirstPlayer(self):
         if len(self.player_dict) < 1 : return
@@ -170,9 +166,6 @@ class Client(NetworkBase):
     
     def send(self, data, conn=None):
         super(Client,self).send(data, self.server_conn)
-        
-    def is_connected(self):
-        return self.server_conn != None
     
     def close_connection(self):
         self.cManager.closeConnection(self.server_conn)

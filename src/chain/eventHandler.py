@@ -45,6 +45,7 @@ class PlayerEventHandler(DirectObject):
     def pause_menu(self):
         self.timeout = not self.timeout
         if self.timeout:
+            self.player.hud.display_gray("Process Stopped.")
             #stop handling key/mouse events, etc.
             self.wp.setCursorHidden(False)
             self.player.handleEvents = False
@@ -57,6 +58,7 @@ class PlayerEventHandler(DirectObject):
             base.win.requestProperties(self.wp)
             base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
             self.player.handleEvents = True
+            self.player.hud.destroy_gray()
             self.player.sendUpdate()
             print "Okay, okay... time in!"
 
@@ -117,12 +119,10 @@ class GameEventHandler(DirectObject):
     
     def addPlayerHandler(self, t):
         base.cTrav.addCollider(t.collider,self.collisionHandler)
-        #base.cTrav.addCollider(t.pusher,self.collisionHandler)
         base.cTrav.addCollider(t.pusher,self.pusherHandler)
         self.pusherHandler.addCollider(t.pusher, t.tron)
         drones = self.game.drones.keys()
         progs  = self.game.programs.keys()
-        #walls = self.game.walls.keys()
         tName = t.name
         for p in progs:
             self.accept("%s-into-%s_donthitthis"%(tName,p),  self.tronHitsProg)
@@ -130,18 +130,7 @@ class GameEventHandler(DirectObject):
         for d in drones:
             self.accept("%s-into-%sdonthitthis"%(tName,d),  self.tronHitsDrone)
             self.accept("%s-out-%sdonthitthis"%(tName,d),self.tronOutDrone)
-        #for w in walls:
-        #    self.accept("%s_wall-into-%s"%(tName,w),  self.tronHitsWall)
-        #    self.accept("%s_wall-repeat-%s"%(tName,w),  self.tronHitsWall)
-        #self.accept("%s_wall-into-%s"%(tName,"tower_base"),  self.tronHitsWall)
-        #self.accept("%s_wall-repeat-%s"%(tName,"tower_base"),  self.tronHitsWall)
         t.initialize_camera()
-    
-    def addWallHandler(self, w):
-        print "NO THANKS!"
-        #for t in self.game.players.iterkeys():
-        #    self.accept("%s_wall-into-%s"%(t,w.name),  self.tronHitsWall)
-        #    self.accept("%s_wall-repeat-%s"%(t,w.name),  self.tronHitsWall)
     
     def tronHitsDrone(self,entry):
         tn,dn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
@@ -175,12 +164,3 @@ class GameEventHandler(DirectObject):
             tron,prog = self.game.players[tn], self.game.programs[pn]
             tron.canCollect = None
             prog.hide_desc()
-    
-    #def tronHitsWall(self, entry):
-    #    tn = entry.getFromNodePath().getName()
-    #    tn = tn.replace("_wall", "")
-    #    tron = self.game.players[tn]
-    #    penetration = entry.getSurfacePoint(render) - entry.getInteriorPoint(render)
-    #    newPos = tron.tron.getPos() + penetration
-    #    #newPos.setZ(tron.tron.getZ())
-    #    tron.tron.setFluidPos(newPos)

@@ -42,7 +42,6 @@ class Player(Agent):
         self.collisionQueue = CollisionHandlerQueue()
         self.invincible = False
         self.handleEvents = False
-        #self.spawn(startPos, False)
     
     def post_environment_init(self):
         self.spawn(None, False)
@@ -57,13 +56,6 @@ class Player(Agent):
     def setup_collider(self):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
         self.pusher = self.attach_collision_node("%s_wall_donthitthis" % self.name, CollisionSphere(0, 0, 0, 12), WALL_COLLIDER_MASK)
-        #self.pusher.show()
-    
-    def get_text_pos(self):
-        return (0,0,12)
-    
-    def get_text_scale(self):
-        return 1.5
     
     def set_glow(self, glow):
         if glow:
@@ -268,10 +260,6 @@ class Player(Agent):
         if self.score() >= self.game.fragLimit:
             self.game.game_over()
     
-    def add_point(self):
-        #do nothing in base class - this does HUD stuff
-        pass
-    
     def my_team(self): # including me
         my_col = self.color
         return (p for p in self.game.players.itervalues() if hasattr(p,'color') and p.color == my_col)
@@ -286,11 +274,10 @@ class Player(Agent):
         # team matches
         return sum(p.stats.get('LocalPlayer_kill',0)+p.stats.get('Player_kill',0) for p in self.my_team())
     
-    def hit(self, amt=0, hitter=None):
-        pass
-    
-    def show_debug_hint(self):
-        return
+    #do nothing in base class - these do HUD stuff
+    def add_point(self):pass
+    def hit(self, amt=0, hitter=None): pass
+    def show_debug_hint(self): pass
     
     def drop(self, i):
         succ=super(Player, self).drop(i)
@@ -362,7 +349,6 @@ class LocalPlayer(Player):
         self.damager = None
         #self.setup_shooting()
         self.eventHandle = PlayerEventHandler(self)
-        self.debug_hint = None
         #self.game.network_listener.loop()
     
     def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager):
@@ -414,7 +400,7 @@ class LocalPlayer(Player):
         self.sendUpdate()
         super(LocalPlayer,self).die()
         if hasattr(self, "hud") and self.hud:
-            self.hud.display_gray()
+            self.hud.display_gray("Process Terminated.")
             self.hud.show_scores()
             self.hud.add_kill()
             self.hud.clearHitIndicators()
@@ -560,18 +546,11 @@ class LocalPlayer(Player):
         self.hud.add_kill()
         
     def show_locate_hint(self):
-        self.locate_hint = OnscreenText(text="Right click to scope", pos=(0,0.1), scale=0.06, fg=(0,0,0,0.8), bg=(1,1,1,0.8), font=self.hud.font)
-        Sequence(Wait(3.0), Func(self.locate_hint.destroy)).start()
+        self.hud.show_hint("Right click to scope")
         self.game.had_locate = True
         
     def show_debug_hint(self):
-        if self.debug_hint == None :
-            self.debug_hint = OnscreenText(text="Already at full health", pos=(0,0.1), scale=0.06, fg=(0,0,0,0.8), bg=(1,1,1,0.8), font=self.hud.font)
-            Sequence(Wait(3.0), Func(self.destroy_debug_hint)).start()
-            
-    def destroy_debug_hint(self):
-        self.debug_hint.destroy()
-        self.debug_hint = None
+        self.hud.show_hint("Already at full health",timeout=1)
     
     def setup_camera(self):
         super(LocalPlayer,self).setup_camera()

@@ -104,7 +104,7 @@ class HUD(object):
             self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
 
     def target(self):
-        objHit,spotHit = self.player.findCrosshairHit()
+        objHit,_ = self.player.findCrosshairHit()
         if objHit in self.player.game.drones or objHit in self.player.game.players: #turn the crosshairs red
             self.infoHUD.setText(objHit)
             self.infoHUD.unstash()
@@ -251,14 +251,21 @@ class HUD(object):
             self.redScreen.destroy()
             self.redScreen = None
             
-    def display_gray(self):
+    def display_gray(self,message):
         if not self.grayScreen:
-            self.grayScreen = DirectFrame(frameSize=(-1.34,1.34,-1,1), frameColor=HUD_FG, sortOrder=3)
+            scale = 0.2
+            invscale = 1.0/scale
+            self.grayScreen = DirectLabel(text=message, frameSize=(-1.34*invscale,1.34*invscale,-invscale,invscale), frameColor=HUD_FG, sortOrder=3, text_fg=HUD_BG, text_font=self.font, scale=scale)
     
     def destroy_gray(self):
         if self.grayScreen:
             self.grayScreen.destroy()
-            self.grayScreen = None        
+            self.grayScreen = None
+                
+    def show_hint(self,message,timeout=3):
+        hint = OnscreenText(text=message, pos=(0,0.1), scale=HUD_SCALE, fg=HUD_FG, bg=HUD_BG, font=self.font)
+        Sequence(Wait(timeout), Func(hint.destroy)).start()
+        return hint
     
     def timerTask(self, task):
         game = self.player.game

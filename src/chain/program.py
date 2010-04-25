@@ -160,12 +160,8 @@ class Basic(Program):
         self.disappear()
         del self.game.programs[self.unique_str()]
         return False
-    
-    def get_description(self):
-        return self.description
 
-    def do_effect(self, player):
-        return
+    def do_effect(self, player): pass
     
 class RAM(Basic):
     def __init__(self, game, room, pos=None, scale=4.0):
@@ -176,9 +172,7 @@ class RAM(Basic):
     def do_effect(self, agent):
         agent.add_slot()
         
-    def setup_interval(self):
-        #do nothing - the interval doesn't exist for RAM
-        pass
+    def setup_interval(self): pass
     
     #RAM is in slots - it collides differently
     def setup_collider(self):

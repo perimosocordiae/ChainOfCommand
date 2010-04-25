@@ -16,15 +16,13 @@ class Room(Obstacle):
         self.environ.setHpr(rot)
         self.add_copper_wires()
     
-    def add_copper_wires(self):
-        return None
+    def add_copper_wires(self): pass
     
     def create_ln_at(self, pos, ln):
         mypt = self.environ.getRelativePoint(render,Point3(pos[0],pos[1],pos[2]))
         self.create_ln_at_my(mypt, ln)
     
-    def create_ln_at_my(self, pos, ln):
-        pass
+    def create_ln_at_my(self, pos, ln): pass
     
     def add_wall(self, name, model, parent, p1, p2, p3, p4, colliderMask):
         self.walls[name] = (model, QuadWall(name, parent, p1, p2, p3, p4, colliderMask))
@@ -62,17 +60,15 @@ class Room(Obstacle):
     def addWallSection(self, name, parent, pos, color, divisor=1, total=0, addWire=False):
         if total >= divisor:
             rotation = (6-(total//divisor)) % 4
-            if rotation % 2 == 1:
-                egg = "L_wall.bam"
-            else:
-                egg = "Reverse_L_wall.bam"
+            egg = "L_wall.bam" if rotation % 2 == 1 else "Reverse_L_wall.bam"
         else:
             rotation = 0
             egg = "white_wall.bam"
         model = make_tile(parent,egg,color,pos,(0,0,90 * rotation))
+        pts = Point3(1,0,1), Point3(-1,0,1),Point3(-1,0,-1), Point3(1,0,-1)
         if total >= divisor:
-            wall = LWall(name, model, Point3(1,0,1), Point3(-1,0,1),
-                    Point3(-1,0,-1), Point3(1,0,-1), WALL_COLLIDER_MASK)
+            wall = LWall(name, model, pts[0],pts[1],pts[2],pts[3], WALL_COLLIDER_MASK)
+            
             if rotation == 1:
                 #hole on the bottom - add a copper wire
                 self.obstacles["%s_wire"%name] = CopperWire("%s_wire"%name, model,
@@ -81,18 +77,15 @@ class Room(Obstacle):
                 self.obstacles["%s_wire"%name] = CopperWire("%s_wire"%name, model,
                                         (0.5,-1.5,-.998), (0,0,0), (0.1,1.5,1))
         else:
-            wall = QuadWall(name, model, Point3(1,0,1), Point3(-1,0,1),
-                    Point3(-1,0,-1), Point3(1,0,-1), WALL_COLLIDER_MASK)
+            wall = QuadWall(name, model, pts[0],pts[1],pts[2],pts[3], WALL_COLLIDER_MASK)
         self.walls[name] = (model,wall)
-    
+        
     def addRightTriangle(self, name, parent, pos, color):
         model = make_tile(parent,"right_triangle.bam",color,pos,(0,0,0))
-        wall = TriangleWall(name, model, Point3(2,0,0), Point3(0,2,0),
-                            Point3(0,0,0), WALL_COLLIDER_MASK)
-        self.walls[name] = (model, wall)
+        self.add_triangle(name,model,parent,Point3(2,0,0), Point3(0,2,0),Point3(0,0,0),WALL_COLLIDER_MASK)
     
     def has_point(self, pos):
-        mypt = self.environ.getRelativePoint(render,Point3(pos[0],pos[1],pos[2]))
+        mypt = self.environ.getRelativePoint(render,Point3(*pos))
         x1,x2,y1,y2,z1,z2 = self.get_bounds()
         return mypt[0] > x1 and mypt[0] < x2 and mypt[1] > y1 and mypt[1] < y2 and mypt[2] > z1 and mypt[2] < z2
     
@@ -118,14 +111,11 @@ class CubeRoom(Room):
             self.addWallSection("wall_%s_2"%i, wall, (0,3,z), color, 5, total, addWire)
             total = total % 5
             self.addWallSection("wall_%s_3"%i, wall, (-2,3,z), color, 1, total, addWire)
-            
-        #Now add the floor & ceiling
-        self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,0,0),(0,0,0),3.0),
-                QuadWall("floor", self.environ, Point3(3,3,0), Point3(-3,3,0),
-                         Point3(-3,-3,0), Point3(3,-3,0), FLOOR_COLLIDER_MASK))
-        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.bam",color,(0,0,4),(0,180,0),3.0),
-                QuadWall("ceiling", self.environ, Point3(3,-3,4), Point3(-3,-3,4),
-                         Point3(-3,3,4), Point3(3,3,4), WALL_COLLIDER_MASK))
+        
+        self.add_wall("floor",make_tile(self.environ,"white_floor.bam",color,(0,0,0),(0,0,0),3.0),
+                      self.environ, Point3(3,3,0), Point3(-3,3,0),Point3(-3,-3,0), Point3(3,-3,0), FLOOR_COLLIDER_MASK)
+        self.add_wall("ceiling",make_tile(self.environ,"white_floor.bam",color,(0,0,4),(0,180,0),3.0),
+                      self.environ, Point3(3,-3,4), Point3(-3,-3,4),Point3(-3,3,4), Point3(3,3,4), WALL_COLLIDER_MASK)
         
     def add_copper_wires(self):
         self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,0,0.001), (0,0,0),(0.2,3))
@@ -168,12 +158,10 @@ class Hallway(Room):
         self.addWallSection("wall_2_1", wall, (-1,1,1), color)
         
         #Add the floor & ceiling
-        self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
-                QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
-                         Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
-        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,2),(0,180,0),1.0),
-                QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
-                         Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
+        self.add_wall("floor",make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
+                      self.environ, Point3(1,2,0), Point3(-1,2,0),Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK)
+        self.add_wall("ceiling",make_tile(self.environ,"white_floor.bam",color,(0,1,2),(0,180,0),1.0),
+                      self.environ, Point3(1,0,2), Point3(-1,0,2),Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK)
         
     def relative_rand_point(self):
         return (randint(-8,8) / 10,randint(2,18)/10, 0)
@@ -217,12 +205,10 @@ class HallwayIntersection(Room):
                 
         self.add_wires(type)
         #Add the floor & ceiling
-        self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
-                QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
-                         Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
-        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,2),(0,180,0),1.0),
-                QuadWall("ceiling", self.environ, Point3(1,0,2), Point3(-1,0,2),
-                         Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK))
+        self.add_wall("floor",make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
+                      self.environ, Point3(1,2,0), Point3(-1,2,0),Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK)
+        self.add_wall("ceiling",make_tile(self.environ,"white_floor.bam",color,(0,1,2),(0,180,0),1.0),
+                      self.environ, Point3(1,0,2), Point3(-1,0,2),Point3(-1,2,2), Point3(1,2,2), WALL_COLLIDER_MASK)
         
     def relative_rand_point(self):
         return (randint(-8,8) / 10,randint(2,18)/10, 0)
@@ -231,11 +217,11 @@ class HallwayIntersection(Room):
         return -1,1,0,2,0,2
     
     def add_wires(self, type):
-        if type == 4:
-            #4-way intersection - add full y wire
-            self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,1,0.001), (0,0,0),(0.2,1))
+        if type == 4: #4-way intersection - add full y wire
+            p1,p2 = (0,1,0.001), (0.2,1)
         else:
-            self.obstacles['wire1'] = CopperWire("wire1", self.environ, (0,0.5,0.001), (0,0,0),(0.2,0.5))
+            p1,p2 = (0,0.5,0.001), (0.2,0.5)
+        self.obstacles['wire1'] = CopperWire("wire1", self.environ, p1, (0,0,0),p2)
         
         if type >= 3:
             #T or 4-way - use full length x wire
@@ -259,12 +245,10 @@ class Platform(Room):
         super(Platform, self).__init__(name, parent, pos, rot, scale)
         
         #Add the floor & ceiling
-        self.walls["floor"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
-                QuadWall("floor", self.environ, Point3(1,2,0), Point3(-1,2,0),
-                         Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK))
-        self.walls["ceiling"] = (make_tile(self.environ,"white_floor.bam",color,(0,1,-1),(0,225,0),(1.0,sqrt(2),sqrt(2))),
-                QuadWall("ceiling", self.environ, Point3(1,0,-2), Point3(-1,0,-2),
-                         Point3(-1,2,0), Point3(1,2,0), WALL_COLLIDER_MASK))
+        self.add_wall("floor",make_tile(self.environ,"white_floor.bam",color,(0,1,0),(0,0,0),1.0),
+                      self.environ, Point3(1,2,0), Point3(-1,2,0),Point3(-1,0,0), Point3(1,0,0), FLOOR_COLLIDER_MASK)
+        self.add_wall("ceiling",make_tile(self.environ,"white_floor.bam",color,(0,1,-1),(0,225,0),(1.0,sqrt(2),sqrt(2))),
+                      self.environ, Point3(1,0,-2), Point3(-1,0,-2),Point3(-1,2,0), Point3(1,2,0), WALL_COLLIDER_MASK)
         
         wall = self.environ.attachNewNode("wall_1")
         wall.setR(90)

@@ -19,15 +19,9 @@ class Drone(Agent):
         self.parent.setPos(pos[0],pos[1],pos[2] + self.get_origin_height())
         self.setup_collider()
         self.speed = speed
-        
-    def get_text_pos(self):
-        return (0,0,5)
     
     def damage(self):
         return 20
-     
-    def repeat_damage(self):
-        return 0.1
 
     def die(self):
         #taskMgr.remove(self.walkTask)
