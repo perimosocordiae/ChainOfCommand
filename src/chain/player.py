@@ -375,6 +375,7 @@ class LocalPlayer(Player):
         if dropping > -1:
             #we dropped it - now we're not dropping anything
             self.dropping = -1
+        self.hud.updateHitIndicators()
     
     def move_to(self,pos,rot,vel,hpr,damage,damager):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
@@ -415,6 +416,7 @@ class LocalPlayer(Player):
             self.hud.display_gray()
             self.hud.show_scores()
             self.hud.add_kill()
+            self.hud.clearHitIndicators()
             if self.hud.redScreen :
                 self.hud.redScreen.destroy()
                 self.hud.redScreen = None

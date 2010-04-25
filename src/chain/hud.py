@@ -1,5 +1,5 @@
 from time import time
-from pandac.PandaModules import TransparencyAttrib, Point3
+from pandac.PandaModules import TransparencyAttrib, Point3, Vec3
 from direct.gui.OnscreenImage import OnscreenImage
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.DirectGui import *
@@ -33,6 +33,7 @@ class HUD(object):
             OnscreenText(text=EMPTY_PROG_STR, pos=(0.3, -0.98), scale=HUD_SCALE,
                          fg=HUD_FG, font=self.font, mayChange=True)
 		]
+        self.hitIndicators = []
         # red flash for indicating hits
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
@@ -128,12 +129,12 @@ class HUD(object):
         self.scopehairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def hit(self, hitter=None):
-        if hitter:
+        if hitter and not self.grayScreen: # don't show hit indicator if you're dead
             hitterPos = None
-            itsaDrone = False
             if hitter in self.player.game.drones :
                 hitterPos = self.player.game.drones[hitter].get_model().getPos()
-                itsaDrone = True
+                droneLookAtVector = render.getRelativeVector(self.player.game.drones[hitter].get_model(), Vec3(0, -40, 0))
+                hitterPos -= droneLookAtVector
             elif hitter in self.player.game.players :
                 hitterPos = self.player.game.players[hitter].get_model().getPos()
             if hitterPos:
@@ -141,19 +142,45 @@ class HUD(object):
                 vectorToHitter = -self.player.get_model().getRelativeVector(render, vectorToHitter)
                 vectorToHitter.setZ(0.0)
                 vectorToHitter.normalize()
-                if itsaDrone : vectorToHitter = -vectorToHitter
                 vectorToHitter = vectorToHitter/3.0
                 rotation = degrees(atan(vectorToHitter.getX()/vectorToHitter.getY()))
                 if vectorToHitter.getY() < 0 : rotation += 180
                 hitArc = OnscreenImage(image="%s/white_arc.png" % TEXTURE_PATH, pos = (vectorToHitter.getX(),0,vectorToHitter.getY()), 
-                            color=(1,0,0,0.5),scale=(0.20, 1, 0.05))
-                hitArc.setR(rotation);
+                            color=(1,0,0,0.8),scale=(0.20, 1, 0.05))
+                hitArc.setR(rotation)
                 hitArc.setTransparency(TransparencyAttrib.MAlpha)
-                Sequence(Wait(2.0), Func(hitArc.destroy)).start()
+                self.hitIndicators.append((hitArc, hitterPos))
         self.flashRed.start() # flash the screen red
         self.healthBAR['value'] = self.player.health
         hpct = self.player.health/100.0
         self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
+    
+    def updateHitIndicators(self):
+        toDelete = []
+        for hitIndicatorData in self.hitIndicators :
+            hitIndicatorColor = hitIndicatorData[0].getColor()
+            if hitIndicatorData[0].getColor()[3] <= 0.02 : # alpha value almost 0, should be destroyed
+                toDelete.append(hitIndicatorData)
+                continue
+            hitIndicatorData[0].setColor(hitIndicatorColor[0], hitIndicatorColor[1], hitIndicatorColor[2], hitIndicatorColor[3] - 0.02)
+            hitterPos = hitIndicatorData[1]
+            vectorToHitter = hitterPos - self.player.get_model().getPos()
+            vectorToHitter = -self.player.get_model().getRelativeVector(render, vectorToHitter)
+            vectorToHitter.setZ(0.0)
+            vectorToHitter.normalize()
+            vectorToHitter = vectorToHitter/3.0
+            rotation = degrees(atan(vectorToHitter.getX()/vectorToHitter.getY()))
+            if vectorToHitter.getY() < 0 : rotation += 180
+            hitIndicatorData[0].setPos(vectorToHitter.getX(),0,vectorToHitter.getY())
+            hitIndicatorData[0].setR(rotation)
+        for hitIndicatorData in toDelete :
+            hitIndicatorData[0].destroy()
+            self.hitIndicators.remove(hitIndicatorData)
+    
+    def clearHitIndicators(self):
+        for hitIndicatorData in self.hitIndicators :
+            hitIndicatorData[0].destroy()
+        self.hitIndicators = []
         
     def heal(self):
         if hasattr(self, "healthBAR") and self.healthBAR is not None:
