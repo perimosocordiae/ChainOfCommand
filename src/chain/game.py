@@ -59,7 +59,7 @@ class Game(object):
         #Some player stuff just shouldn't be done until we have a world
         for pname in self.players:
             self.players[pname].post_environment_init()
-        self.drone_adder = Sequence(Wait(2.0), Func(self.send_drone_signal))
+        self.drone_adder = Sequence(Wait(20.0), Func(self.send_drone_signal))
         print "game initialized, synchronizing"
         self.client.send("ready")
         

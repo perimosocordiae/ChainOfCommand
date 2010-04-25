@@ -102,6 +102,7 @@ class Player(Agent):
         self.tron.hide()
     
     def die(self):
+        self.toggle_god()
         self.hide()
         self.handleEvents = False
         for i in range(len(self.programs)):
@@ -123,7 +124,7 @@ class Player(Agent):
             self.tron.setPos(pt[0],pt[1],pt[2] + TRON_ORIGIN_HEIGHT)
 
     def respawn(self):
-        Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn),Wait(1.0),
+        Sequence(Wait(4.0), Func(self.spawn),Wait(1.0),
                  Func(self.toggle_god)).start()
     
     def toggle_god(self):
@@ -423,7 +424,7 @@ class LocalPlayer(Player):
     
     def respawn(self):
         print "respawning"
-        Sequence(Func(self.toggle_god),Wait(4.0), Func(self.spawn), Wait(1.0),
+        Sequence(Wait(4.0), Func(self.spawn), Wait(1.0),
                  Func(self.hud.hide_scores), Func(self.hud.destroy_gray), Func(self.toggle_god)).start()
     
     def spawn(self,startPos=None,update=True):
@@ -527,8 +528,8 @@ class LocalPlayer(Player):
             return
         self.stats['damage_taken'] += amt
         if LocalPlayer.sounds['grunt'].getTime() == 0.0 : LocalPlayer.sounds['grunt'].play()
-        print "Hit"
-        self.hud.hit(hitter)
+        if not self.invincible:
+            self.hud.hit(hitter)
     
     def heal(self, amt=0):
         super(LocalPlayer, self).heal(amt)

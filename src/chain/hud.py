@@ -129,7 +129,7 @@ class HUD(object):
         self.scopehairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def hit(self, hitter=None):
-        if hitter and not self.grayScreen: # don't show hit indicator if you're dead
+        if hitter :
             hitterPos = None
             if hitter in self.player.game.drones :
                 hitterPos = self.player.game.drones[hitter].get_model().getPos()
@@ -138,18 +138,12 @@ class HUD(object):
             elif hitter in self.player.game.players :
                 hitterPos = self.player.game.players[hitter].get_model().getPos()
             if hitterPos:
-                vectorToHitter = hitterPos - self.player.get_model().getPos()
-                vectorToHitter = -self.player.get_model().getRelativeVector(render, vectorToHitter)
-                vectorToHitter.setZ(0.0)
-                vectorToHitter.normalize()
-                vectorToHitter = vectorToHitter/3.0
-                rotation = degrees(atan(vectorToHitter.getX()/vectorToHitter.getY()))
-                if vectorToHitter.getY() < 0 : rotation += 180
-                hitArc = OnscreenImage(image="%s/white_arc.png" % TEXTURE_PATH, pos = (vectorToHitter.getX(),0,vectorToHitter.getY()), 
-                            color=(1,0,0,0.8),scale=(0.20, 1, 0.05))
-                hitArc.setR(rotation)
+                hitArc = OnscreenImage(image="%s/white_arc.png" % TEXTURE_PATH, pos = (1,0,1), 
+                            color=(1,0,0,0.8),scale=(0.000001, 0.000001, 0.000001))
                 hitArc.setTransparency(TransparencyAttrib.MAlpha)
                 self.hitIndicators.append((hitArc, hitterPos))
+                self.updateHitIndicators()
+                hitArc.setScale(0.20, 1, 0.05)
         self.flashRed.start() # flash the screen red
         self.healthBAR['value'] = self.player.health
         hpct = self.player.health/100.0
@@ -246,6 +240,7 @@ class HUD(object):
             self.redScreen = None
         self.hide_scores()
         self.destroy_radar()
+        self.clearHitIndicators()
         base.setFrameRateMeter(False) 
     
     def flash_red(self):
