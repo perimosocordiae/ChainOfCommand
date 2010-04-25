@@ -151,7 +151,6 @@ class Program(Agent):
 
 #Programs that have an immediate effect and then disappear
 class Basic(Program):
-    
     def __init__(self, game, room, name, desc, scale, pos, prefix=''):
         super(Basic, self).__init__(game, room, name, prefix, desc, scale, pos)
     
@@ -195,11 +194,11 @@ class Debug(Basic):
         self.per = per
         self.times = times
     
-    def pick_up(self, player):
-        if player.health < player.get_max_health(): # no effect if full health
-            super(Debug, self).pick_up(player)
+    def pick_up(self, agent):
+        if agent.health < agent.get_max_health(): # no effect if full health
+            super(Debug, self).pick_up(agent)
         else:
-            player.show_debug_hint()
+            agent.show_debug_hint()
             print "Already at full health"
         return False
 
@@ -209,6 +208,24 @@ class Debug(Basic):
 class Gdb(Debug):
     def __init__(self, game, room, pos=None):
         super(Gdb, self).__init__(game, room, 'gdb', "Restore Health", BASE_SCALE, pos, 'terminal_window_gdb')
+
+class Sudo(Basic):
+    def __init__(self, game, room, pos=None):
+        super(Sudo, self).__init__(game, room, 'sudo', "10s God Mode", BASE_SCALE, pos, 'terminal_window')
+    
+    def pick_up(self, agent):
+        if not agent.invincible: # no effect if already in God Mode
+            super(Sudo, self).pick_up(agent)
+            print "Sudo God Mode"
+        else:
+            # agent.show_hint('Already in God Mode')
+            print "Already in God Mode"
+        return False
+
+    def do_effect(self, agent):
+        agent.toggle_god()
+        taskMgr.doMethodLater(0.2, agent.updateGodModeTask, "updateGodModeTask")
+        taskMgr.doMethodLater(10, agent.stopGodModeTask, "stopGodModeTask")
 
 #***************************** ACHIEVEMENT PROGRAMS *****************************
 
@@ -305,8 +322,9 @@ class Chmod(Achievement):
     
     def add_effect(self, agent):
         agent.get_shield_sphere().show()
-    def remove_effect(self, player):
-        player.get_shield_sphere().hide()
+        
+    def remove_effect(self, agent):
+        agent.get_shield_sphere().hide()
 
 class DashR(Achievement):
     def __init__(self, game, room, pos=None):

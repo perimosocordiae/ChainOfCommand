@@ -39,6 +39,7 @@ class Level(Obstacle):
             self.rooms["Cube_Room"].add_program(self.game, Gdb)
             #self.rooms["Cube_Room"].add_program(self.game, Locate)
             self.rooms["Cube_Room"].add_program(self.game, Ls)
+            self.rooms["Cube_Room"].add_program(self.game, Sudo)
             
         for slot in range(5):
             pos = self.rooms["Cube_Room"].rand_point()

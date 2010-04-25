@@ -591,6 +591,25 @@ class LocalPlayer(Player):
         #self.sendUpdate()
         return Task.cont
     
+    def updateGodModeTask(self, task):
+        glow = not self.laserGlow
+        self.set_laser_glow(glow)
+        self.set_glow(glow)
+        return task.again
+    
+    def stopGodModeTask(self, task):
+        print "Sudo wore off"
+        taskMgr.remove('updateGodModeTask')
+        self.toggle_god()
+        self.set_laser_glow(False)
+        self.set_glow(False)
+        for p in ifilter(lambda p: p != None, self.programs):
+            if p.name == "rm":
+                self.set_laser_glow(True)
+                self.set_glow(True)
+                break
+        return task.done
+    
     def sendUpdate(self):
         if not self.handleEvents: return Task.cont
         self.hud.target()
