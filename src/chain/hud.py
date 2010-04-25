@@ -24,13 +24,13 @@ class HUD(object):
         self.scopehairs.stash()
         self.infoHUD = OnscreenText(text="PlayerName", pos=(0,0.1), scale=HUD_SCALE, fg=HUD_FG, bg=HUD_BG, font=self.font, mayChange=True)
         self.infoHUD.stash()
-        self.bottomHUD = DirectFrame(frameSize=(-0.77,0.77,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,-0.96))
+        self.bottomHUD = DirectFrame(frameSize=(-0.77,0.77,-0.07,0.07), frameColor=HUD_BG, pos=(0,0,-0.93))
         self.programHUD = [
-            OnscreenText(text=EMPTY_PROG_STR, pos=(-0.3, -0.98), scale=HUD_SCALE,
+            OnscreenText(text="1\n" + EMPTY_PROG_STR, pos=(-0.3, -0.91), scale=HUD_SCALE,
                          fg=HUD_FG, font=self.font, mayChange=True),
-            OnscreenText(text=EMPTY_PROG_STR, pos=(0, -0.98), scale=HUD_SCALE,
+            OnscreenText(text="2\n" + EMPTY_PROG_STR, pos=(0, -0.91), scale=HUD_SCALE,
                          fg=HUD_FG, font=self.font, mayChange=True),
-            OnscreenText(text=EMPTY_PROG_STR, pos=(0.3, -0.98), scale=HUD_SCALE,
+            OnscreenText(text="3\n" + EMPTY_PROG_STR, pos=(0.3, -0.91), scale=HUD_SCALE,
                          fg=HUD_FG, font=self.font, mayChange=True)
 		]
         self.hitIndicators = []
@@ -183,19 +183,21 @@ class HUD(object):
             self.healthBAR['barColor'] = (1-hpct,hpct,0,1)
     
     def collect(self,i,prog_name):
-        self.programHUD[i].setText("[%s]" % prog_name)
+        
+        self.programHUD[i].setText(str(i+1) + "\n[%s]" % prog_name)
     
-    def drop(self, prog_index):
-        self.programHUD[prog_index].setText(EMPTY_PROG_STR)
+    def drop(self, i):
+        self.programHUD[i].setText(str(i+1) + "\n" + EMPTY_PROG_STR)
         
     def add_slot(self):
         x = self.programHUD[-1].getPos()[0]
-        self.programHUD.append(OnscreenText(text=EMPTY_PROG_STR,
-                        pos=(x + 0.3, -0.98), scale=HUD_SCALE,
+        i = str(len(self.programHUD) + 1)
+        self.programHUD.append(OnscreenText(text=i + "\n" + EMPTY_PROG_STR,
+                        pos=(x + 0.3, -0.91), scale=HUD_SCALE,
                         fg=HUD_FG, font=self.font, mayChange=True))
-        for txt in self.programHUD:
+        for slot in self.programHUD:
             #they couldn't just make it simple and override getX() could they?
-            txt.setX(txt.getPos()[0] - 0.15)
+            slot.setX(slot.getPos()[0] - 0.15)
         
     def add_kill(self):
         self.killHUD.setText("Score:%d" % self.player.score())
