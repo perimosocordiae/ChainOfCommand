@@ -347,7 +347,7 @@ class Ls(Achievement):
 class Ln(Achievement):
     def __init__(self, game, room, pos=None):
         super(Ln, self).__init__(game, room, 'ln', "Move the Link to the South Bridge", BASE_SCALE, pos)
-        self.wire = CopperWire("ln_wire", render, (0,0,0), (0,0,0), (0,0,0))
+        self.wire = CopperWire("ln_wire", render, (0,0,0), (0,0,0), (0.0001,0.0001,0))
     
     def die(self):
         super(Ln, self).die()
