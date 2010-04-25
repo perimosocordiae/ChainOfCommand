@@ -287,7 +287,7 @@ class HUD(object):
         for drone in game.drones :
             vectorToDrone = game.drones[drone].get_model().getPos() - myPos
             vectorToDrone.setZ(0.0)
-            if (vectorToDrone.lengthSquared() < clipConstantSquared) :
+            if vectorToDrone.lengthSquared() < clipConstantSquared :
                 vectorToDrone = -self.player.get_model().getRelativeVector(render, vectorToDrone)/scaleConstant
                 radarPoint = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (vectorToDrone.getX(),0,vectorToDrone.getY()), 
                                          scale=0.05, color=(0,0,0,.8), parent=self.radar_background)
@@ -295,10 +295,13 @@ class HUD(object):
         for player in game.players :
             vectorToPlayer = game.players[player].get_model().getPos() - myPos
             vectorToPlayer.setZ(0.0)
-            if (vectorToPlayer.lengthSquared() < clipConstantSquared) :
+            if vectorToPlayer.lengthSquared() < clipConstantSquared :
                 vectorToPlayer = -self.player.get_model().getRelativeVector(render, vectorToPlayer)/scaleConstant
                 teamColor = TEAM_COLORS[game.players[player].color]
+                sortNum = 0
+                if player == self.player.name :
+                    sortNum = -5
                 radarPoint = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, pos = (vectorToPlayer.getX(),0,vectorToPlayer.getY()), 
-                                         scale=0.05, color=teamColor+(0.8,), parent=self.radar_background)
+                                         scale=0.05, color=teamColor+(0.8,), parent=self.radar_background, sort=sortNum)
                 self.radarPoints.append(radarPoint)
         return task.cont
