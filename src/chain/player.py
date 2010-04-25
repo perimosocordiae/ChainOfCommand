@@ -381,7 +381,7 @@ class LocalPlayer(Player):
         self.tron.setFluidPos(self.tron.getPos() + (vel * SERVER_TICK))
         self.tron.setH(self.tron.getH() + hpr.getX())
         if self.tron.getZ() < BOTTOM_OF_EVERYTHING:
-            self.die()
+            self.hit((self.shield()*self.health), None) # calculate the exact amount for a 1 hit death
         
     def initialize_camera(self):
         super(LocalPlayer,self).initialize_camera()

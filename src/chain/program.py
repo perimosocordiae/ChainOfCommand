@@ -273,7 +273,7 @@ class Flag(Achievement):
         self.model.setTexture(ts, tex)
     
     def damage_mod(self, d):
-        return d * 0.1 # double the player's damage
+        return d * 0.1 # decrease the player's damage
     
     def shield_mod(self, s):
         return s * 1.5

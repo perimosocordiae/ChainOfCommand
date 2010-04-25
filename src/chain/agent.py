@@ -212,6 +212,9 @@ class Agent(object):
         
     def get_base_damage(self):
         return 10
+    
+    def get_base_shield(self):
+        return 1.0 # no shield
         
     def damage(self):
         d = self.get_base_damage()
@@ -220,7 +223,7 @@ class Agent(object):
         return d
 
     def shield(self):
-        s = 1.0 # no shield
+        s = self.get_base_shield()
         for p in ifilter(lambda p: p != None, self.programs):
             s = p.shield_mod(s)
         return s
