@@ -291,11 +291,11 @@ class Flag(Achievement):
     def reappear(self, pos):
         super(Flag, self).reappear(pos)
         self.load_texture()
-        for color,base in self.game.level.bases.iteritems():
+        for color,base in self.game.mode.level.bases.iteritems():
             if color != self.color and base.has_point(pos):
-                self.game.ctf_scores[color] += 1
+                self.game.mode.ctf_scores[color] += 1
                 self.game.add_point_for(color)
-                self.game.level.readd_flag(self)
+                self.game.mode.level.readd_flag(self)
                 break
     
     def load_texture(self):
@@ -400,7 +400,7 @@ class Ln(Achievement):
     
     def reappear(self, pos):
         super(Ln, self).reappear(pos)
-        self.game.level.create_ln_at(pos, self)
+        self.game.mode.level.create_ln_at(pos, self)
         
     def show_desc(self):
         super(Ln, self).show_desc()
@@ -418,4 +418,4 @@ class Ln(Achievement):
         return True
     
     #def remove_effect(self, agent):
-    #    self.game.level.create_ln_at(agent.get_model().getPos(), self)
+    #    self.game.mode.level.create_ln_at(agent.get_model().getPos(), self)

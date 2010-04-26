@@ -12,7 +12,8 @@ from pandac.PandaModules import TextNode, Thread, TransparencyAttrib
 from direct.interval.IntervalGlobal import Func, Sequence, Wait
 from networking import Server, Client
 from game import Game
-from constants import MODEL_PATH,USE_GLOW,GAME_TYPES,TEAM_COLORS,TEXTURE_PATH
+from constants import MODEL_PATH,USE_GLOW,TEAM_COLORS,TEXTURE_PATH
+
 
 SCOREFILE = 'hiscores.pyz'
 CONTROLSFILE = 'controls.pyz'
@@ -262,12 +263,20 @@ class Shell(object):
         self.overwrite_line(idx+9,"When everyone is ready, press 'b' to begin")
         self.overwrite_line(idx+10,"To go back to the shell, press 'x'")
         self.g.client.send("player %s"%self.name)
-        self.screen.accept('b',self.g.client.send,['start'])
+        self.screen.accept('b',self.finish_staging)
         self.screen.accept('x',self.exit_staging)
         self.screen.accept('arrow_up', self.g.send_color_change, [1])
         self.screen.accept('arrow_down', self.g.send_color_change, [-1])
         self.screen.accept('arrow_right', self.g.send_type_change, [1])
         self.screen.accept('arrow_left', self.g.send_type_change, [-1])
+        
+    def finish_staging(self):
+        min_p = self.g.get_mode().min_players
+        if len(self.g.players) < min_p:
+            idx = len(LOADINGTEXT.splitlines())+10
+            self.overwrite_line(idx, "Sorry, this game mode needs at least %d players"%min_p)
+        else:
+            self.g.client.send,['start']
     
     def exit_staging(self):
         self.g.client.send('unreg %s'%self.name)
@@ -277,7 +286,7 @@ class Shell(object):
     
     def refresh_staging(self):
         player_names = ("%s (%s)"%(n,TEAM_COLORS.keys()[t]) for n,t in self.g.players.iteritems())
-        type,desc = GAME_TYPES[self.g.type_idx]
+        type,desc = self.g.get_mode().name, self.g.get_mode().desc
         name_idx = len(LOADINGTEXT.splitlines())+4
         self.overwrite_line(name_idx," | ".join(player_names).center(60))
         self.overwrite_line(name_idx+3,type.upper().center(60))
@@ -298,73 +307,9 @@ class Shell(object):
     def main(self, client):
         print "creating new Game object"
         self.g = Game(client,self,100.0)
+        
+    ########## HERE THERE BE SETTINGS #############
 
-    #### HERE THERE BE SHELL COMMANDS ####
-    
-    def start_game(self,cmd,arglist=[],sudo=False):
-        if len(arglist) < 2:
-            self.append_line("Usage: %s [port_num] [host_ip]"%cmd)
-            self.append_line("  join the specified server, to get the game started")
-        else:               
-            try :
-                port = int(arglist[0])
-            except ValueError:
-                self.append_line("Error: Invalid format for port number")
-                self.square_bracket_checker(arglist[0])
-                return
-            if not self.ip_validator(arglist[1]) :
-                self.append_line("Error: Invalid format for IP address")
-                self.square_bracket_checker(arglist[1])
-                return 
-            try :
-                client = Client(arglist[1],port)
-            except EnvironmentError :
-                self.append_line("Error: Can't find a host on that IP and port")
-                return
-            loadingScreen = Sequence(Func(self.hide_inputs))#,Func(self.output.setText,""))
-            format = dict(self.controls)
-            for value in format :
-                if format[value] == 'mouse1' : format[value] = 'left click'
-                elif format[value] == 'mouse3' : format[value] = 'right click'
-            for line in (LOADINGTEXT%format).splitlines():
-                loadingScreen.append(Func(self.append_line, line))
-                loadingScreen.append(Wait(0.05))
-            loadingScreen.append(Func(self.append_line,""))
-            loadingScreen.append(Func(self.append_line,"Loading... "))
-            for _ in range(23 - len(LOADINGTEXT.splitlines())):
-                loadingScreen.append(Func(self.append_line, ""))
-                loadingScreen.append(Wait(0.05))
-            loadingScreen.append(Func(self.main, client))
-            loadingScreen.start()
-    
-    def start_server(self,cmd,arglist=[],sudo=False):
-        if len(arglist) != 1:
-            self.append_line("Usage: %s [port_num]"%cmd)
-            self.append_line("  start a server on this machine")
-            return
-        try :
-            port = int(arglist[0])
-        except ValueError:
-            self.append_line("Error: Invalid format for port number")
-            self.square_bracket_checker(arglist[0])
-            return
-        if self.server is not None:
-            if self.server.port == port:
-                self.append_line("A server is already running on that port.")
-                return
-            self.append_line("Moving server from port %d to port %d"%(self.server.port,port))
-            self.server.shutdown()
-        else:
-            adverb = "vigorously " if sudo else ""
-            self.append_line("Starting server %son port %d..."%(adverb,port))
-        self.server = Server(port)
-        self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
-            
-    def quit(self,cmd,arglist=[],sudo=False):
-        Sequence(Func(self.append_line,"Saving scores..."),Wait(0.5),
-                 Func(self.append_line,"Done."),Wait(0.5),
-                 Func(taskMgr.stop)).start()
-    
     def settingsPrompt(self,cmd,arglist=[],sudo=False):
         self.input.stash()
         self.prompt.stash()
@@ -501,6 +446,72 @@ class Shell(object):
         self.screen.accept('arrow_up',self.history,[True])
         self.screen.accept('arrow_down',self.history,[False])
         self.screen.accept('tab', self.tab_completion)
+
+    #### HERE THERE BE SHELL COMMANDS ####
+    
+    def start_game(self,cmd,arglist=[],sudo=False):
+        if len(arglist) < 2:
+            self.append_line("Usage: %s [port_num] [host_ip]"%cmd)
+            self.append_line("  join the specified server, to get the game started")
+        else:               
+            try :
+                port = int(arglist[0])
+            except ValueError:
+                self.append_line("Error: Invalid format for port number")
+                self.square_bracket_checker(arglist[0])
+                return
+            if not self.ip_validator(arglist[1]) :
+                self.append_line("Error: Invalid format for IP address")
+                self.square_bracket_checker(arglist[1])
+                return 
+            try :
+                client = Client(arglist[1],port)
+            except EnvironmentError :
+                self.append_line("Error: Can't find a host on that IP and port")
+                return
+            loadingScreen = Sequence(Func(self.hide_inputs))#,Func(self.output.setText,""))
+            format = dict(self.controls)
+            for value in format :
+                if format[value] == 'mouse1' : format[value] = 'left click'
+                elif format[value] == 'mouse3' : format[value] = 'right click'
+            for line in (LOADINGTEXT%format).splitlines():
+                loadingScreen.append(Func(self.append_line, line))
+                loadingScreen.append(Wait(0.05))
+            loadingScreen.append(Func(self.append_line,""))
+            loadingScreen.append(Func(self.append_line,"Loading... "))
+            for _ in range(23 - len(LOADINGTEXT.splitlines())):
+                loadingScreen.append(Func(self.append_line, ""))
+                loadingScreen.append(Wait(0.05))
+            loadingScreen.append(Func(self.main, client))
+            loadingScreen.start()
+    
+    def start_server(self,cmd,arglist=[],sudo=False):
+        if len(arglist) != 1:
+            self.append_line("Usage: %s [port_num]"%cmd)
+            self.append_line("  start a server on this machine")
+            return
+        try :
+            port = int(arglist[0])
+        except ValueError:
+            self.append_line("Error: Invalid format for port number")
+            self.square_bracket_checker(arglist[0])
+            return
+        if self.server is not None:
+            if self.server.port == port:
+                self.append_line("A server is already running on that port.")
+                return
+            self.append_line("Moving server from port %d to port %d"%(self.server.port,port))
+            self.server.shutdown()
+        else:
+            adverb = "vigorously " if sudo else ""
+            self.append_line("Starting server %son port %d..."%(adverb,port))
+        self.server = Server(port)
+        self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
+            
+    def quit(self,cmd,arglist=[],sudo=False):
+        Sequence(Func(self.append_line,"Saving scores..."),Wait(0.5),
+                 Func(self.append_line,"Done."),Wait(0.5),
+                 Func(taskMgr.stop)).start()
     
     def sudo(self,cmd,arglist=[],sudo=False):
         if len(arglist) == 0:

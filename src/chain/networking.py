@@ -2,7 +2,8 @@ from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
 from direct.task.Task import Task
 from pandac.PandaModules import *
-from time import time,sleep
+from time import time
+from itertools import ifilter
 from random import choice
 
 # adapted from http://www.panda3d.org/phpbb2/viewtopic.php?t=4881
@@ -121,6 +122,10 @@ class Server(NetworkBase):
             # and remove it from our activeConnections list
             for c in range(len(self.activeConnections)):
                 if self.activeConnections[c] == connection:
+                    try:
+                        name,_ = ifilter(lambda p: p[1] == connection, self.player_dict.iteritems()).next()
+                        del self.player_dict[name]
+                    except StopIteration: pass # player was already removed
                     del self.activeConnections[c]
                     break       
         return Task.cont

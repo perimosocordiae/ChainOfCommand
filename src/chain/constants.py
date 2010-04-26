@@ -26,12 +26,4 @@ SOUND_PATH = "../../sounds"
 NO_GLOW = "%s/no_glow.jpg"%TEXTURE_PATH
 USE_GLOW = True
 TEAM_COLORS = {'blue': (0, 0, 1), 'brown': (0.80, 0.53, 0.22), 'green': (0, 1, 0), 'red': (1, 0, 0), 'yellow': (1, 1, 0)}
-GAME_TYPES = [('deathmatch',"Every man for himself, first to 5 kills wins"),
-              ('timed deathmatch',"Every man for himself, highest score after 3 minutes wins"),
-              ('team deathmatch',"Team vs team, first to 15 kills wins"),
-              ('timed team deathmatch',"Team vs team, highest score after 3 minutes wins"),
-              ('capture the --flag',"Steal another team's flag to score"),
-              ('for the hoard',"Score by bringing programs back to base"),
-              ('pwnage',"Attack another team's base to score"),
-              ('tutorial', "Learn how to play")]
 SERVER_TICK = 0.08

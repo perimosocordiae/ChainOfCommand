@@ -265,14 +265,7 @@ class Player(Agent):
         return (p for p in self.game.players.itervalues() if hasattr(p,'color') and p.color == my_col)
         
     def score(self):
-        if self.game.type_idx < 2: # non-team matches
-            return self.stats.get('LocalPlayer_kill',0)+self.stats.get('Player_kill',0)+self.stats.get('Drone_kill',0)
-        if self.game.type_idx == 4: # ctf
-            try:
-                return self.game.ctf_scores[self.color]
-            except: return 0
-        # team matches
-        return sum(p.stats.get('LocalPlayer_kill',0)+p.stats.get('Player_kill',0) for p in self.my_team())
+        return self.game.mode.score(self)
     
     #do nothing in base class - these do HUD stuff
     def add_point(self):pass

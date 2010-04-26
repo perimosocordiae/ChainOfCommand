@@ -13,28 +13,18 @@ from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
+from mode import CaptureTheFlag,Deathmatch,ForTheHoard,Pwnage,Tutorial
 from constants import *
-from level import SniperLevel,CubeLevel,Beaumont
-
-TUTORIAL_PROMPTS = ["Welcome to the tutorial for \nChain of Command.\nPress c to continue.\n\n\n",
-                    "Use the mouse to look around.",
-                    "Use WASD to move around the world.\nW moves your player forwards.\nS moves your player backwards.\nA moves your player left.\nD moves your player right.",
-                    "Left click to shoot.",
-                    "Press e to pick up programs.\nYou can see your collected programs at the bottom of the screen.\nPress the number keys to drop a program.",
-                    "Press spacebar to jump.\n(Watch your height. Falling causes damage.)",
-                    "At the top of the screen is your health bar and game info.",
-                    "Press tab to see the current scores.\nPress p to pause the game.",
-                    "Press f or use the scroll wheel to change your perspective.",
-                    "Press n to toggle sound effects.\nPress m to toggle background music.",              
-                    "You've reached the end of our tutorial. Enjoy the game!\nPress Esc to exit the tutorial."]
-TUTORIAL_CONTINUE = 'Press c to continue.'
 
 class Game(object):
 
     def __init__(self,client,shell,tile_size=100):
         self.shell, self.tile_size = shell, tile_size
         self.players, self.programs,self.drones = {},{},{}
-        self.type_idx = 2 # index into GAME_TYPES, can be changed from the staging shell
+        self.modes = [Deathmatch(self,False,False),Deathmatch(self,False,True),
+                           Deathmatch(self,True,False), Deathmatch(self,True,True),
+                           CaptureTheFlag(self), ForTheHoard(self),Pwnage(self),Tutorial(self)]
+        self.mode_idx = 2 # index into game_modes, can be changed from the staging shell
         
         #The size of a cube
         num_tiles = 3
@@ -44,22 +34,23 @@ class Game(object):
         self.load_models()
         self.had_locate = False # used by Locate to figure out whether to add "Right click to scope"
         self.drone_spawner = False # indicates if I'm the assigned drone spawner
-        self.tutorial = False
     
     def rest_of_init(self):
         base.cTrav = CollisionTraverser()
         base.cTrav.setRespectPrevTransform(True)
         base.disableMouse()
-        if self.type_idx == 7: self.tutorial = True
+        self.mode = self.modes[self.mode_idx]
+        delattr(self,'modes')
+        delattr(self,'mode_idx')
         self.network_listener = Sequence(Wait(SERVER_TICK), Func(self.network_listen))
         [self.add_player(pname,i) for pname,i in self.players.iteritems() if pname != self.shell.name]
         self.add_local_player(self.players[self.shell.name]) # yay python and loose typing
         self.add_event_handler()
-        self.load_env()        
+        self.load_env()
         #Some player stuff just shouldn't be done until we have a world
         for pname in self.players:
             self.players[pname].post_environment_init()
-        self.drone_adder = Sequence(Wait(20.0), Func(self.send_drone_signal))
+        self.mode.post_environment_init()
         print "game initialized, synchronizing"
         self.client.send("ready")
         
@@ -71,25 +62,11 @@ class Game(object):
         self.shell.output.setText("\n"*24)
         self.shell.hide_shell()
         self.network_listener.loop()
-        if self.drone_spawner and not self.tutorial : self.drone_adder.loop()
-        if self.tutorial:
-            self.tutorialScreen = OnscreenText(text=TUTORIAL_PROMPTS[0], pos=(-1.31,0.75), scale=0.07, align=TextNode.ALeft, 
-                                               mayChange=True, bg=(0,0,0,0.8), fg=(0,1,0,0.8), font=self.shell.font, wordwrap=35)
-            self.tutorialIndex = 0;
-            self.tutorial_scrolling = False
-            self.eventHandle.accept('c', self.advance_tutorial)
+        if self.drone_spawner: 
+            self.mode.start_drones()
         self.local_player().add_background_music()
         self.startTime = time()
-        if self.type_idx in [1,3,5]: # timed levels
-            self.gameLength = 180 # 3 minutes
-            self.fragLimit = 9999
-            self.endTime = self.startTime + self.gameLength
-            self.local_player().hud.start_timer()
-        else: # untimed levels
-            self.gameLength = -1
-            self.fragLimit = [5,15,3,3][self.type_idx/2]
-        if self.type_idx == 4: # CTF
-            self.ctf_scores = dict((p.color,0) for p in self.players.itervalues())
+        self.endTime = self.startTime + self.mode.gameLength
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
@@ -103,8 +80,13 @@ class Game(object):
         taskMgr.add(self.handshakeTask, 'handshakeTask')
         self.shell.load_finished()
     
+    def get_mode(self):
+        if hasattr(self,'mode'):
+            return self.mode
+        return self.modes[self.mode_idx]
+    
     def point_for(self, color):
-        return self.level.point_for(color)
+        return self.mode.level.point_for(color)
 
     def add_event_handler(self):
         self.eventHandle = GameEventHandler(self)
@@ -147,52 +129,12 @@ class Game(object):
         self.environ.reparentTo(render)
         self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         self.environ.setPos(0, 0, 0)
-        
-        # simply change the level based on game type, for now
-        if self.type_idx < 2 or self.type_idx == 7: # (non-team) deathmatches
-            self.level = CubeLevel(self, self.environ)
-        else:
-            self.level = SniperLevel(self, self.environ)
-        #self.level = Beaumont(self, self.environ)
-    
-    def tutorial_append_line(self, line):
-        if self.tutorial:
-            lines = self.tutorialScreen.getText().split('\n')
-            del lines[0] # scroll
-            lines.append(line)
-            self.tutorialScreen.setText('\n'.join(lines))
-    
-    def advance_tutorial(self):
-        if self.tutorialIndex >= len(TUTORIAL_PROMPTS)-1: return
-        if self.tutorial_scrolling : return
-        self.tutorialIndex += 1
-        lines = TUTORIAL_PROMPTS[self.tutorialIndex].split('\n')
-        scrollSequence = Sequence(Func(self.toggle_scrolling))
-        for line in lines :
-            scrollSequence.append(Wait(.4))
-            scrollSequence.append(Func(self.tutorial_append_line, line))
-        if self.tutorialIndex < len(TUTORIAL_PROMPTS)-1:
-            scrollSequence.append(Func(self.tutorial_append_line, TUTORIAL_CONTINUE))
-        else:
-            scrollSequence.append(Func(self.tutorial_append_line, ""))
-        for i in range(len(lines)+1, 6) :
-            scrollSequence.append(Wait(.4))
-            scrollSequence.append(Func(self.tutorial_append_line, ""))
-        scrollSequence.append(Wait(1.2))
-        scrollSequence.append(Func(self.toggle_scrolling))
-        scrollSequence.start()
-    
-    def toggle_scrolling(self):
-        self.tutorial_scrolling = not self.tutorial_scrolling
+        self.mode.load_level(self.environ) # simply change the level based on game type, for now
 
     def game_over(self):
         print "Game over"
         p = self.local_player()
         p.hide()
-        if self.tutorial :
-            self.tutorialScreen.destroy()
-            self.tutorialScreen = None
-        self.tutorial = False
         p.handleEvents = False
         p.invincible = True
         p.hud.display_gray("Process Terminated.")
@@ -228,14 +170,13 @@ class Game(object):
         for k in self.programs.keys():
             self.programs[k].die()
             del self.programs[k]
-        self.level.destroy()
-            
+        self.mode.destroy()
         self.client.close_connection()
         base.enableMouse()
         base.cTrav = None
     
     def send_type_change(self, change):
-        self.client.send('staging %s type %d'%(self.shell.name, (self.type_idx+change) % len(GAME_TYPES)))
+        self.client.send('staging %s type %d'%(self.shell.name, (self.mode_idx+change) % len(self.modes)))
     
     def send_color_change(self, change):
         self.client.send('staging %s color %d'%(self.shell.name, (self.players[self.shell.name]+change) % len(TEAM_COLORS)))
@@ -275,7 +216,7 @@ class Game(object):
                 if ds[2] == 'color':
                     self.players[ds[1]] = int(ds[3])
                 elif ds[2] == 'type':
-                    self.type_idx = int(ds[3])
+                    self.mode_idx = int(ds[3])
                 self.shell.refresh_staging()
             elif ds[0] == 'echo':
                 assert len(ds) == 2
