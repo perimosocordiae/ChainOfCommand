@@ -27,6 +27,9 @@ class Level(Obstacle):
                 return
         #next room
     
+    def south_bridge_pos(self):
+        return Point3(0,0,0)
+    
     def default_environment(self):
         #Sets up the good old classic 5 sticks of RAM, 5 capacitors, 4 of each program
         #Notes: 1. Requires room called "Cube_Room"

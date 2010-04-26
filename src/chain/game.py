@@ -299,12 +299,12 @@ class Game(object):
             if len(ds) >= 2 and ds[0] == "AddaDrone":
                 self.add_drone(eval(ds[1]))
                 continue
-            if len(ds) != 11: continue # maybe we should not silently ignore this?
+            if len(ds) != 12: continue # maybe we should not silently ignore this?
             name,strs = ds[0],ds[1:]
-            pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager = map(eval,strs)
+            pos,rot,vel,hpr,anim,firing,collecting,dropping,warping,damage,damager = map(eval,strs)
             if name in self.players:
                 self.players[name].move(pos,rot,vel,hpr,anim,firing,collecting,
-                                        dropping,damage,damager)
+                                        dropping,warping,damage,damager)
         for drone in self.drones.values():
             drone.act()
         base.cTrav.traverse(render)

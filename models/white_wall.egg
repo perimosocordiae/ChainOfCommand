@@ -6,9 +6,9 @@
   <Scalar> diffr {0.8}
   <Scalar> diffg {0.8}
   <Scalar> diffb {0.8}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
+  <Scalar> specr {0}
+  <Scalar> specg {0}
+  <Scalar> specb {0}
   <Scalar> shininess {12.5}
 }
 <Texture> white_floor_Plane.tga {
@@ -73,7 +73,7 @@
   <Polygon> {
     <TRef> { white_floor_Plane.tga }
     <MRef> { Material }
-    <Normal> { -0.000000 0.000000 1.000000
+    <Normal> { -0.000000 -1.000000 0.000000
     }
     <Scalar> alpha { OFF }
     <VertexRef> { 0 1 2 <Ref> { Plane } }
@@ -81,7 +81,7 @@
   <Polygon> {
     <TRef> { white_floor_Plane.tga }
     <MRef> { Material }
-    <Normal> { 0.000000 -0.000000 1.000000
+    <Normal> { 0.000000 -1.000000 0.000000
     }
     <Scalar> alpha { OFF }
     <VertexRef> { 3 4 5 <Ref> { Plane } }

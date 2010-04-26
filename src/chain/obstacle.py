@@ -1,4 +1,5 @@
-from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionTube, Point3, TextureStage
+from pandac.PandaModules import CollisionNode, CollisionPolygon, CollisionTube, Point3
+from pandac.PandaModules import TextureStage, Material, VBase4
 from constants import *
 
 #Basically an abstract base class that provides "destroy"
@@ -177,4 +178,7 @@ def make_tile(parent,modelFile,color,pos, hpr=(0,0,0), scale=1.0):
         tex = loader.loadTexture("%s/%s1040.jpg"%(COLOR_PATH,color))
         ts.setMode(TextureStage.MModulate)
         tile.setTexture(ts, tex)
+    #mat = Material()
+    #mat.setDiffuse(VBase4(1,1,1,1))
+    #tile.setMaterial(mat)
     return tile

@@ -164,6 +164,12 @@ class Agent(object):
         else:
             return -1, None
     
+    def warp(self):
+        if self.canCollect:
+            prog = self.canCollect
+            if prog.warps():
+                self.get_model().setPos(self.game.level.south_bridge_pos())
+    
     def drop(self, i):
         if i >= len(self.programs) or not self.programs[i]: return False
         self.programs[i].reappear(self.tron.getPos())

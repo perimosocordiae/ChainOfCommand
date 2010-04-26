@@ -28,6 +28,9 @@ class PlayerEventHandler(DirectObject):
         self.accept('e',playr.collectOn)
         self.accept('e-repeat',playr.collectOn)
         self.accept('e-up',playr.collectOff)
+        self.accept('x',playr.warpOn)
+        self.accept('x-repeat',playr.warpOn)
+        self.accept('x-up',playr.warpOff)
         
         #drop program i; if we go past 9 programs, we'll need another key system anyway
         for i in range(9):

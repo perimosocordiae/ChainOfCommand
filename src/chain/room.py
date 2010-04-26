@@ -3,6 +3,7 @@ from random import randint
 from obstacle import *
 from constants import *
 from program import RAM
+from pandac.PandaModules import Point3, VBase4, PointLight, DirectionalLight, AmbientLight
 
 class Room(Obstacle):
     def __init__(self, name, parent, pos, rot, scale):
@@ -15,8 +16,31 @@ class Room(Obstacle):
         self.environ.setPos(pos)
         self.environ.setHpr(rot)
         self.add_copper_wires()
+        self.add_light()
     
     def add_copper_wires(self): pass
+    
+    def add_light(self):
+        pos,pos2 = self.light_poses()
+        
+        self.light = PointLight('plight')
+        self.light.setColor(VBase4(1, 1, 1, 1))
+        self.light.setAttenuation(Point3(0.2, 0.0022, 0))
+        self.plnp = self.environ.attachNewNode(self.light)
+        self.plnp.setPos(pos)
+        self.environ.setLight(self.plnp)
+        
+        self.light2 = PointLight('plight2')
+        self.light2.setColor(VBase4(1, 1, 1, 1))
+        self.light2.setAttenuation(Point3(0.2, 0.0022, 0))
+        self.plnp2 = self.environ.attachNewNode(self.light2)
+        self.plnp2.setPos(pos2)
+        self.environ.setLight(self.plnp2)
+        
+        self.alight = AmbientLight('alight')
+        self.alight.setColor(VBase4(0.3,0.3,0.3,1))
+        self.alnp = self.environ.attachNewNode(self.alight)
+        self.environ.setLight(self.alnp)
     
     def create_ln_at(self, pos, ln):
         mypt = self.environ.getRelativePoint(render,Point3(pos[0],pos[1],pos[2]))
@@ -49,6 +73,9 @@ class Room(Obstacle):
     
     def relative_rand_point(self):
         return (0,0,0)
+    
+    def light_poses(self):
+        return Point3(0,0.5,1.5), Point3(0,1.5,1.5) 
     
     def add_program(self,game,ptype,color=None):
         if color:
@@ -123,6 +150,9 @@ class CubeRoom(Room):
     
     def relative_rand_point(self):
         return (randint(-25,25) / 10, randint(-25,25)/10, 0)
+    
+    def light_poses(self):
+        return Point3(-1.5,0,3.5), Point3(1.5,0,3.5)
     
     def get_bounds(self):
         return -3,3,-3,3,-0.1,4

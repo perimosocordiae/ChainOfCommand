@@ -323,7 +323,7 @@ class Player(Agent):
                 print "Dying"
                 self.game.players[damager].add_kill(self)
     
-    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager):
+    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,warping,damage,damager):
         self.move_to(pos,rot,vel,hpr,damage,damager)
         #print hpr
         if anim == 'start':  self.StartMovingAnim()
@@ -334,6 +334,8 @@ class Player(Agent):
             self.shoot()
         if dropping > -1:
             self.drop(dropping)
+        if warping:
+            self.warp()
         self.do_debug()
 
 class LocalPlayer(Player):
@@ -343,6 +345,7 @@ class LocalPlayer(Player):
         self.collecting = False
         self.shooting = False
         self.scopeZoomed = False
+        self.warping = False
         self.dropping = -1
         self.hud = HUD(self)
         self.current_damage_taken = 0
@@ -351,8 +354,8 @@ class LocalPlayer(Player):
         self.eventHandle = PlayerEventHandler(self)
         #self.game.network_listener.loop()
     
-    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager):
-        super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping,damage,damager)
+    def move(self,pos,rot,vel,hpr,anim,firing,collecting,dropping,warping,damage,damager):
+        super(LocalPlayer,self).move(pos,rot,vel,hpr,anim,firing,collecting,dropping,warping,damage,damager)
         newP = self.get_camera().getP() + hpr.getY() 
         newP = max(min(newP, 80), -80)
         self.get_camera().setP(newP)
@@ -500,7 +503,13 @@ class LocalPlayer(Player):
         
     def collectOff(self):
         self.collecting = False
-        
+    
+    def warpOn(self):
+        self.warping = True
+    
+    def warpOff(self):
+        self.warping = False
+    
     def set_dropping(self, i):
         self.dropping = i
     
@@ -606,7 +615,7 @@ class LocalPlayer(Player):
         pos = self.tron.getPos() + (self.velocity * SERVER_TICK)
         rot = Point3(self.tron.getH(), self.get_camera().getP(), 0)+self.hpr
         # send command to move tron, based on the values in self.velocity
-        self.game.client.send(':'.join([self.name,str(pos),str(rot),str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping),str(self.current_damage_taken),'"%s"'%self.damager]))
+        self.game.client.send(':'.join([self.name,str(pos),str(rot),str(self.velocity),str(self.hpr),anim,str(self.shooting),str(self.collecting),str(self.dropping),str(self.warping),str(self.current_damage_taken),'"%s"'%self.damager]))
         self.shooting = False
         self.current_damage_taken = 0
         self.damager = None
