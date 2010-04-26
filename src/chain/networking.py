@@ -73,14 +73,6 @@ class Server(NetworkBase):
             if ds[0] == 'player':
                 append = ''
                 while (d[0]+append) in self.player_dict :
-                    if self.player_dict[d[0]+append].getAddress().getIpString() == '0.0.0.0' :
-                        removeThis = self.player_dict[d[0]+append]
-                        self.cReader.removeConnection(removeThis)
-                        for c in range(len(self.activeConnections)):
-                            if self.activeConnections[c] == removeThis:
-                                del self.activeConnections[c]
-                                break
-                        break
                     append += choice(list('!@#$%^&*'))
                 if append != '' :
                     dataCopy = list(ds)
