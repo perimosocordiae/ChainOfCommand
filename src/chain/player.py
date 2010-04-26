@@ -334,6 +334,7 @@ class Player(Agent):
             self.drop(dropping)
         if warping:
             self.warp()
+        self.act()
         #self.do_debug()
 
 class LocalPlayer(Player):
