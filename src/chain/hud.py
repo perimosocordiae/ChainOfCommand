@@ -272,11 +272,11 @@ class HUD(object):
     
     def timerTask(self, task):
         game = self.player.game
-        game.gameTime = game.endTime - time()
-        self.timer.setText("Time:%.2fs"%game.gameTime)
-        if 0 < game.gameTime < 10:
+        gameTime = game.endTime - time()
+        self.timer.setText("Time:%.2fs"%gameTime)
+        if 0 < gameTime < 10:
             self.timer.setFg((1,0,0,0.8))
-        elif game.gameTime <= 0:
+        elif gameTime <= 0:
             self.timer.setText("Time:%.2fs"%0)
             game.game_over()
             return task.done

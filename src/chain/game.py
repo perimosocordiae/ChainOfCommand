@@ -65,8 +65,10 @@ class Game(object):
         if self.drone_spawner: 
             self.mode.start_drones()
         self.local_player().add_background_music()
-        self.startTime = time()
-        self.endTime = self.startTime + self.mode.gameLength
+        if self.mode.gameLength > 0:
+            self.startTime = time()
+            self.endTime = self.startTime + self.mode.gameLength
+            self.local_player().hud.start_timer()
         
     def load_models(self): # asynchronous
         LocalPlayer.setup_sounds() # sound effects and background music
