@@ -404,7 +404,7 @@ class Shell(object):
         format['error'] = errorMessage
         settingsText = """  Below are the game controls.
   Use the up and down arrows to select a control,
-  and press enter to change it
+  and press enter to change it.
                 
   Move forward: \t\t\t%(forward)s
   Move backward: \t\t%(backward)s
@@ -450,6 +450,13 @@ class Shell(object):
         self.screen.accept('arrow_down',self.history,[False])
         self.screen.accept('tab', self.tab_completion)
 
+    def nice_controls(self):
+        format = dict(self.controls)
+        for key in format :
+            if format[key] == 'mouse1': format[key] = 'left click'
+            elif format[key] == 'mouse2': format[key] = 'middle click'
+            elif format[key] == 'mouse3': format[key] = 'right click'
+            
     #### HERE THERE BE SHELL COMMANDS ####
     
     def start_game(self,cmd,arglist=[],sudo=False):
@@ -473,12 +480,7 @@ class Shell(object):
                 self.append_line("Error: Can't find a host on that IP and port")
                 return
             loadingScreen = Sequence(Func(self.hide_inputs))#,Func(self.output.setText,""))
-            format = dict(self.controls)
-            for value in format :
-                if format[value] == 'mouse1' : format[value] = 'left click'
-                elif format[value] == 'mouse2' : format[value] = 'middle click'
-                elif format[value] == 'mouse3' : format[value] = 'right click'
-            for line in (LOADINGTEXT%format).splitlines():
+            for line in (LOADINGTEXT%self.nice_controls()).splitlines():
                 loadingScreen.append(Func(self.append_line, line))
                 loadingScreen.append(Wait(0.05))
             loadingScreen.append(Func(self.append_line,""))

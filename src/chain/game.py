@@ -180,7 +180,8 @@ class Game(object):
         self.client.send('staging %s type %d'%(self.shell.name, (self.mode_idx+change) % len(self.modes)))
     
     def send_color_change(self, change):
-        self.client.send('staging %s color %d'%(self.shell.name, (self.players[self.shell.name]+change) % len(TEAM_COLORS)))
+        color = (self.players[self.shell.name]+change) % len(TEAM_COLORS)
+        self.client.send('staging %s color %d'%(self.shell.name, color))
     
     def handshakeTask(self,task):
         data = self.client.getData()
