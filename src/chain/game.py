@@ -158,6 +158,7 @@ class Game(object):
         self.local_player().eventHandle.ignoreAll()
         for t in self.local_player().input_tokens:
             t.release()
+        self.mode.destroy()
         self.local_player().get_camera().reparentTo(render)
         self.local_player().hud.destroy_HUD()
         for d in self.drones.values():
@@ -169,7 +170,6 @@ class Game(object):
         for k in self.programs.keys():
             self.programs[k].die()
             del self.programs[k]
-        self.mode.destroy()
         self.client.close_connection()
         base.enableMouse()
         base.cTrav = None

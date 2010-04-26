@@ -15,9 +15,9 @@ class Mode(object):
             self.drone_adder.loop()
     
     def destroy(self):
-        self.level.destroy()
         if hasattr(self,'drone_adder'):
             self.drone_adder.finish()
+        self.level.destroy()
     
     def post_environment_init(self): pass
     def load_level(self,environ): pass
