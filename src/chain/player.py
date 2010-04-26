@@ -40,7 +40,6 @@ class Player(Agent):
         self.laserSound = base.sfxManagerList[0].getSound(SOUND_PATH + "/hilas.mp3")
         #add the camera collider:
         self.collisionQueue = CollisionHandlerQueue()
-        self.invincible = False
         self.handleEvents = False
     
     def post_environment_init(self):
@@ -118,10 +117,6 @@ class Player(Agent):
     def respawn(self):
         Sequence(Wait(4.0), Func(self.spawn),Wait(1.0),
                  Func(self.toggle_god)).start()
-    
-    def toggle_god(self):
-        self.invincible = not self.invincible
-        print "Toggling God-mode"
     
     def get_base_damage(self):
         return BASE_DAMAGE

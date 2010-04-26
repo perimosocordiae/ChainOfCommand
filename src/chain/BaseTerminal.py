@@ -11,6 +11,7 @@ class BaseTerminal(Agent):
         self.color = color
         self.parent = parent
         self.load_model()
+        self.setup_collider()
     
     def load_model(self):
         self.model = loader.loadModel("%s/base_terminal.bam"%MODEL_PATH)
@@ -22,6 +23,9 @@ class BaseTerminal(Agent):
         self.model.setHpr(self.hpr)
         self.model.setScale(self.scale)
         self.model.reparentTo(self.parent)
+    
+    def setup_collider(self):
+        pass
     
     def die(self):
         #TODO do some point updating stuff here - use self.color

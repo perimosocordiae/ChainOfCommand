@@ -17,6 +17,7 @@ class Agent(object):
         self.programs = [None]
         self.debuggers = {}
         self.canCollect = None
+        self.invincible = False
         self.health = STARTING_HEALTH
         self.velocity = Vec3(0, 0, 0)
         if setup_mcs:
@@ -80,6 +81,16 @@ class Agent(object):
         if not self.in_air():
             self.velocity.setZ(self.get_jump_speed())  # he's on the ground - let him jump
     
+    def toggle_god(self):
+        self.invincible = not self.invincible
+        print "Toggling God-mode"
+    
+    def updateGodModeTask(self):
+        pass
+    
+    def stopGodModeTask(self):
+        self.toggle_god()
+        
     def load_model(self): pass
     def get_model(self): pass
     def add_radar(self): pass
