@@ -136,7 +136,7 @@ class Agent(object):
         if self.canCollect:
             prog = self.canCollect
             if prog.warps():
-                self.get_model().setPos(self.game.level.south_bridge_pos())
+                self.get_model().setPos(self.game.mode.level.south_bridge_pos())
     
     def drop(self, i):
         if 0 > i >= len(self.programs) or not self.programs[i]: return False
