@@ -574,7 +574,7 @@ class Shell(object):
         playnames = self.hiscores.keys()
         maxpname = max(max(len(n) for n in playnames),5)
         self.append_line("Name%s| %s"%(" "*(maxpname-4)," ".join(statnames)))
-        for p in sorted(self.hiscores,key=lambda k:self.hiscores[k]['wins']):
+        for p in reversed(sorted(self.hiscores,key=lambda k:self.hiscores[k]['wins'])):
             stats = []
             for k in statnames:
                 if k in self.hiscores[p]:
