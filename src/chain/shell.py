@@ -67,7 +67,7 @@ class Shell(object):
         except:
             self.hiscores = {}
         try :
-            self.controls = load(open(CONTROLSFILE))
+            self.controls = load(open(CONTROLSFILE, 'rb'))
         except:
             self.loadDefaultSettings()
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
@@ -367,6 +367,7 @@ class Shell(object):
     def youPressedEnter(self):
         if self.controlIndex == len(self.draftControls)-1+3-2 : 
             self.loadDefaultSettings()
+            self.draftControls = self.controls
             self.refreshSettingsPrompt(None)
             return
         elif self.controlIndex == len(self.draftControls)-1+3-1 : 
@@ -430,11 +431,11 @@ class Shell(object):
         self.controls = {'forward': 'w', 'backward': 's', 'moveleft': 'a', 'moveright': 'd',
                     'shoot': 'mouse1', 'jump': 'space', 'collect': 'e', 'scope': 'mouse3',
                     'pause': 'p', 'changePerspective': 'f', 'toggleMusic': 'm', 
-                    'toggleSoundEffects': 'n', 'scores': 'tab'}  
+                    'toggleSoundEffects': 'n', 'scores': 'tab'}
         
     def exitSettingsPrompt(self):
         self.controls = self.draftControls
-        dump(self.controls,open(CONTROLSFILE,'w'),-1)
+        dump(self.draftControls,open(CONTROLSFILE,'wb'),-1)
         self.destroySettingsPrompt()
         self.append_line("Settings saved")
         
