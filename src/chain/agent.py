@@ -85,10 +85,10 @@ class Agent(object):
         self.invincible = not self.invincible
         print "Toggling God-mode"
     
-    def updateGodModeTask(self):
+    def updateGodModeTask(self, task):
         pass
     
-    def stopGodModeTask(self):
+    def stopGodModeTask(self, task):
         self.toggle_god()
         
     def load_model(self): pass
