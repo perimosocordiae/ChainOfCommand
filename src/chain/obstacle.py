@@ -165,7 +165,7 @@ class SouthBridge(Obstacle):
         self.model.setHpr(hpr)
         
     def destroy(self):
-        self.model.removeNode()
+        self.model.removeNode()        
         
 def make_tile(parent,modelFile,color,pos, hpr=(0,0,0), scale=1.0):
     tile = loader.loadModel("%s/%s"%(MODEL_PATH, modelFile))

@@ -4,6 +4,7 @@ from obstacle import *
 from constants import *
 from program import RAM
 from pandac.PandaModules import Point3, VBase4, PointLight, DirectionalLight, AmbientLight
+from BaseTerminal import BaseTerminal
 
 class Room(Obstacle):
     def __init__(self, name, parent, pos, rot, scale):
@@ -166,7 +167,12 @@ class CubeRoom(Room):
             ln.wire.wire.setScale(0.1, abs(pos[0] / 2.0), 1)
         ln.wire.wire.reparentTo(self.environ)
         ln.wire.wire.show()
-            
+
+class Base(CubeRoom):
+    def __init__(self, game, name, parent, pos, rot, scale, color, holes=(0,0,0,0,0,0,0,0)):
+        super(Base, self).__init__(name, parent, pos, rot, scale, color, holes)
+        self.obstacles['terminal'] = BaseTerminal(game, name, self.environ, (0,-2.8,0), (180,0,0), 1, color)
+        
 class Hallway(Room):
     def __init__(self, name, parent, pos, rot, scale, color, angle):
         super(Hallway, self).__init__(name, parent, pos, rot, scale)

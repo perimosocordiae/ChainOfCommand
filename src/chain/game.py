@@ -170,8 +170,8 @@ class Game(object):
             self.players[k].tron.removeNode()
             del self.players[k]
         for k in self.programs.keys():
-            self.programs[k].die()
-            del self.programs[k]
+            self.programs[k].die(False)
+            #del self.programs[k]
         self.client.close_connection()
         base.enableMouse()
         base.cTrav = None

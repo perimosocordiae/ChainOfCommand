@@ -65,7 +65,7 @@ class Level(Obstacle):
             return choice(self.rooms.values()).rand_point()
         else:
             #no rooms available - the best we can do is the origin
-            return (0,0,0)
+            return Point3(0,0,0)
     
     def readd_flag(self, flag):
         if flag:
@@ -97,10 +97,10 @@ class BasicBaseLevel(Level):
         radAng = radians(hallwayAngle)
         basey = (cos(radAng) * 8.0) + 3.75
         basez = sin(radAng) * 8.0
-        self.rooms["Blue_Base"] = CubeRoom("Blue_Base", self.parent, (0,basey,basez),
+        self.rooms["Blue_Base"] = Base(self.game, "Blue_Base", self.parent, (0,basey,basez),
                     (180,0,0), (1.0,0.25,1.0), "blue", holes=(10,0,0,0,0,0,0,0))
         self.bases["blue"] = self.rooms["Blue_Base"]
-        self.rooms["Red_Base"] = CubeRoom("Red_Base", self.parent, (0,-basey,basez),
+        self.rooms["Red_Base"] = Base(self.game, "Red_Base", self.parent, (0,-basey,basez),
                     (0,0,0), (1.0,0.25,1.0), "red", holes=(10,0,0,0,0,0,0,0))
         self.bases["red"] = self.rooms["Red_Base"]
         self.default_environment()
@@ -122,10 +122,10 @@ class SniperLevel(Level):
         radAng = radians(hallwayAngle)
         basey = (cos(radAng) * 6.0) + 3.75
         basez = sin(radAng) * 6.0
-        self.rooms["%s_Base"%t1] = CubeRoom("%s_Base"%t1, self.parent, (0,basey,basez),
+        self.rooms["%s_Base"%t1] = Base(self.game, "%s_Base"%t1, self.parent, (0,basey,basez),
                     (180,0,0), (1.0,0.25,1.0), team1, holes=(27,0,0,0,0,0,0,0))
         self.bases[team1] = self.rooms["%s_Base"%t1]
-        self.rooms["%s_Base"%t2] = CubeRoom("%s_Base"%t2, self.parent, (0,-basey,basez),
+        self.rooms["%s_Base"%t2] = Base(self.game, "%s_Base"%t2, self.parent, (0,-basey,basez),
                     (0,0,0), (1.0,0.25,1.0), team2, holes=(27,0,0,0,0,0,0,0))
         self.bases[team2] = self.rooms["%s_Base"%t2]
         

@@ -126,7 +126,7 @@ class Agent(object):
         alreadyHave = any(True for p in self.programs if p and p.name == prog.name)
         self.programs[i] = prog
         prog.disappear()
-        del self.game.programs[prog.unique_str()]
+        #del self.game.programs[prog.unique_str()]
         if not alreadyHave:
             prog.add_effect(self)  
         self.canCollect = None

@@ -40,12 +40,12 @@ class Program(Agent):
     def unique_str(self):
         return self.name + str(hash(self))
     
-    def die(self):
+    def die(self, respawn=True):
         #maybe explode instead if killed?
-        self.disappear()
+        self.disappear(respawn)
         #TODO: see if we should remove from list
     
-    def disappear(self):
+    def disappear(self, _=True):
         if hasattr(self, "seq") and self.seq:
             self.seq.finish()
         if self.desc:
@@ -64,6 +64,7 @@ class Program(Agent):
         self.pusher = None
         self.hitter = None
         self.model = None
+        del self.game.programs[self.unique_str()]
         #self.collider.stash()
         #self.pusher.stash()
         
@@ -178,24 +179,33 @@ class Basic(Program):
     def __init__(self, game, room, name, desc, scale, pos, respawnRate, prefix=''):
         super(Basic, self).__init__(game, room, name, prefix, desc, scale, pos)
         self.respawnRate = respawnRate
+        self.respawnSeq = None
     
     #do effect and make it disappear; return false so player doesn't add it to a slot
     def pick_up(self, player):
         self.do_effect(player)
         self.disappear()
-        del self.game.programs[self.unique_str()]
+        #del self.game.programs[self.unique_str()]
         return False
     
-    def disappear(self):
+    def die(self, respawn=True):
+        super(Basic, self).die(respawn)
+        if self.respawnSeq and not respawn:
+            self.respawnSeq.finish()
+            self.respawnSeq = None
+    
+    def disappear(self, respawn=True):
         #Set up the sequence to respawn the program
-        if self.respawnRate > 0:
+        if self.respawnRate > 0 and respawn:
             pos = self.model.getPos()
-            Sequence(Wait(self.respawnRate), Func(self.respawn, Point3(pos[0], pos[1], pos[2] - FLOAT_HEIGHT))).start()
+            self.respawnSeq = Sequence(Wait(self.respawnRate), Func(self.respawn, Point3(pos[0], pos[1], pos[2] - FLOAT_HEIGHT)))
+            self.respawnSeq.start()
         super(Basic, self).disappear()
     
     def respawn(self, pos):
         self.reappear(pos)
         self.health = 100
+        self.respawnSeq = None
     
     def do_effect(self, player): pass
     
@@ -384,12 +394,12 @@ class Ln(Achievement):
         self.wire = CopperWire("ln_wire", render, (0,0,0), (0,0,0), (0.0001,0.0001,0))
         self.warpHint = None
         
-    def die(self):
-        super(Ln, self).die()
+    def die(self, respawn=True):
+        super(Ln, self).die(respawn)
         self.wire.destroy()
         self.wire = None
         
-    def disappear(self):
+    def disappear(self, _=True):
         super(Ln, self).disappear()
         if self.warpHint:
             self.warpHint.destroy()
