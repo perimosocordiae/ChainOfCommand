@@ -554,12 +554,12 @@ class LocalPlayer(Player):
     def add_point(self):
         self.hud.add_kill()
         
-    def show_locate_hint(self):
-        self.hud.show_hint("Right click to scope")
-        self.game.had_locate = True
+    #def show_locate_hint(self):
+    #    self.hud.show_hint("Right click to scope")
+    #    self.game.had_locate = True
         
-    def show_debug_hint(self):
-        self.hud.show_hint("Already at full health",timeout=1)
+    #def show_debug_hint(self):
+    #    self.hud.show_hint("Already at full health",timeout=1)
     
     def setup_camera(self):
         super(LocalPlayer,self).setup_camera()

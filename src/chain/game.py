@@ -198,6 +198,8 @@ class Game(object):
         p.hud.display_gray("Process Terminated.")
         p.hud.show_scores()
         taskMgr.remove('timerTask')
+        taskMgr.remove('updateGodModeTask')
+        taskMgr.remove('stopGodModeTask')
         if not self.end_sequence:
             winning_score = max(p.score() for p in self.players.itervalues())
             stats = [(p.name, p.score()==winning_score, p.stats) for p in self.players.itervalues()]

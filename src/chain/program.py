@@ -196,7 +196,7 @@ class Debug(Basic):
         if agent.health < agent.get_max_health(): # no effect if full health
             super(Debug, self).pick_up(agent)
         else:
-            agent.show_debug_hint()
+            agent.hud.show_hint("Already at full health",1)
             print "Already at full health"
         return False
 
@@ -216,7 +216,7 @@ class Sudo(Basic):
             super(Sudo, self).pick_up(agent)
             print "Sudo God Mode"
         else:
-            # agent.show_hint('Already in God Mode')
+            agent.hud.show_hint('Already in God Mode',1)
             print "Already in God Mode"
         return False
 
@@ -341,7 +341,8 @@ class Locate(Achievement):
     def add_effect(self, agent):
         agent.show_scopehairs()
         if not self.game.had_locate :
-            agent.show_locate_hint()
+            agent.hud.show_hint("Right click to scope")
+            self.game.had_locate = True
         
     def remove_effect(self, agent):
         agent.hide_scopehairs()        
