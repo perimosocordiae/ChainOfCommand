@@ -274,7 +274,7 @@ class Shell(object):
         min_p = self.g.get_mode().min_players
         if len(self.g.players) < min_p:
             idx = len(LOADINGTEXT.splitlines())+9
-            self.overwrite_line(idx, "Sorry, this game mode needs at least %d players"%min_p)
+            self.overwrite_line(idx, ("Sorry, this game mode needs at least %d players"%min_p).center(60))
         else:
             self.g.client.send('start')
     
@@ -291,6 +291,7 @@ class Shell(object):
         self.overwrite_line(name_idx," | ".join(player_names).center(60))
         self.overwrite_line(name_idx+3,type.upper().center(60))
         self.overwrite_line(name_idx+4,desc.center(60))
+        self.overwrite_line(name_idx+5,'')
 
     def finish_staging(self):
         idx = len(LOADINGTEXT.splitlines())+1

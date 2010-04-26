@@ -257,7 +257,7 @@ class Player(Agent):
         else:
             self.stats[key] += 1
             self.add_point()
-        if self.score() >= self.game.fragLimit:
+        if self.score() >= self.game.mode.fragLimit:
             self.game.game_over()
     
     def my_team(self): # including me

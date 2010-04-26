@@ -154,7 +154,6 @@ class Game(object):
         base.enableMusic(False)
         base.enableSoundEffects(False)
         self.network_listener.finish()
-        self.drone_adder.finish()
         self.eventHandle.ignoreAll()
         self.local_player().eventHandle.ignoreAll()
         for t in self.local_player().input_tokens:

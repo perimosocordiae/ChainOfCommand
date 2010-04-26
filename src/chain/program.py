@@ -24,7 +24,7 @@ class Program(Agent):
             pos = room.rand_point()
         self.prefix = prefix
         self.scale = scale
-        self.pos = pos
+        self.pos = pos # in time
         self.load_model()
         self.initialize_flash_sequence()
         #self.initialize_debug_text()

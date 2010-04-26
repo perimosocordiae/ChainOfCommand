@@ -16,6 +16,8 @@ class Mode(object):
     
     def destroy(self):
         self.level.destroy()
+        if hasattr(self,'drone_adder'):
+            self.drone_adder.finish()
     
     def post_environment_init(self): pass
     def load_level(self,environ): pass
@@ -53,7 +55,13 @@ class ForTheHoard(Mode):
     def load_level(self,environ):
         self.level = SniperLevel(self.game, environ)
     
-    def score(self,player): return 0
+    def score(self,player):
+        base = self.level.bases[player.color]
+        progs_in_base = 0
+        for p in self.game.programs.itervalues():
+            if base.has_point(p.get_model().getPos()):
+                progs_in_base += 1
+        return progs_in_base
 
 class Pwnage(Mode):
     def __init__(self,game):
