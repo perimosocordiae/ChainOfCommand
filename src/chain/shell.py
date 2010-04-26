@@ -273,10 +273,10 @@ class Shell(object):
     def staging_ready(self):
         min_p = self.g.get_mode().min_players
         if len(self.g.players) < min_p:
-            idx = len(LOADINGTEXT.splitlines())+10
+            idx = len(LOADINGTEXT.splitlines())+9
             self.overwrite_line(idx, "Sorry, this game mode needs at least %d players"%min_p)
         else:
-            self.g.client.send,['start']
+            self.g.client.send('start')
     
     def exit_staging(self):
         self.g.client.send('unreg %s'%self.name)
