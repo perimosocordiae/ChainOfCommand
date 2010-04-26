@@ -241,6 +241,16 @@ class Player(Agent):
                 if p.is_dead():
                     print "you killed %s!"%objHit
                     self.add_kill(p)
+        elif "_Terminal" in objHit:
+            t = self.game.mode.level.get_terminal(objHit.split('_')[0])
+            if not t.is_dead():
+                t.hit(self.damage(),self.name)
+                print "Hit %s for %d damage" %(objHit, self.damage() / t.shield())
+                if t.is_dead():
+                    print "YOU KILLED %s!!!"%objHit
+                    self.add_kill(t)
+        else:
+            print objHit
         #end if 
         self.fire_laser(objHit,spotHit,playSound)
     
@@ -324,7 +334,7 @@ class Player(Agent):
             self.drop(dropping)
         if warping:
             self.warp()
-        self.do_debug()
+        #self.do_debug()
 
 class LocalPlayer(Player):
     def __init__(self, game, name, startPos, color):

@@ -251,6 +251,10 @@ class Game(object):
                                         dropping,warping,damage,damager)
         for drone in self.drones.values():
             drone.act()
+        if self.mode.level:
+            for terminal in self.mode.level.terminals:
+                terminal.act()
+            
         base.cTrav.traverse(render)
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):

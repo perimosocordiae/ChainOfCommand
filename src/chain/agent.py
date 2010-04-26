@@ -102,6 +102,9 @@ class Agent(object):
     def die(self): pass
     def show_locate_hint(self): pass
     
+    def act(self):
+        self.do_debug()
+    
     #Per is the amount to heal per tick... times is the number of ticks to heal for
     def debug(self, name, per, times):
         self.debuggers[name] = (per, times)
@@ -112,6 +115,9 @@ class Agent(object):
     def do_debug(self):
         for name, debugger in self.debuggers.items():
             self.heal(debugger[0])
+            if debugger[1] == -1:
+                #Heal forever (eg. base terminals)
+                continue
             if debugger[1] <= 1 or self.health == self.get_max_health():
                 del self.debuggers[name]
             else:
