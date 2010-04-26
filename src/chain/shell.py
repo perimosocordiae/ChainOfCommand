@@ -263,14 +263,14 @@ class Shell(object):
         self.overwrite_line(idx+9,"When everyone is ready, press 'b' to begin")
         self.overwrite_line(idx+10,"To go back to the shell, press 'x'")
         self.g.client.send("player %s"%self.name)
-        self.screen.accept('b',self.finish_staging)
+        self.screen.accept('b',self.staging_ready)
         self.screen.accept('x',self.exit_staging)
         self.screen.accept('arrow_up', self.g.send_color_change, [1])
         self.screen.accept('arrow_down', self.g.send_color_change, [-1])
         self.screen.accept('arrow_right', self.g.send_type_change, [1])
         self.screen.accept('arrow_left', self.g.send_type_change, [-1])
         
-    def finish_staging(self):
+    def staging_ready(self):
         min_p = self.g.get_mode().min_players
         if len(self.g.players) < min_p:
             idx = len(LOADINGTEXT.splitlines())+10
