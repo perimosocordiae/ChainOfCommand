@@ -11,6 +11,7 @@ from obstacle import CopperWire
 
 BASE_SCALE = 2
 DESCRIPTION_SCALE = 0.2
+FLOAT_HEIGHT = 8
 
 #********************************** BASE CLASS **********************************
 
@@ -30,6 +31,11 @@ class Program(Agent):
         self.load_desc(desc)
         self.setup_interval()
         self.setup_collider()
+        self.description = desc
+    
+    #Set the pos relative to the floor - floats a little above this pos
+    def setFloorPos(self, pos):
+        self.model.setPos(pos[0], pos[1], pos[2] + FLOAT_HEIGHT)
     
     def unique_str(self):
         return self.name + str(hash(self))
@@ -60,12 +66,26 @@ class Program(Agent):
         self.model = None
         #self.collider.stash()
         #self.pusher.stash()
-    
+        
+    def reappear(self, pos):
+        self.load_model()
+        self.load_desc(self.description)
+        #self.model.unstash()
+        #self.collider.unstash()
+        #self.pusher.unstash()
+        self.setFloorPos(pos)
+        #self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
+        #self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
+        #self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
+        self.setup_interval()
+        self.setup_collider()
+        self.game.readd_program(self)
+        
     def load_model(self):
         self.model = loader.loadModel("%s/%s.bam" % (MODEL_PATH, self.prefix))
         self.model.setScale(self.scale)
         self.model.reparentTo(render)
-        self.model.setPos(Point3(self.pos[0], self.pos[1], self.pos[2] + 10))
+        self.setFloorPos(self.pos)
         if not self.name in ["RAM",'gdb','--flag']:
             textFront = TextNode("NameFront")
             textFront.setText("%s" % self.name)
@@ -155,8 +175,9 @@ class Program(Agent):
 
 #Programs that have an immediate effect and then disappear
 class Basic(Program):
-    def __init__(self, game, room, name, desc, scale, pos, prefix=''):
+    def __init__(self, game, room, name, desc, scale, pos, respawnRate, prefix=''):
         super(Basic, self).__init__(game, room, name, prefix, desc, scale, pos)
+        self.respawnRate = respawnRate
     
     #do effect and make it disappear; return false so player doesn't add it to a slot
     def pick_up(self, player):
@@ -164,12 +185,23 @@ class Basic(Program):
         self.disappear()
         del self.game.programs[self.unique_str()]
         return False
-
+    
+    def disappear(self):
+        #Set up the sequence to respawn the program
+        if self.respawnRate > 0:
+            pos = self.model.getPos()
+            Sequence(Wait(self.respawnRate), Func(self.respawn, Point3(pos[0], pos[1], pos[2] - FLOAT_HEIGHT))).start()
+        super(Basic, self).disappear()
+    
+    def respawn(self, pos):
+        self.reappear(pos)
+        self.health = 100
+    
     def do_effect(self, player): pass
     
 class RAM(Basic):
-    def __init__(self, game, room, pos=None, scale=4.0):
-        super(RAM, self).__init__(game, room, 'RAM', "Add Program Slot", scale, pos,'RAM')
+    def __init__(self, game, room, pos=None, scale=4.0, respawnRate=-1):
+        super(RAM, self).__init__(game, room, 'RAM', "Add Program Slot", scale, pos,respawnRate,'RAM')
         self.desc.setZ(0.5)
         self.desc.setScale(0.1)
     
@@ -187,8 +219,8 @@ class RAM(Basic):
 
 class Debug(Basic):
     #Per is the amount to heal per tick... times is the number of ticks to heal for
-    def __init__(self, game, room, name, desc, scale, pos, prefix='', per=0.8, times=125):
-        super(Debug, self).__init__(game, room, name, desc, scale, pos, prefix)
+    def __init__(self, game, room, name, desc, scale, pos, respawnRate, prefix='', per=0.8, times=125):
+        super(Debug, self).__init__(game, room, name, desc, scale, pos, respawnRate, prefix)
         self.per = per
         self.times = times
     
@@ -204,12 +236,12 @@ class Debug(Basic):
         agent.debug(self.unique_str(), self.per, self.times)
 
 class Gdb(Debug):
-    def __init__(self, game, room, pos=None):
-        super(Gdb, self).__init__(game, room, 'gdb', "Restore Health", BASE_SCALE, pos, 'terminal_window_gdb')
+    def __init__(self, game, room, pos=None, respawnRate=30):
+        super(Gdb, self).__init__(game, room, 'gdb', "Restore Health", BASE_SCALE, pos, respawnRate, 'terminal_window_gdb')
 
 class Sudo(Basic):
-    def __init__(self, game, room, pos=None):
-        super(Sudo, self).__init__(game, room, 'sudo', "10s God Mode", BASE_SCALE, pos, 'terminal_window')
+    def __init__(self, game, room, pos=None, respawnRate=60):
+        super(Sudo, self).__init__(game, room, 'sudo', "10s God Mode", BASE_SCALE, pos, respawnRate, 'terminal_window')
     
     def pick_up(self, agent):
         if not agent.invincible: # no effect if already in God Mode
@@ -232,21 +264,6 @@ class Achievement(Program):
     
     def __init__(self, game, room, name, desc, scale, pos):
          super(Achievement, self).__init__(game, room, name, 'terminal_window', desc, scale, pos)
-         self.description = desc
-        
-    def reappear(self, pos):
-        self.load_model()
-        self.load_desc(self.description)
-        #self.model.unstash()
-        #self.collider.unstash()
-        #self.pusher.unstash()
-        self.model.setPos((pos[0],pos[1],pos[2] + 5))
-        #self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
-        #self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
-        #self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
-        self.setup_interval()
-        self.setup_collider()
-        self.game.readd_program(self)
     
     # modifiers: generic program has no effect
     def damage_mod(self, d):

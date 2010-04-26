@@ -140,7 +140,8 @@ class Agent(object):
     
     def drop(self, i):
         if 0 > i >= len(self.programs) or not self.programs[i]: return False
-        self.programs[i].reappear(self.tron.getPos())
+        pos = self.get_model().getPos()
+        self.programs[i].reappear((pos[0], pos[1], pos[2] - self.get_origin_height()))
 
         # see if any of this type are left
         for j,p in enumerate(self.programs):
