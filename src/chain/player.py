@@ -548,20 +548,13 @@ class LocalPlayer(Player):
         
     def add_point(self):
         self.hud.add_kill()
-        
-    #def show_locate_hint(self):
-    #    self.hud.show_hint("Right click to scope")
-    #    self.game.had_locate = True
-        
-    #def show_debug_hint(self):
-    #    self.hud.show_hint("Already at full health",timeout=1)
     
     def setup_camera(self):
         super(LocalPlayer,self).setup_camera()
-        self.input_tokens = [inputState.watch('forward', 'w', 'w-up'),
-                             inputState.watch('backward', 's', 's-up'),
-                             inputState.watch('moveleft', 'a', 'a-up'),
-                             inputState.watch('moveright', 'd', 'd-up')]
+        self.input_tokens = [inputState.watch('forward', self.game.shell.controls['forward'], self.game.shell.controls['forward']+'-up'),
+                             inputState.watch('backward', self.game.shell.controls['backward'], self.game.shell.controls['backward']+'-up'),
+                             inputState.watch('moveleft', self.game.shell.controls['moveleft'], self.game.shell.controls['moveleft']+'-up'),
+                             inputState.watch('moveright', self.game.shell.controls['moveright'], self.game.shell.controls['moveright']+'-up')]
         #taskMgr.add(self.updateCameraTask, "updateCameraTask")
     
     def updateShotTask(self, task):

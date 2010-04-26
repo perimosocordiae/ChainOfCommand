@@ -358,7 +358,7 @@ class Locate(Achievement):
     def add_effect(self, agent):
         agent.show_scopehairs()
         if not self.game.had_locate :
-            agent.hud.show_hint("Right click to scope")
+            agent.hud.show_hint("%s to scope"%self.game.shell.formatControls('scope'))
             self.game.had_locate = True
         
     def remove_effect(self, agent):

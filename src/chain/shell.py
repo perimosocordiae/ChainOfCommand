@@ -5,15 +5,17 @@ from pickle import load,dump
 from re import match
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
-from direct.gui.OnscreenText import OnscreenText 
+from direct.gui.OnscreenText import OnscreenText
+from direct.gui.OnscreenImage import OnscreenImage
 from direct.filter.CommonFilters import CommonFilters
-from pandac.PandaModules import TextNode, Thread
+from pandac.PandaModules import TextNode, Thread, TransparencyAttrib
 from direct.interval.IntervalGlobal import Func, Sequence, Wait
 from networking import Server, Client
 from game import Game
-from constants import MODEL_PATH,USE_GLOW,GAME_TYPES,TEAM_COLORS
+from constants import MODEL_PATH,USE_GLOW,GAME_TYPES,TEAM_COLORS,TEXTURE_PATH
 
 SCOREFILE = 'hiscores.pyz'
+CONTROLSFILE = 'controls.pyz'
 CHARACTER_DELAY = 0.08
 INTRO = "Hello\nWelcome to\n"
 PROMPT = "Enter a command to get started ('help' lists commands)"
@@ -33,17 +35,18 @@ LOGO = """\n\n\n
 \n\n\n\n\n
 """
 LOADINGTEXT = """In-game Controls:
-  Mouse       | look and turn
-  Left click  | shoot
-  Right click | scope zoom
-  E           | pick up programs
-  1-9         | drop program
-  W/A/S/D     | move forward/left/back/right
-  Spacebar    | jump
-  F or scroll | change perspective
-  P           | pause
-  M/N         | toggle music/sound fx
-  tab         | show leaderboard
+  Look and turn                 | mouse
+  Shoot                         | %(shoot)s
+  Move forward/left/back/right  | %(forward)s/%(moveleft)s/%(backward)s/%(moveright)s
+  Pick up programs              | %(collect)s
+  Drop programs                 | 1-9
+  Jump                          | %(jump)s
+  Scope zoom                    | %(scope)s
+  Change perspective            | %(changePerspective)s or scroll
+  Pause                         | %(pause)s
+  Toggle music/sound effects    | %(toggleMusic)s/%(toggleSoundEffects)s
+  Show leaderboard              | %(scores)s
+  Quit game                     | escape
 """
 
 PROGRAMS = {'rm' : 'Doubles attack power',
@@ -62,6 +65,10 @@ class Shell(object):
             self.hiscores = load(open(SCOREFILE))
         except:
             self.hiscores = {}
+        try :
+            self.controls = load(open(CONTROLSFILE))
+        except:
+            self.loadDefaultSettings()
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
         self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
@@ -74,7 +81,7 @@ class Shell(object):
             'rm': self.rm, 'sudo': self.sudo, 'make':self.make, '!!':self.bangbang,
             'host': self.start_server, 'server': self.start_server,
             'start': self.start_game, 'run': self.start_game, 'join': self.start_game,
-            'ifconfig': self.ifconfig, 'ipconfig': self.ifconfig
+            'ifconfig': self.ifconfig, 'ipconfig': self.ifconfig, 'settings': self.settingsPrompt
         }
         # subset of commands, to get the user started
         self.help_cmds = {
@@ -83,7 +90,8 @@ class Shell(object):
             'join' : 'Join an already hosted game',
             'man' : 'Manual page for in-game upgrade programs',
             'scores' : 'List the scores of the previous round',
-            'quit' : 'Exit the game and close the shell'
+            'quit' : 'Exit the game and close the shell',
+            'settings' : 'Change the controls for the game'
         }
         self.cmd_hist = [""]
         self.cmd_pos = 0
@@ -314,7 +322,11 @@ class Shell(object):
                 self.append_line("Error: Can't find a host on that IP and port")
                 return
             loadingScreen = Sequence(Func(self.hide_inputs))#,Func(self.output.setText,""))
-            for line in LOADINGTEXT.splitlines():
+            format = dict(self.controls)
+            for value in format :
+                if format[value] == 'mouse1' : format[value] = 'left click'
+                elif format[value] == 'mouse3' : format[value] = 'right click'
+            for line in (LOADINGTEXT%format).splitlines():
                 loadingScreen.append(Func(self.append_line, line))
                 loadingScreen.append(Wait(0.05))
             loadingScreen.append(Func(self.append_line,""))
@@ -352,6 +364,143 @@ class Shell(object):
         Sequence(Func(self.append_line,"Saving scores..."),Wait(0.5),
                  Func(self.append_line,"Done."),Wait(0.5),
                  Func(taskMgr.stop)).start()
+    
+    def settingsPrompt(self,cmd,arglist=[],sudo=False):
+        self.input.stash()
+        self.prompt.stash()
+        self.output.stash()
+        self.screen.ignoreAll()
+        self.settingsOutput = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, 
+                                           align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
+        self.controlIndex = 0
+        self.validBindings = ['a','b','c','d','e','f','g','h','i','j','k',
+               'l','m','n','o','p','q','r','s','t','u','v','w','x','y','n','z',
+               '`','-','=','[',']','\\',';',"'",',','.','/','+','*',    #note that \\ is the \ key     
+               'f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','scroll_lock',
+               'backspace','insert','home','page_up','num_lock','tab','delete','end',
+               'page_down','caps_lock','arrow_left','arrow_right','mouse1','mouse3',
+               'lshift','rshift','lcontrol','rcontrol','lalt','ralt','space'
+               ]
+        self.invalidBindings = ['0','1','2','3','4','5','6','7','8','9','escape']
+        self.settingsBorder = OnscreenImage(image="%s/white_border.png" % TEXTURE_PATH, pos = (-.33,0,.662), 
+                                         scale=(0.97, 1, 0.04), color=(1,1,1,.8), parent=self.settingsOutput)
+        self.settingsBorder.setTransparency(TransparencyAttrib.MAlpha)
+        self.selected = False
+        self.draftControls = dict(self.controls)
+        self.refreshSettingsPrompt(None)
+        self.settingsOutput.accept('arrow_up', self.incrementControlIndex,[-1])
+        self.settingsOutput.accept('arrow_down', self.incrementControlIndex,[1])
+        Sequence(Wait(0.001), Func(self.settingsOutput.accept,'enter', self.youPressedEnter)).start()
+        for key in self.validBindings :
+            self.settingsOutput.accept(key, self.refreshSettingsPrompt,[key])
+        for key in self.invalidBindings :
+            self.settingsOutput.accept(key, self.refreshSettingsPrompt,[key])
+    
+    def incrementControlIndex(self, change):
+        if self.selected : # bind this key
+            if change == -1 : self.refreshSettingsPrompt('arrow_up')
+            elif change == 1 : self.refreshSettingsPrompt('arrow_down')
+            return
+        self.controlIndex += change
+        if self.controlIndex < 0 : self.controlIndex = 0
+        if self.controlIndex > len(self.draftControls)-1+4 : self.controlIndex = len(self.draftControls)-1+4
+        settingsBorderPos = self.settingsBorder.getPos()
+        settingsBorderZPos = 0.662 - (.076*self.controlIndex)
+        if self.controlIndex > len(self.draftControls)-1 : settingsBorderZPos -= (.076*3)
+        self.settingsBorder.setPos(settingsBorderPos[0], settingsBorderPos[1], settingsBorderZPos)
+        
+    def formatControls(self, control, press=True, uppercase=False):
+        result = self.controls[control]
+        if result == 'mouse1' : result = 'Left click'
+        elif result == 'mouse3' : result = 'Right click'
+        elif press : result = "Press " + result
+        if uppercase : result = result.upper()
+        return result
+    
+    def youPressedEnter(self):
+        if self.controlIndex == len(self.draftControls)-1+3-2 : 
+            self.loadDefaultSettings()
+            self.refreshSettingsPrompt(None)
+            return
+        elif self.controlIndex == len(self.draftControls)-1+3-1 : 
+            self.destroySettingsPrompt()
+            return
+        elif self.controlIndex == len(self.draftControls)-1+3 : 
+            self.exitSettingsPrompt()
+            return
+        if self.selected : 
+            self.refreshSettingsPrompt('enter')
+            return
+        self.selected = True
+        self.settingsBorder.setColor(0,1,0,.8)
+        
+    def deselect(self):
+        self.selected = False
+        self.settingsBorder.setColor(1,1,1,.8)
+    
+    def refreshSettingsPrompt(self, key):
+        if not self.selected and key : return
+        self.deselect()
+        errorMessage = ""
+        if key :
+            if 0 > self.controlIndex or self.controlIndex > len(self.draftControls) - 1 : return
+            if key not in self.validBindings and key not in ['arrow_up','arrow_down','enter'] :
+                errorMessage = "Invalid binding"
+            elif key in self.draftControls.values() :
+                errorMessage = "Key already in use"
+            else :
+                self.draftControls[('forward', 'backward', 'moveleft', 'moveright', 'shoot', 'jump', 
+                               'collect', 'scope', 'pause', 'changePerspective', 'toggleMusic', 
+                               'toggleSoundEffects', 'scores')[self.controlIndex]] = key
+        format = dict(self.draftControls)
+        format['error'] = errorMessage
+        settingsText = """  Below are the game controls.
+  Use the up and down arrows to select a control,
+  and press enter to change it
+                
+  Move forward: \t\t\t%(forward)s
+  Move backward: \t\t%(backward)s
+  Move left: \t\t\t%(moveleft)s
+  Move right: \t\t\t%(moveright)s
+  Shoot: \t\t\t%(shoot)s
+  Jump:\t\t\t\t%(jump)s
+  Collect a program:\t\t%(collect)s
+  Scope: \t\t\t%(scope)s
+  Pause:\t\t\t\t%(pause)s
+  Change perspective:\t\t%(changePerspective)s
+  Toggle background music:\t%(toggleMusic)s
+  Toggle sound effects:\t\t%(toggleSoundEffects)s
+  Show scores:\t\t\t%(scores)s
+  
+  %(error)s
+  
+  Restore default settings
+  Exit without saving
+  Save and exit"""%format
+        self.settingsOutput.setText(settingsText)
+        
+    def loadDefaultSettings(self):
+        self.controls = {'forward': 'w', 'backward': 's', 'moveleft': 'a', 'moveright': 'd',
+                    'shoot': 'mouse1', 'jump': 'space', 'collect': 'e', 'scope': 'mouse3',
+                    'pause': 'p', 'changePerspective': 'f', 'toggleMusic': 'm', 
+                    'toggleSoundEffects': 'n', 'scores': 'tab'}  
+        
+    def exitSettingsPrompt(self):
+        self.controls = self.draftControls
+        dump(self.controls,open(CONTROLSFILE,'w'),-1)
+        self.destroySettingsPrompt()
+        self.append_line("Settings saved")
+        
+    def destroySettingsPrompt(self):
+        self.settingsOutput.ignoreAll()
+        self.settingsBorder.destroy()
+        self.settingsOutput.destroy()
+        self.output.unstash()
+        self.prompt.unstash()
+        self.input.unstash()        
+        self.screen.accept('arrow_up',self.history,[True])
+        self.screen.accept('arrow_down',self.history,[False])
+        self.screen.accept('tab', self.tab_completion)
     
     def sudo(self,cmd,arglist=[],sudo=False):
         if len(arglist) == 0:
