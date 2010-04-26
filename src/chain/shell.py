@@ -323,7 +323,7 @@ class Shell(object):
                '`','-','=','[',']','\\',';',"'",',','.','/','+','*',    #note that \\ is the \ key     
                'f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','scroll_lock',
                'backspace','insert','home','page_up','num_lock','tab','delete','end',
-               'page_down','caps_lock','arrow_left','arrow_right','mouse1','mouse3',
+               'page_down','caps_lock','arrow_left','arrow_right','mouse1','mouse2','mouse3',
                'lshift','rshift','lcontrol','rcontrol','lalt','ralt','space'
                ]
         self.invalidBindings = ['0','1','2','3','4','5','6','7','8','9','escape']
@@ -347,8 +347,8 @@ class Shell(object):
             elif change == 1 : self.refreshSettingsPrompt('arrow_down')
             return
         self.controlIndex += change
-        if self.controlIndex < 0 : self.controlIndex = 0
-        if self.controlIndex > len(self.draftControls)-1+4 : self.controlIndex = len(self.draftControls)-1+4
+        if self.controlIndex < 0 : self.controlIndex = len(self.draftControls)-1+3
+        if self.controlIndex > len(self.draftControls)-1+3 : self.controlIndex = 0
         settingsBorderPos = self.settingsBorder.getPos()
         settingsBorderZPos = 0.662 - (.076*self.controlIndex)
         if self.controlIndex > len(self.draftControls)-1 : settingsBorderZPos -= (.076*3)
@@ -357,6 +357,7 @@ class Shell(object):
     def formatControls(self, control, press=True, uppercase=False):
         result = self.controls[control]
         if result == 'mouse1' : result = 'Left click'
+        elif result == 'mouse2' : result = 'Middle click'
         elif result == 'mouse3' : result = 'Right click'
         elif press : result = "Press " + result
         if uppercase : result = result.upper()
@@ -473,6 +474,7 @@ class Shell(object):
             format = dict(self.controls)
             for value in format :
                 if format[value] == 'mouse1' : format[value] = 'left click'
+                elif format[value] == 'mouse2' : format[value] = 'middle click'
                 elif format[value] == 'mouse3' : format[value] = 'right click'
             for line in (LOADINGTEXT%format).splitlines():
                 loadingScreen.append(Func(self.append_line, line))
