@@ -456,7 +456,8 @@ class Shell(object):
             if format[key] == 'mouse1': format[key] = 'left click'
             elif format[key] == 'mouse2': format[key] = 'middle click'
             elif format[key] == 'mouse3': format[key] = 'right click'
-            
+        return format
+    
     #### HERE THERE BE SHELL COMMANDS ####
     
     def start_game(self,cmd,arglist=[],sudo=False):
