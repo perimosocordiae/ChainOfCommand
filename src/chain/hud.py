@@ -266,7 +266,8 @@ class HUD(object):
                 
     def show_hint(self,message,timeout=3):
         hint = OnscreenText(text=message, pos=(0,0.1), scale=HUD_SCALE, fg=HUD_FG, bg=HUD_BG, font=self.font)
-        Sequence(Wait(timeout), Func(hint.destroy)).start()
+        if timeout != -1:
+            Sequence(Wait(timeout), Func(hint.destroy)).start()
         return hint
     
     def timerTask(self, task):

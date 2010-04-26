@@ -363,7 +363,7 @@ class Ls(Achievement):
 
 class Ln(Achievement):
     def __init__(self, game, room, pos=None):
-        super(Ln, self).__init__(game, room, 'ln', "Move the Link to the South Bridge", BASE_SCALE, pos)
+        super(Ln, self).__init__(game, room, 'ln', "Warp Link", BASE_SCALE, pos)
         self.wire = CopperWire("ln_wire", render, (0,0,0), (0,0,0), (0.0001,0.0001,0))
         self.warpHint = None
         
@@ -388,7 +388,8 @@ class Ln(Achievement):
     def show_desc(self):
         super(Ln, self).show_desc()
         if not self.warpHint:
-            self.warpHint = OnscreenText(text="Press 'x' key to warp to the south bridge, or 'e' to pick up this link", pos=(0,0.1), scale=0.06, fg=(0,0,0,0.8), bg=(1,1,1,0.8), font=self.game.shell.font)
+            self.warpHint = self.game.local_player().hud.show_hint("Press 'e' to pick up this link\nPress 'x' to warp to the south bride",-1)
+            #self.warpHint = OnscreenText(text="Press 'x' key to warp to the south bridge, or 'e' to pick up this link", pos=(0,0.1), scale=0.06, fg=(0,0,0,0.8), bg=(1,1,1,0.8), font=self.game.shell.font)
     
     def hide_desc(self):
         super(Ln, self).hide_desc()
