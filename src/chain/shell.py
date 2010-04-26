@@ -87,6 +87,7 @@ class Shell(object):
         }
         self.cmd_hist = [""]
         self.cmd_pos = 0
+        self.server = None
         if USE_GLOW:
             CommonFilters(base.win, base.cam).setBloom(blend=(0,0,0,1), desat=-0.5, intensity=3.0, size=2)
             render.setShaderAuto()
@@ -242,7 +243,7 @@ class Shell(object):
         m = match(r"(\d+)\.(\d+)\.(\d+)\.(\d+)",is_this_an_ip)
         if not m or len(m.groups()) != 4: return False
         for section in m.groups():
-            if not 1 <= len(section) <= 3: return False
+            if not (1 <= len(section) <= 3 or  0 <= int(section) <= 255): return False
         return True
             
     def load_finished(self):
@@ -328,17 +329,24 @@ class Shell(object):
         if len(arglist) != 1:
             self.append_line("Usage: %s [port_num]"%cmd)
             self.append_line("  start a server on this machine")
-        else:
-            try :
-                port = int(arglist[0])
-            except ValueError:
-                self.append_line("Error: Invalid format for port number")
-                self.square_bracket_checker(arglist[0])
+            return
+        try :
+            port = int(arglist[0])
+        except ValueError:
+            self.append_line("Error: Invalid format for port number")
+            self.square_bracket_checker(arglist[0])
+            return
+        if self.server is not None:
+            if self.server.port == port:
+                self.append_line("A server is already running on that port.")
                 return
-            str = "vigorously " if sudo else ""
-            self.append_line("Starting server %son port %d..."%(str,port))
-            Server(port)
-            self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
+            self.append_line("Moving server from port %d to port %d"%(self.server.port,port))
+            self.server.shutdown()
+        else:
+            adverb = "vigorously " if sudo else ""
+            self.append_line("Starting server %son port %d..."%(adverb,port))
+        self.server = Server(port)
+        self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
             
     def quit(self,cmd,arglist=[],sudo=False):
         Sequence(Func(self.append_line,"Saving scores..."),Wait(0.5),

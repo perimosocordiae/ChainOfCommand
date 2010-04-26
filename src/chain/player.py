@@ -452,7 +452,6 @@ class LocalPlayer(Player):
         self.hud.toggle_sound_effects()
 
     def click(self):
-        #self.shoot()
         delay = self.rapid_fire()
         self.shooting = True
         taskMgr.doMethodLater(delay, self.updateShotTask, "updateShotTask")
@@ -547,10 +546,6 @@ class LocalPlayer(Player):
             self.programs.append(None)
             self.hud.add_slot()
         
-    #def add_kill(self, objKilled):
-    #    super(LocalPlayer, self).add_kill(objKilled)
-    #    self.hud.add_kill()
-        
     def add_point(self):
         self.hud.add_kill()
         
@@ -567,17 +562,17 @@ class LocalPlayer(Player):
                              inputState.watch('backward', 's', 's-up'),
                              inputState.watch('moveleft', 'a', 'a-up'),
                              inputState.watch('moveright', 'd', 'd-up')]
-        taskMgr.add(self.updateCameraTask, "updateCameraTask")
+        #taskMgr.add(self.updateCameraTask, "updateCameraTask")
     
     def updateShotTask(self, task):
         self.shooting = True
         return task.again
         
     #Task to move the camera
-    def updateCameraTask(self, task):
+    #def updateCameraTask(self, task):
         #print self.velocity * globalClock.getDt()
         #self.sendUpdate()
-        return Task.cont
+    #    return Task.cont
     
     def updateGodModeTask(self, task):
         glow = not self.laserGlow
@@ -624,14 +619,14 @@ class LocalPlayer(Player):
         new_vel = Vec2(0, 0)
         for cmd in cmds:
             new_vel += self.get_partial_velocity(cmd)
-        
         new_vel.normalize()
         new_vel *= MOTION_MULTIPLIER
         return new_vel
     
     def get_partial_velocity(self, dir):
         h = radians(self.tron.getH())
-        if dir in ['moveleft', 'moveright']: h += pi / 2.0
+        if dir in ['moveleft', 'moveright']: 
+            h += pi / 2.0
         if dir in ['forward', 'moveleft']:
             return Vec2(sin(h), -cos(h))
         else:

@@ -9,7 +9,7 @@ if __name__ == '__main__':
     if len(argv) == 2:
         port = int(argv[1])
         assert 1000 <= port <= 99999
-        Server(port)
+        Server(port) # dragons
         if getOS() == 'Windows': # epic hacks
             ip = Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
         else:

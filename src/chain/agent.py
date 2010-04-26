@@ -29,16 +29,6 @@ class Agent(object):
         self.redTex = loader.loadTexture("%s/red_screen.png" % TEXTURE_PATH)
         self.texStg = TextureStage('redTexStg')
         self.flashSequence = Sequence(Func(NodePath(self.get_model()).setTexture, self.texStg, self.redTex), Wait(0.25), Func(NodePath(self.get_model()).clearTexture, self.texStg))    
-        #self.flashSequence.start()
-    
-    def load_model(self):
-        return
-    
-    def get_text_pos(self):
-        return (0,0,1)
-    
-    def get_text_scale(self):
-        return 1.0
     
     def get_shield_sphere(self):
         #override to show some kind of shield
@@ -90,20 +80,16 @@ class Agent(object):
         if not self.in_air():
             self.velocity.setZ(self.get_jump_speed())  # he's on the ground - let him jump
     
-    def get_model(self):
-        return None
-    
-    def add_radar(self):
-        pass
-    
-    def remove_radar(self):
-        pass
-    
-    def show_scopehairs(self):
-        return
-    
-    def hide_scopehairs(self):
-        return
+    def load_model(self): pass
+    def get_model(self): pass
+    def add_radar(self): pass
+    def remove_radar(self): pass
+    def show_scopehairs(self): pass
+    def hide_scopehairs(self): pass    
+    def set_laser_glow(self, glow): pass
+    def set_glow(self, glow): pass
+    def die(self): pass
+    def show_locate_hint(self): pass
     
     #Per is the amount to heal per tick... times is the number of ticks to heal for
     def debug(self, name, per, times):
@@ -113,57 +99,39 @@ class Agent(object):
             print "Debugging %s: (%d, %d)"%(name, per, times)
     
     def do_debug(self):
-        origSize = len(self.debuggers)
-        if origSize > 0:
-            #delete OUTSIDE of iteration... keep a list of to_delete
-            toDelete = []
-            for name, debugger in self.debuggers.iteritems():
-                self.heal(debugger[0])
-                if debugger[1] <= 1 or self.health == self.get_max_health():
-                    toDelete.append(name)
-                else:
-                    self.debuggers[name] = (debugger[0], debugger[1] - 1)
-            for name in toDelete:
+        for name, debugger in self.debuggers.items():
+            self.heal(debugger[0])
+            if debugger[1] <= 1 or self.health == self.get_max_health():
                 del self.debuggers[name]
-            if len(self.debuggers) == 0:
-                if hasattr(self, "hud") and self.hud and self.hud.healthBAR:
-                    self.hud.healthBAR['text'] = ""
+            else:
+                self.debuggers[name] = (debugger[0], debugger[1] - 1)
+        if len(self.debuggers) == 0:
+            if hasattr(self, "hud") and self.hud and self.hud.healthBAR:
+                self.hud.healthBAR['text'] = ""
     
     def collect(self):
-        if self.canCollect:
-            prog = self.canCollect
+        prog = self.canCollect
+        if not prog: return -1, None
+        if prog.unique_str() not in self.game.programs: return -1, None
+        if prog.name == "RAM" and len(self.programs) == MAX_PROGRAMS: return -1, None
+        #if basic, have it do its effect and return. fails for non-effectful gdb
+        if not prog.pick_up(self): return -1, prog
+        
+        for i,p in enumerate(self.programs):
+            if not p: break
+        else: # didn't break, there are no slots open
+            return i, False
+        
+        # ok, pick it up
+        alreadyHave = any(True for p in self.programs if p and p.name == prog.name)
+        self.programs[i] = prog
+        prog.disappear()
+        del self.game.programs[prog.unique_str()]
+        if not alreadyHave:
+            prog.add_effect(self)  
+        self.canCollect = None
+        return i, prog
 
-            if prog.unique_str() in self.game.programs:
-                #fails when maximum number of slots/programs is reached
-                if prog.name == "RAM" and len(self.programs) == MAX_PROGRAMS:
-                    return -1, None
-            
-                #if basic, have it do its effect and return
-                #fails for non-effectful gdb
-                if not prog.pick_up(self):
-                    return -1, prog
-                
-                for i,p in enumerate(self.programs):
-                    if not p: break
-                if p:
-                    return i, False
-                
-                alreadyHave = False
-                for i2,p2 in enumerate(self.programs):
-                    if p2 and p2.name == prog.name:
-                        alreadyHave = True
-                self.programs[i] = prog
-                prog.disappear()
-                del self.game.programs[prog.unique_str()]
-                if not alreadyHave:
-                    prog.add_effect(self)  
-                self.canCollect = None
-                return i, prog
-            else:
-                return -1, None
-        else:
-            return -1, None
-    
     def warp(self):
         if self.canCollect:
             prog = self.canCollect
@@ -171,41 +139,30 @@ class Agent(object):
                 self.get_model().setPos(self.game.level.south_bridge_pos())
     
     def drop(self, i):
-        if i >= len(self.programs) or not self.programs[i]: return False
+        if 0 > i >= len(self.programs) or not self.programs[i]: return False
         self.programs[i].reappear(self.tron.getPos())
-        noneLeft = True
+
+        # see if any of this type are left
         for j,p in enumerate(self.programs):
             if i != j and p != None and p.name == self.programs[i].name:
-                noneLeft = False
-                break
-        if noneLeft: #have the program remove any of its visual effects
-            self.programs[i].remove_effect(self)      
+                break # yep, there's at least one left
+        else: # nope, it was the last one
+            self.programs[i].remove_effect(self)
+          
         self.programs[i] = None
         return True
     
     def add_slot(self):
         self.programs.append(None)
     
-    def set_laser_glow(self, glow):
-        return
-    
-    def set_glow(self, glow):
-        return
-    
     def hit(self,amt,hitter=None):
         if self.is_dead(): return False# semi-hack
         self.health -= amt/self.shield()
         self.flashSequence.start()
-        if self.health <= 0:
+        if self.is_dead():
             self.health = 0 # hax
             self.die()
         return True
-    
-    def die(self):
-        print "Agent is dead"
-    
-    def show_locate_hint(self):
-        return
     
     def is_dead(self):
         return self.health <= 0

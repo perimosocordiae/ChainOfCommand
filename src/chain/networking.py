@@ -133,6 +133,12 @@ class Server(NetworkBase):
     def getFirstPlayer(self):
         if len(self.player_dict) < 1 : return
         else: return self.player_dict.keys()[0]
+        
+    def shutdown(self):
+        for conn in self.activeConnections:
+            self.cManager.closeConnection(conn)
+        taskMgr.remove("serverListenTask")
+        taskMgr.remove("serverDisconnectTask")
 
 class Client(NetworkBase):
     def __init__(self, host, port, timeout=3000):
