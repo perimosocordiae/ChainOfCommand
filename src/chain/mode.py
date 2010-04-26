@@ -56,6 +56,7 @@ class ForTheHoard(Mode):
         self.level = SniperLevel(self.game, environ)
     
     def score(self,player):
+        if not hasattr(self,'level'): return 0
         base = self.level.bases[player.color]
         progs_in_base = 0
         for p in self.game.programs.itervalues():
