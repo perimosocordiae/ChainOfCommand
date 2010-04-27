@@ -85,7 +85,7 @@ class GameEventHandler(DirectObject):
             self.pusherHandler.addCollider(d.pusher, d.parent)
         for p in game.programs.itervalues():
             base.cTrav.addCollider(p.pusher, self.pusherHandler)
-            self.pusherHandler.addCollider(p.pusher, p.model)
+            self.pusherHandler.addCollider(p.pusher, p.parent)
         
         drones = game.drones.keys()
         progs  = game.programs.keys()
@@ -106,7 +106,7 @@ class GameEventHandler(DirectObject):
     
     def addProgramHandler(self, p):
         base.cTrav.addCollider(p.pusher, self.pusherHandler)
-        self.pusherHandler.addCollider(p.pusher, p.model)
+        self.pusherHandler.addCollider(p.pusher, p.parent)
         for t in self.game.players.iterkeys():
             self.accept("%s-into-%s_donthitthis"%(t,p.unique_str()),  self.tronHitsProg)
             self.accept("%s-out-%s_donthitthis"%(t,p.unique_str()), self.tronOutProg)

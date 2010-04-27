@@ -35,7 +35,7 @@ class Program(Agent):
     
     #Set the pos relative to the floor - floats a little above this pos
     def setFloorPos(self, pos):
-        self.model.setPos(pos[0], pos[1], pos[2] + FLOAT_HEIGHT)
+        self.parent.setPos(pos[0], pos[1], pos[2] + FLOAT_HEIGHT)
     
     def unique_str(self):
         return self.name + str(hash(self))
@@ -83,9 +83,10 @@ class Program(Agent):
         self.game.readd_program(self)
         
     def load_model(self):
+        self.parent = render.attachNewNode("%s_Parent"%str(hash(self)))
         self.model = loader.loadModel("%s/%s.bam" % (MODEL_PATH, self.prefix))
-        self.model.setScale(self.scale)
-        self.model.reparentTo(render)
+        self.parent.setScale(self.scale)
+        self.model.reparentTo(self.parent)
         self.setFloorPos(self.pos)
         if not self.name in ["RAM",'gdb','--flag']:
             textFront = TextNode("NameFront")
@@ -107,14 +108,14 @@ class Program(Agent):
             textNodeBack.setHpr(180,0,0)
         
     def get_model(self):
-        return self.model
+        return self.parent
     
     def setup_interval(self):
         #Create the intervals needed to spin and expand/contract
         hpr1 = self.model.hprInterval(1.5, Point3(180, 0, 0), startHpr=Point3(0, 0, 0))
         hpr2 = self.model.hprInterval(1.5, Point3(360, 0, 0), startHpr=Point3(180, 0, 0))
-        scale1 = self.model.scaleInterval(1.5, self.scale * 2, startScale=self.scale, blendType='easeInOut')
-        scale2 = self.model.scaleInterval(1.5, self.scale, startScale=self.scale * 2, blendType='easeInOut')
+        scale1 = self.model.scaleInterval(1.5, 2, startScale=1, blendType='easeInOut')
+        scale2 = self.model.scaleInterval(1.5, 1, startScale=2, blendType='easeInOut')
         
         #Create and play the sequence that coordinates the intervals  
         self.seq = Sequence(Parallel(scale1, hpr1), Parallel(scale2, hpr2))
@@ -126,12 +127,12 @@ class Program(Agent):
                 Point3(1, 0, -0.877), Point3(1, 0, 0.877), Point3(-1, 0, 0.877)))
     
     def setup_collider_solid(self, solid, pusherSolid, hitterSolid):
-        self.collider = self.model.attachNewNode(CollisionNode(self.unique_str() + "_donthitthis"))
+        self.collider = self.parent.attachNewNode(CollisionNode(self.unique_str() + "_donthitthis"))
         self.collider.node().addSolid(solid)
         self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
         self.collider.node().setFromCollideMask(0)
         
-        self.pusher = self.model.attachNewNode(CollisionNode(self.unique_str() + "_pusher_donthitthis"))
+        self.pusher = self.parent.attachNewNode(CollisionNode(self.unique_str() + "_pusher_donthitthis"))
         self.pusher.node().addSolid(pusherSolid)
         self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
         self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
@@ -197,7 +198,7 @@ class Basic(Program):
     def disappear(self, respawn=True):
         #Set up the sequence to respawn the program
         if self.respawnRate > 0 and respawn:
-            pos = self.model.getPos()
+            pos = self.parent.getPos()
             self.respawnSeq = Sequence(Wait(self.respawnRate), Func(self.respawn, Point3(pos[0], pos[1], pos[2] - FLOAT_HEIGHT)))
             self.respawnSeq.start()
         super(Basic, self).disappear()
