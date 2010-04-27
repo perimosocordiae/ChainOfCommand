@@ -38,7 +38,7 @@ class BaseTerminal(Agent):
     
     def load_text(self):
         self.text = TextNode('TerminalText')
-        self.text.setText("\Corruption 0%%\nroot@%s:~$"%self.color)
+        self.text.setText("Corruption 0%%\nStatus:\nnormal\nroot@%s:~$"%self.color)
         self.text.setTextColor(1, 1, 1, 1)
         self.text.setFont(self.game.shell.font)
         self.text.setAlign(TextNode.ACenter)

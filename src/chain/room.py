@@ -171,7 +171,7 @@ class CubeRoom(Room):
 class Base(CubeRoom):
     def __init__(self, game, name, parent, pos, rot, scale, color, holes=(0,0,0,0,0,0,0,0)):
         super(Base, self).__init__(name, parent, pos, rot, scale, color, holes)
-        self.obstacles['terminal'] = BaseTerminal(game, self, self.environ, (0,-3,1), (180,0,0), 1, color)
+        self.obstacles['terminal'] = BaseTerminal(game, self, self.environ, (0,-3,0.5), (180,0,0), 1, color)
         
 class Hallway(Room):
     def __init__(self, name, parent, pos, rot, scale, color, angle):
