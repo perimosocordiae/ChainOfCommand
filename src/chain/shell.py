@@ -283,8 +283,8 @@ class Shell(object):
         return True
             
     def load_finished(self):
-        idx = len(LOADINGTEXT.splitlines())+1
-        self.overwrite_line(idx,"Loading... Done.")
+        idx = len(LOADINGTEXT.splitlines())
+        self.overwrite_line(idx+1,"Loading... Done.")
         self.overwrite_line(idx+2,"Players: (up/down to change team)")
         self.overwrite_line(idx+5,"Game: (left/right to change type)")
         self.overwrite_line(idx+9,"When everyone is ready, press 'b' to begin")
@@ -300,7 +300,7 @@ class Shell(object):
     def staging_ready(self):
         min_p = self.g.get_mode().min_players
         if len(self.g.players) < min_p:
-            idx = len(LOADINGTEXT.splitlines())+9
+            idx = len(LOADINGTEXT.splitlines())+8
             self.overwrite_line(idx, ("Sorry, this game mode needs at least %d players"%min_p).center(60))
         else:
             self.g.client.send('start')
@@ -314,14 +314,14 @@ class Shell(object):
     def refresh_staging(self):
         player_names = ("%s (%s)"%(n,TEAM_COLORS.keys()[t]) for n,t in self.g.players.iteritems())
         type,desc = self.g.get_mode().name, self.g.get_mode().desc
-        name_idx = len(LOADINGTEXT.splitlines())+4
+        name_idx = len(LOADINGTEXT.splitlines())+3
         self.overwrite_line(name_idx," | ".join(player_names).center(60))
         self.overwrite_line(name_idx+3,type.upper().center(60))
         self.overwrite_line(name_idx+4,desc.center(60))
         self.overwrite_line(name_idx+5,'')
 
     def finish_staging(self):
-        idx = len(LOADINGTEXT.splitlines())+1
+        idx = len(LOADINGTEXT.splitlines())
         self.overwrite_line(idx+2,"Players:")
         self.overwrite_line(idx+5,"Game:")
         self.overwrite_line(idx+9,"Starting game...")
@@ -329,7 +329,7 @@ class Shell(object):
         self.screen.ignoreAll()
     
     def show_sync(self):
-        idx = len(LOADINGTEXT.splitlines())+1
+        idx = len(LOADINGTEXT.splitlines())
         self.overwrite_line(idx+9,"Synchronizing watches...")
             
     def main(self, client):

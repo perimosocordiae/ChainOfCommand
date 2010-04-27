@@ -219,7 +219,7 @@ class Beaumont(Level):
         self.rooms[room.name] = room
         room = StandardIntersection(self.parent, (-18,-3.5,z), 90, team1, 3)
         self.rooms[room.name] = room
-        self.rooms["room_114"] = CubeRoom("room_114", self.parent, (-21, 0, z),
+        self.rooms["room_114"] = Base(self.game, "room_114", self.parent, (-21, 0, z),
                     (0,0,0), 1.0, team1, (0,0,1,0,0,0,0,0))
         self.bases[team1] = self.rooms["room_114"]
         
@@ -286,7 +286,7 @@ class Beaumont(Level):
         room = StandardIntersection(self.parent, (18,-3.5,z), 270, team2, 3)
         self.rooms[room.name] = room
         
-        self.rooms["room_101"] = CubeRoom("room_101", self.parent, (21, 0, z),
+        self.rooms["room_101"] = Base(self.game, "room_101", self.parent, (21, 0, z),
                     (0,0,0), 1.0, team2, (0,0,50,0,0,0,0,0))
         self.bases[team2] = self.rooms["room_101"]
         
