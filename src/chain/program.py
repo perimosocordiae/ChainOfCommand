@@ -415,7 +415,7 @@ class Ln(Achievement):
     def show_desc(self):
         super(Ln, self).show_desc()
         if not self.warpHint:
-            hint = "Press %(collect)s to pick up this link\nPress x to warp to the south bridge"%self.game.shell.controls
+            hint = "%s to pick up this link\n%s to warp to the south bridge"%(self.game.shell.formatControls('collect'),self.game.shell.formatControls('warp'))
             self.warpHint = self.game.local_player().hud.show_hint(hint,-1)
     
     def hide_desc(self):

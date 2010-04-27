@@ -11,6 +11,7 @@ from direct.filter.CommonFilters import CommonFilters
 from pandac.PandaModules import TextNode, Thread, TransparencyAttrib
 from direct.interval.IntervalGlobal import Func, Sequence, Wait
 from networking import Server, Client
+import re
 from game import Game
 from constants import MODEL_PATH,USE_GLOW,TEAM_COLORS,TEXTURE_PATH
 
@@ -43,12 +44,38 @@ LOADINGTEXT = """In-game Controls:
   Drop programs                 | 1-9
   Jump                          | %(jump)s
   Scope zoom                    | %(scope)s
+  Warp                          | %(warp)s
   Change perspective            | %(changePerspective)s or scroll
   Pause                         | %(pause)s
   Toggle music/sound effects    | %(toggleMusic)s/%(toggleSoundEffects)s
   Show leaderboard              | %(scores)s
   Quit game                     | escape
 """
+
+SETTINGSTEXT = """  Below are the game controls.
+  Use the up and down arrows to select a control,
+  and press enter to change it.
+                
+  Move forward: \t\t\t%(forward)s
+  Move backward: \t\t%(backward)s
+  Move left: \t\t\t%(moveleft)s
+  Move right: \t\t\t%(moveright)s
+  Shoot: \t\t\t%(shoot)s
+  Jump:\t\t\t\t%(jump)s
+  Collect a program:\t\t%(collect)s
+  Scope: \t\t\t%(scope)s
+  Warp:\t\t\t\t%(warp)s
+  Pause:\t\t\t\t%(pause)s
+  Change perspective:\t\t%(changePerspective)s
+  Toggle background music:\t%(toggleMusic)s
+  Toggle sound effects:\t\t%(toggleSoundEffects)s
+  Show scores:\t\t\t%(scores)s
+  
+  %(error)s
+  
+  Restore default settings
+  Exit without saving
+  Save and exit"""
 
 PROGRAMS = {'rm' : 'Doubles attack power',
             'chmod' : 'Doubles shield strength (halves damage taken)',
@@ -397,40 +424,19 @@ class Shell(object):
             elif key in self.draftControls.values() :
                 errorMessage = "Key already in use"
             else :
-                self.draftControls[('forward', 'backward', 'moveleft', 'moveright', 'shoot', 'jump', 
-                               'collect', 'scope', 'pause', 'changePerspective', 'toggleMusic', 
-                               'toggleSoundEffects', 'scores')[self.controlIndex]] = key
+                self.draftControls[re.findall("%\(([^)]*)\)s", SETTINGSTEXT)[self.controlIndex]] = key
+        if errorMessage != "" : 
+            errorMessage = "Error: " + errorMessage
+            self.settingsBorder.setColor(1,0,0,.8)
+            Sequence(Wait(0.3),Func(self.settingsBorder.setColor,1,1,1,.8)).start()
         format = dict(self.draftControls)
         format['error'] = errorMessage
-        settingsText = """  Below are the game controls.
-  Use the up and down arrows to select a control,
-  and press enter to change it.
-                
-  Move forward: \t\t\t%(forward)s
-  Move backward: \t\t%(backward)s
-  Move left: \t\t\t%(moveleft)s
-  Move right: \t\t\t%(moveright)s
-  Shoot: \t\t\t%(shoot)s
-  Jump:\t\t\t\t%(jump)s
-  Collect a program:\t\t%(collect)s
-  Scope: \t\t\t%(scope)s
-  Pause:\t\t\t\t%(pause)s
-  Change perspective:\t\t%(changePerspective)s
-  Toggle background music:\t%(toggleMusic)s
-  Toggle sound effects:\t\t%(toggleSoundEffects)s
-  Show scores:\t\t\t%(scores)s
-  
-  %(error)s
-  
-  Restore default settings
-  Exit without saving
-  Save and exit"""%format
-        self.settingsOutput.setText(settingsText)
+        self.settingsOutput.setText(SETTINGSTEXT%format)
         
     def loadDefaultSettings(self):
         self.controls = {'forward': 'w', 'backward': 's', 'moveleft': 'a', 'moveright': 'd',
                     'shoot': 'mouse1', 'jump': 'space', 'collect': 'e', 'scope': 'mouse3',
-                    'pause': 'p', 'changePerspective': 'f', 'toggleMusic': 'm', 
+                    'warp': 'x', 'pause': 'p', 'changePerspective': 'f', 'toggleMusic': 'm', 
                     'toggleSoundEffects': 'n', 'scores': 'tab'}
         
     def exitSettingsPrompt(self):

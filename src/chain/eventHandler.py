@@ -12,7 +12,6 @@ class PlayerEventHandler(DirectObject):
         self.accept('wheel_up',playr.zoomIn)
         self.accept('wheel_down',playr.zoomOut)
         self.accept('escape',playr.game.game_over)
-        #self.accept('escape',sys.exit)
         self.accept(playr.game.shell.controls['pause'],self.pause_menu)
         self.accept(playr.game.shell.controls['toggleMusic'],playr.toggle_background_music)
         self.accept(playr.game.shell.controls['toggleSoundEffects'],playr.toggle_sound_effects)
@@ -28,9 +27,9 @@ class PlayerEventHandler(DirectObject):
         self.accept(playr.game.shell.controls['collect'],playr.collectOn)
         self.accept(playr.game.shell.controls['collect'] + '-repeat',playr.collectOn)
         self.accept(playr.game.shell.controls['collect'] + '-up',playr.collectOff)
-        self.accept('x',playr.warpOn)
-        self.accept('x-repeat',playr.warpOn)
-        self.accept('x-up',playr.warpOff)
+        self.accept(playr.game.shell.controls['warp'],playr.warpOn)
+        self.accept(playr.game.shell.controls['warp'] + '-repeat',playr.warpOn)
+        self.accept(playr.game.shell.controls['warp'] + '-up',playr.warpOff)
         
         #drop program i; if we go past 9 programs, we'll need another key system anyway
         for i in range(9):
