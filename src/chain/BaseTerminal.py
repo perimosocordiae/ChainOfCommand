@@ -38,15 +38,17 @@ class BaseTerminal(Agent):
     
     def load_text(self):
         self.text = TextNode('TerminalText')
-        self.text.setText("\Corruption 0%%\nroot@blue:~$")
+        self.text.setText("\Corruption 0%%\nroot@%s:~$"%self.color)
         self.text.setTextColor(1, 1, 1, 1)
         self.text.setFont(self.game.shell.font)
         self.text.setAlign(TextNode.ACenter)
         self.consoleText = NodePath(self.text)
+        self.consoleText.setShaderOff()
         self.consoleText.reparentTo(self.parent)
-        self.consoleText.setScale(0.12)
+        self.consoleText.setScale(0.11)
         self.consoleText.setHpr(180,0,0)
         self.consoleText.setPos(self.parent.getRelativePoint(self.model, Point3(0, -0.1, 0.65)))
+        
     
     def setup_collider(self):
         self.wall = QuadWall(self.name, self.model, Point3(0.65,-0.05,1), Point3(-0.65,-0.05,1),
@@ -75,7 +77,12 @@ class BaseTerminal(Agent):
         else:
             status = "Segmentation Fault"
         self.text.clearText()
-        self.text.setText("Corruption %d%%\n%s\nroot@blue:~#"%(percent, status))
+        #calling clear unfortunately clears all settings - reset them here:
+        self.text.clear()
+        self.text.setFont(self.game.shell.font)
+        self.text.setAlign(TextNode.ACenter)
+        self.text.setTextColor(1,1,1,1)
+        self.text.setText("Corruption %d%%\n%s\nroot@%s:~#"%(percent, status, self.color))
     
     def die(self):
         for debugger in self.debuggers.keys():
