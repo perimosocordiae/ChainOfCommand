@@ -477,9 +477,9 @@ class Shell(object):
     def start_tutorial(self,cmd,arglist=[],sudo=False):
         self.tutorial = True
         self.append_line('Host a game with the \'host\' command.')
-        self.append_line('Only one player should host the game')
-        self.append_line('Enter \'host 1337\' (without the quotes) to run a host on')
-        self.append_line('port 1337')
+        self.append_line('Only one player should host the game.')
+        self.append_line('For example, enter \'host 1337\' (without the quotes) to run')
+        self.append_line('a host on port 1337.')
     
     def start_game(self,cmd,arglist=[],sudo=False):
         if len(arglist) < 2:
@@ -535,10 +535,10 @@ class Shell(object):
             self.append_line("Starting server %son port %d..."%(adverb,port))
         self.server = Server(port)
         if self.tutorial :
-            self.append_line("Server active")
-            self.append_line("Now players need to connect to your game")
-            self.append_line("All players (including you) should enter")
-            self.append_line("'join %d %s' (without the quotes) to connect"%(port,self.get_IP()))
+            self.append_line("Server active.")
+            self.append_line("Now players need to connect to your game.")
+            self.append_line("Everyone (including you) should enter 'join %d %s'"%(port,self.get_IP()))
+            self.append_line("(without the quotes) to connect.")
         else :
             self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
             

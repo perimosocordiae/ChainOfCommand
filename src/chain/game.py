@@ -24,7 +24,6 @@ class Game(object):
         self.modes = [Deathmatch(self,False,False),Deathmatch(self,False,True),
                            Deathmatch(self,True,False), Deathmatch(self,True,True),
                            CaptureTheFlag(self), ForTheHoard(self),Pwnage(self),Tutorial(self)]
-        print self.shell.hiscores
         if self.shell.tutorial or self.shell.name not in self.shell.hiscores :
             self.mode_idx = 7
         else :
