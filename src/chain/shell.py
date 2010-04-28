@@ -128,8 +128,10 @@ class Shell(object):
         self.cmd_pos = 0
         self.server = None
         if USE_GLOW:
-            CommonFilters(base.win, base.cam).setBloom(blend=(0,0,0,1), desat=-0.5, intensity=3.0, size=2)
-            render.setShaderAuto()
+            try:
+                CommonFilters(base.win, base.cam).setBloom(blend=(0,0,0,1), desat=-0.5, intensity=3.0, size=2)
+                render.setShaderAuto()
+            except: pass
 
     def intro(self,full):
         if full:
@@ -696,4 +698,8 @@ if __name__ == '__main__':
     s = Shell(False)
     # hack the history, but only for our debugging runs
     s.cmd_hist = ["","join 1337 localhost", "host 1337"]
-    run()
+    while True:
+        try: run()
+        except: 
+            raw_input('restart?')
+            # re-load the modules (I wish)

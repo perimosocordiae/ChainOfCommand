@@ -163,15 +163,14 @@ class Game(object):
         self.mode.destroy()
         self.local_player().get_camera().reparentTo(render)
         self.local_player().hud.destroy_HUD()
-        for d in self.drones.values():
-            d.die() # should we be del'ing the drones?
+        for k in self.drones.keys():
+            self.drones[k].die()  # will remove self from hash
         for k in self.players.keys():
             self.players[k].tron.cleanup()
             self.players[k].tron.removeNode()
             del self.players[k]
         for k in self.programs.keys():
-            self.programs[k].die(False)
-            #del self.programs[k]
+            self.programs[k].die(False) # will remove self from hash
         self.client.close_connection()
         base.enableMouse()
         base.cTrav = None

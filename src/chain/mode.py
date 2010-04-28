@@ -77,7 +77,10 @@ class Pwnage(Mode):
     def load_level(self,environ):
         self.level = SniperLevel(self.game, environ)
     
-    def score(self,player): return 0
+    def score(self,player):
+        if not hasattr(self,'level'): return 0
+        if player.color not in self.level.bases: return 0
+        return self.level.terminals[player.color].health
 
 class Deathmatch(Mode):
     def __init__(self,game,is_team,is_timed):

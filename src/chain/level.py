@@ -7,7 +7,7 @@ class Level(Obstacle):
         self.rooms = {}
         self.bases = {}
         self.obstacles = {}
-        self.terminals = []
+        self.terminals = {}
         self.tower_size = 16 #hard coded for now
         self.game = game
         self.parent = parent
@@ -105,11 +105,11 @@ class BasicBaseLevel(Level):
         basez = sin(radAng) * 8.0
         self.rooms["Blue_Base"] = Base(self.game, "Blue_Base", self.parent, (0,basey,basez),
                     (180,0,0), (1.0,0.25,1.0), "blue", holes=(10,0,0,0,0,0,0,0))
-        self.terminals.append(self.rooms["Blue_Base"].obstacles["terminal"])
+        self.terminals['blue'] = self.rooms["Blue_Base"].obstacles["terminal"]
         self.bases["blue"] = self.rooms["Blue_Base"]
         self.rooms["Red_Base"] = Base(self.game, "Red_Base", self.parent, (0,-basey,basez),
                     (0,0,0), (1.0,0.25,1.0), "red", holes=(10,0,0,0,0,0,0,0))
-        self.terminals.append(self.rooms["Red_Base"].obstacles["terminal"])
+        self.terminals['red'] = self.rooms["Red_Base"].obstacles["terminal"]
         self.bases["red"] = self.rooms["Red_Base"]
         self.default_environment()
         self.rooms["Blue_Base"].add_program(self.game, Flag, "blue")
@@ -133,11 +133,11 @@ class SniperLevel(Level):
         self.rooms["%s_Base"%t1] = Base(self.game, "%s_Base"%t1, self.parent, (0,basey,basez),
                     (180,0,0), (1.0,0.25,1.0), team1, holes=(27,0,0,0,0,0,0,0))
         self.bases[team1] = self.rooms["%s_Base"%t1]
-        self.terminals.append(self.rooms["%s_Base"%t1].obstacles["terminal"])
+        self.terminals[team1] = self.rooms["%s_Base"%t1].obstacles["terminal"]
         self.rooms["%s_Base"%t2] = Base(self.game, "%s_Base"%t2, self.parent, (0,-basey,basez),
                     (0,0,0), (1.0,0.25,1.0), team2, holes=(27,0,0,0,0,0,0,0))
         self.bases[team2] = self.rooms["%s_Base"%t2]
-        self.terminals.append(self.rooms["%s_Base"%t2].obstacles["terminal"])
+        self.terminals[team2] = self.rooms["%s_Base"%t2].obstacles["terminal"]
         
         self.rooms["%s_Ramp"%t1] = Hallway("%s_Ramp"%t1, self.parent, (1.5,basey-.75,basez),
                     (180,0,0), (0.5,3.0,0.5), team1, hallwayAngle)

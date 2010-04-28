@@ -4,7 +4,6 @@ from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, B
 from pandac.PandaModules import DirectionalLight, VBase4, NodePath
 from direct.interval.IntervalGlobal import *
 from agent import Agent
-from random import random
 from constants import *
 
 #Scale factor for panda speed - bigger makes them faster
@@ -110,10 +109,14 @@ class Drone(Agent):
             else:
                 del self.hittables[player.name]
     
+    def dist_to(self,player):
+        if self.model.isEmpty(): return 99999
+        return (player.tron.getPos()-self.model.getPos()).lengthSquared()
+    
     def follow_tron(self):
         # get closest player
-        dist_to = lambda p: (p.tron.getPos()-self.model.getPos()).lengthSquared()
-        tron = sorted(self.game.players.values(),key=dist_to)[0].tron
+        tron = sorted(self.game.players.values(),key=self.dist_to)[0].tron
+        if self.parent.isEmpty(): return
         self.parent.lookAt(tron)
         self.parent.setH(self.parent.getH() + 180)
         self.parent.setP(0)
