@@ -84,6 +84,8 @@ PROGRAMS = {'rm' : 'Doubles attack power',
             'gdb' : 'Debugger restores health over time',
             'ls' : 'Increases radar range by 1.5',
             'locate' : 'Doubles scope zoom',
+            'ln' : 'Warp to a central location on the level',
+            'sudo' : 'Invincibility for 10 seconds'
            }
 
 class Shell(object):
@@ -101,6 +103,7 @@ class Shell(object):
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
         self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
         self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
+        self.tutorial = False
         self.intro(full)
         self.cmd_dict = { 
             'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
@@ -110,7 +113,8 @@ class Shell(object):
             'rm': self.rm, 'sudo': self.sudo, 'make':self.make, '!!':self.bangbang,
             'host': self.start_server, 'server': self.start_server,
             'start': self.start_game, 'run': self.start_game, 'join': self.start_game,
-            'ifconfig': self.ifconfig, 'ipconfig': self.ifconfig, 'settings': self.settingsPrompt
+            'ifconfig': self.ifconfig, 'ipconfig': self.ifconfig, 'settings': self.settingsPrompt,
+            'tutorial': self.start_tutorial
         }
         # subset of commands, to get the user started
         self.help_cmds = {
@@ -120,7 +124,8 @@ class Shell(object):
             'man' : 'Manual page for in-game upgrade programs',
             'scores' : 'List the scores of the previous round',
             'quit' : 'Exit the game and close the shell',
-            'settings' : 'Change the controls for the game'
+            'settings' : 'Change the controls for the game',
+            'tutorial' : 'Learn how to start a game'
         }
         self.cmd_hist = [""]
         self.cmd_pos = 0
@@ -469,6 +474,13 @@ class Shell(object):
     
     #### HERE THERE BE SHELL COMMANDS ####
     
+    def start_tutorial(self,cmd,arglist=[],sudo=False):
+        self.tutorial = True
+        self.append_line('Host a game with the \'host\' command.')
+        self.append_line('Only one player should host the game')
+        self.append_line('Enter \'host 1337\' (without the quotes) to run a host on')
+        self.append_line('port 1337')
+    
     def start_game(self,cmd,arglist=[],sudo=False):
         if len(arglist) < 2:
             self.append_line("Usage: %s [port_num] [host_ip]"%cmd)
@@ -522,7 +534,13 @@ class Shell(object):
             adverb = "vigorously " if sudo else ""
             self.append_line("Starting server %son port %d..."%(adverb,port))
         self.server = Server(port)
-        self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
+        if self.tutorial :
+            self.append_line("Server active")
+            self.append_line("Now players need to connect to your game")
+            self.append_line("All players (including you) should enter")
+            self.append_line("'join %d %s' (without the quotes) to connect"%(port,self.get_IP()))
+        else :
+            self.append_line("Server active, use 'join %d %s' to connect"%(port,self.get_IP()))
             
     def quit(self,cmd,arglist=[],sudo=False):
         Sequence(Func(self.append_line,"Saving scores..."),Wait(0.5),

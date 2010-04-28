@@ -24,7 +24,11 @@ class Game(object):
         self.modes = [Deathmatch(self,False,False),Deathmatch(self,False,True),
                            Deathmatch(self,True,False), Deathmatch(self,True,True),
                            CaptureTheFlag(self), ForTheHoard(self),Pwnage(self),Tutorial(self)]
-        self.mode_idx = 2 # index into game_modes, can be changed from the staging shell
+        print self.shell.hiscores
+        if self.shell.tutorial or self.shell.name not in self.shell.hiscores :
+            self.mode_idx = 7
+        else :
+            self.mode_idx = 2 # index into game_modes, can be changed from the staging shell
         
         #The size of a cube
         num_tiles = 3
@@ -253,7 +257,7 @@ class Game(object):
             drone.act()
         if self.mode.level:
             for terminal in self.mode.level.terminals:
-                terminal.act()
+                self.mode.level.terminals[terminal].act()
             
         base.cTrav.traverse(render)
         
