@@ -95,9 +95,7 @@ class Shell(object):
             self.hiscores = {}
         try :
             self.controls = load(open(CONTROLSFILE, 'rb'))
-            format = dict(self.controls)
-            format['error'] = ''
-            SETTINGSTEXT%format
+            LOADINGTEXT%self.controls
         except:
             self.loadDefaultSettings()
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)

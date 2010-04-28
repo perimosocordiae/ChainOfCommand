@@ -55,7 +55,6 @@ class HUD(object):
         self.timer = OnscreenText(text="", pos=(0,0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
         
     def setup_radar(self):
-        print "setup radar"
         self.radar_background = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, color=(.871,.722,.529, 0.5), 
                                             scale=0.25, pos=(1.08, 0, -0.75))
         self.radar_background.setTransparency(TransparencyAttrib.MAlpha)
@@ -66,7 +65,6 @@ class HUD(object):
         taskMgr.doMethodLater(0.01, self.timerTask, 'timerTask')
     
     def destroy_radar(self):
-        print "destroy radar"
         if hasattr(self, "radar_background") and self.radar_background is not None:
             self.radar_background.removeNode()
         taskMgr.remove('radarTask')

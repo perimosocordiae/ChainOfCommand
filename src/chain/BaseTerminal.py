@@ -88,11 +88,11 @@ class BaseTerminal(Agent):
         for debugger in self.debuggers.keys():
             del self.debuggers[debugger]
         #TODO do some point updating stuff here - use self.color
-        self.destroy()
+        self.wall.destroy()
     
     def destroy(self):
         self.wall.destroy()
-        #self.consoleText.removeNode()
-        #self.consoleText = None
-        #self.text = None
-        #self.model.removeNode()
+        self.consoleText.removeNode()
+        self.consoleText = None
+        self.text = None
+        self.model.removeNode()

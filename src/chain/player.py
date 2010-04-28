@@ -460,12 +460,10 @@ class LocalPlayer(Player):
         taskMgr.remove("updateShotTask")
     
     def add_radar(self):
-        print "radar"
         if hasattr(self, "hud") and self.hud:
             self.hud.setup_radar()
         
     def remove_radar(self):
-        print "radar remove"
         if hasattr(self, "hud") and self.hud:
             self.hud.destroy_radar()
         

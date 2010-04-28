@@ -383,10 +383,8 @@ class Ls(Achievement):
         return r * 1.5
     
     def add_effect(self, agent):
-        print "add radar"
         agent.add_radar()
     def remove_effect(self, agent):
-        print "remove radar"
         agent.remove_radar()
 
 class Ln(Achievement):
