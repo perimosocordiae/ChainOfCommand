@@ -21,7 +21,17 @@ class Program(Agent):
         super(Program, self).__init__(game, name, False)
         self.game = game
         if not pos:
-            pos = room.rand_point()
+            programPoses = []
+            for program in self.game.programs :
+                programPoses.append(self.game.programs[program].get_model().getPos())
+            tooClose = True
+            while tooClose :
+                pos = room.rand_point()
+                tooClose = False
+                for programPos in programPoses :
+                    if (programPos - pos).lengthSquared() < 2500 :
+                        tooClose = True
+                        break
         self.prefix = prefix
         self.scale = scale
         self.pos = pos # in time
