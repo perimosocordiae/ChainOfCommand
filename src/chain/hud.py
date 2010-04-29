@@ -46,6 +46,7 @@ class HUD(object):
         self.healthBAR.setSx(0.57)
         self.healthBAR.setTransparency(TransparencyAttrib.MAlpha)
         self.killHUD = OnscreenText(text="Score:%d" % player.score(), pos=(-0.39, 0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
+        taskMgr.doMethodLater(1, self.scoreTask, 'scoreTask')
         self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(0.43,0,0.96), scale=0.04)
         self.musicHUD.setImage(image="%s/music_on.png" % TEXTURE_PATH)
         self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
@@ -197,9 +198,6 @@ class HUD(object):
             #they couldn't just make it simple and override getX() could they?
             slot.setX(slot.getPos()[0] - 0.15)
         
-    def add_kill(self):
-        self.killHUD.setText("Score:%d" % self.player.score())
-    
     def destroy_HUD(self): 
         for programDisp in self.programHUD : programDisp.destroy() 
         if self.crosshairs:
@@ -267,6 +265,10 @@ class HUD(object):
         if timeout != -1:
             Sequence(Wait(timeout), Func(hint.destroy)).start()
         return hint
+    
+    def scoreTask(self, task):
+        self.killHUD.setText("Score:%d" % self.player.score())
+        return task.again
     
     def timerTask(self, task):
         game = self.player.game

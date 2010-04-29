@@ -103,8 +103,6 @@ class Player(Agent):
         self.stats['deaths'] += 1
         print "%s died!"%self.name
         self.respawn()
-        if hasattr(self, "hud") and self.hud:
-            self.hud.add_kill()
         
     def spawn(self,pt=None,_=None):
         if not self.tron.isEmpty(): # and self.game.gameTime > 0
@@ -258,10 +256,8 @@ class Player(Agent):
         key = objKilled.__class__.__name__+'_kill'
         if not key in self.stats:
             self.stats[key] = 1
-            self.add_point()
         else:
             self.stats[key] += 1
-            self.add_point()
         if self.score() >= self.game.mode.fragLimit:
             self.game.game_over()
     
@@ -273,7 +269,6 @@ class Player(Agent):
         return self.game.mode.score(self)
     
     #do nothing in base class - these do HUD stuff
-    def add_point(self):pass
     def hit(self, amt=0, hitter=None): pass
     def show_debug_hint(self): pass
     
@@ -402,9 +397,8 @@ class LocalPlayer(Player):
         self.sendUpdate()
         super(LocalPlayer,self).die()
         if hasattr(self, "hud") and self.hud:
-            self.hud.display_gray("Process Terminated.")
+            self.hud.display_gray("Process Terminated.\nExit status 1")
             self.hud.show_scores()
-            self.hud.add_kill()
             self.hud.clearHitIndicators()
             if self.hud.redScreen :
                 self.hud.redScreen.destroy()
@@ -542,9 +536,6 @@ class LocalPlayer(Player):
         if len(self.programs) <= 5:
             self.programs.append(None)
             self.hud.add_slot()
-        
-    def add_point(self):
-        self.hud.add_kill()
     
     def setup_camera(self):
         super(LocalPlayer,self).setup_camera()

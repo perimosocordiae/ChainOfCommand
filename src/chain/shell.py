@@ -106,7 +106,7 @@ class Shell(object):
         self.tutorial = False
         self.intro(full)
         self.cmd_dict = { 
-            'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit,
+            'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit, 'logout' : self.quit,
             'help' : self.help, 'ls' : self.help, 'dir' : self.help, 'wtf': self.help,
             'man' : self.manual,'clear' : self.clear, 'echo' : self.echo, 'su' : self.su,
             'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
@@ -715,7 +715,9 @@ if __name__ == '__main__':
     # hack the history, but only for our debugging runs
     s.cmd_hist = ["","join 1337 localhost", "host 1337"]
     while True:
-        try: run()
+        try: 
+            run()
+            break
         except: 
             raw_input('restart?')
             # re-load the modules (I wish)

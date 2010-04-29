@@ -142,8 +142,9 @@ class Game(object):
         p.hide()
         p.handleEvents = False
         p.invincible = True
-        p.hud.display_gray("Process Terminated.")
+        p.hud.display_gray("Process Terminated.\nExit status 0")
         p.hud.show_scores()
+        taskMgr.remove('scoreTask')
         taskMgr.remove('timerTask')
         taskMgr.remove('updateGodModeTask')
         taskMgr.remove('stopGodModeTask')
