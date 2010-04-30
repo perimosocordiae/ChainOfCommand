@@ -50,6 +50,13 @@ class Level(Obstacle):
             self.rooms["Cube_Room"].add_program(self.game, Ls)
             self.rooms["Cube_Room"].add_program(self.game, Ln)
             
+        for _ in range(2):
+            self.rooms["Cube_Room"].add_program(self.game, FalseP)
+            self.rooms["Cube_Room"].add_program(self.game, TrueP)
+            self.rooms["Cube_Room"].add_program(self.game, Kill)
+            self.rooms["Cube_Room"].add_program(self.game, KillAll)
+
+            
         for slot in range(5):
             pos = self.rooms["Cube_Room"].rand_point()
             name = "RAM_slot_%d"%slot

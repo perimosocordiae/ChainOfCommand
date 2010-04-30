@@ -289,6 +289,30 @@ class Sudo(Basic):
         agent.toggle_god()
         taskMgr.doMethodLater(0.2, agent.updateGodModeTask, "updateGodModeTask")
         taskMgr.doMethodLater(10, agent.stopGodModeTask, "stopGodModeTask")
+        
+class Kill(Basic):
+    def __init__(self, game, room, pos=None, respawnRate=30):
+        super(Kill, self).__init__(game, room, 'kill', "Kill", BASE_SCALE, pos, respawnRate, 'terminal_window')
+    
+    def pick_up(self, agent):
+        super(Kill, self).pick_up(agent)
+        print "program killed you"
+        return False
+
+    def do_effect(self, agent):
+        agent.kill_self()
+        
+class KillAll(Basic):
+    def __init__(self, game, room, pos=None, respawnRate=30):
+        super(KillAll, self).__init__(game, room, 'killall', "Kill All", BASE_SCALE, pos, respawnRate, 'terminal_window')
+    
+    def pick_up(self, agent):
+        super(KillAll, self).pick_up(agent)
+        print "program killed all y'all"
+        return False
+
+    def do_effect(self, agent):
+        agent.kill_all()
 
 #***************************** ACHIEVEMENT PROGRAMS *****************************
 
@@ -406,8 +430,17 @@ class Ls(Achievement):
     
     def add_effect(self, agent):
         agent.add_radar()
+        
     def remove_effect(self, agent):
         agent.remove_radar()
+        
+class FalseP(Achievement):
+    def __init__(self, game, room, pos=None):
+        super(FalseP, self).__init__(game, room, 'false', "False", BASE_SCALE, pos)
+        
+class TrueP(Achievement):
+    def __init__(self, game, room, pos=None):
+        super(TrueP, self).__init__(game, room, 'true', "True", BASE_SCALE, pos)
 
 class Ln(Achievement):
     def __init__(self, game, room, pos=None):

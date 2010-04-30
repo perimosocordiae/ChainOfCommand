@@ -38,22 +38,22 @@ class HUD(object):
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         self.grayScreen = None
-        self.scopeScreen = DirectFrame(frameSize=(1.34,-1.34,1,-1), pos=(0,0,0), frameColor=(0,0,0,0), image="%s/scope_screen.png" % TEXTURE_PATH, image_scale=(1.34,1,1), sortOrder=4)
+        self.scopeScreen = DirectFrame(frameSize=(1.78,-1.78,1,-1), pos=(0,0,0), frameColor=(0,0,0,0), image="%s/scope_screen.png" % TEXTURE_PATH, image_scale=(1.34,1,1), sortOrder=4)
         self.scopeScreen.setTransparency(TransparencyAttrib.MAlpha)
         self.scopeScreen.stash()
         self.topHUD = DirectFrame(frameSize=(-0.57,0.57,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,0.96))
         self.healthBAR = DirectWaitBar(range=100, value=100, pos=(0,0,0.88), barColor=(0,1,0,0.5), scale=0.5, text="", text_scale=0.12, text_font=self.font, frameColor=HUD_BG, sortOrder=2)
         self.healthBAR.setSx(0.57)
         self.healthBAR.setTransparency(TransparencyAttrib.MAlpha)
-        self.killHUD = OnscreenText(text="Score:%d" % player.score(), pos=(-0.39, 0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
-        taskMgr.doMethodLater(1, self.scoreTask, 'scoreTask')
+        self.scoreHUD = OnscreenText(text="Score:%d" % player.score(), pos=(-0.39, 0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
+        taskMgr.doMethodLater(0.5, self.scoreTask, 'scoreTask')
         self.musicHUD = OnscreenImage(image="%s/music_off.png" % TEXTURE_PATH, pos=(0.43,0,0.96), scale=0.04)
         self.musicHUD.setImage(image="%s/music_on.png" % TEXTURE_PATH)
         self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
         self.soundHUD = OnscreenImage(image="%s/speaker_off.png" % TEXTURE_PATH, pos=(0.51,0,0.96), scale=0.04)
         self.soundHUD.setImage(image="%s/speaker_on.png" % TEXTURE_PATH)
         self.soundHUD.setTransparency(TransparencyAttrib.MAlpha)
-        self.timer = OnscreenText(text="", pos=(0,0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
+        self.timer = OnscreenText(text="Time:", pos=(0.05,0.94), scale=HUD_SCALE, fg=HUD_FG, font=self.font, mayChange=True)
         
     def setup_radar(self):
         self.radar_background = OnscreenImage(image="%s/white_circle.png" % TEXTURE_PATH, color=(.871,.722,.529, 0.5), 
@@ -198,6 +198,9 @@ class HUD(object):
             #they couldn't just make it simple and override getX() could they?
             slot.setX(slot.getPos()[0] - 0.15)
         
+    def add_kill(self):
+        self.scoreHUD.setText("Score:%d" % self.player.score())
+    
     def destroy_HUD(self): 
         for programDisp in self.programHUD : programDisp.destroy() 
         if self.crosshairs:
@@ -218,9 +221,9 @@ class HUD(object):
         if self.healthBAR:
             self.healthBAR.destroy()
             self.healthBAR = None
-        if self.killHUD:
-            self.killHUD.destroy() 
-            self.killHUD = None
+        if self.scoreHUD:
+            self.scoreHUD.destroy() 
+            self.scoreHUD = None
         if self.musicHUD:
             self.musicHUD.destroy()
             self.musicHUD = None
@@ -253,7 +256,7 @@ class HUD(object):
         if not self.grayScreen:
             scale = 0.2
             invscale = 1.0/scale
-            self.grayScreen = DirectLabel(text=message, frameSize=(-1.34*invscale,1.34*invscale,-invscale,invscale), frameColor=HUD_FG, sortOrder=3, text_fg=HUD_BG, text_font=self.font, scale=scale)
+            self.grayScreen = DirectLabel(text=message, frameSize=(-1.78*invscale,1.78*invscale,-invscale,invscale), frameColor=HUD_FG, sortOrder=3, text_fg=HUD_BG, text_font=self.font, scale=scale)
     
     def destroy_gray(self):
         if self.grayScreen:
@@ -267,7 +270,7 @@ class HUD(object):
         return hint
     
     def scoreTask(self, task):
-        self.killHUD.setText("Score:%d" % self.player.score())
+        self.scoreHUD.setText("Score:%d" % self.player.score())
         return task.again
     
     def timerTask(self, task):

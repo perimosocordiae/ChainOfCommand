@@ -281,6 +281,18 @@ class Player(Agent):
         if succ[1]: self.stats['pickups'] += 1
         return succ
         
+    def kill_self(self):
+        self.hit((self.shield()*self.health), None) # calculate the exact amount for a 1 hit death
+    
+    def kill_all(self):
+        if self.invincible:
+            for p in self.game.players.itervalues():
+                if hasattr(p,'color') and p.color != self.color:
+                    p.kill_self()
+        else:
+            for p in self.my_team():
+                p.kill_self()
+    
     def fire_laser(self, objHit, spotHit, playSound):
         startPos = self.tron.getPos()
         laser = Laser()
@@ -558,7 +570,7 @@ class LocalPlayer(Player):
         glow = not self.laserGlow
         self.set_laser_glow(glow)
         self.set_glow(glow)
-        return task.again
+        return task.again        
     
     def stopGodModeTask(self, task):
         print "Sudo wore off"

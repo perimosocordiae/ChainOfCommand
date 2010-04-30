@@ -101,7 +101,7 @@ class Shell(object):
         except:
             self.loadDefaultSettings()
         self.font = loader.loadFont('%s/FreeMono.ttf'%MODEL_PATH)
-        self.screen = DirectFrame(frameSize=(-1.33,1.33,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
+        self.screen = DirectFrame(frameSize=(-1.78,1.78,-1,1), frameColor=(0,0,0,1), pos=(0,0,0))
         self.output = OnscreenText(text="\n"*24, pos=(-1.31,0.95), scale=0.07, align=TextNode.ALeft, mayChange=True, fg=(1,1,1,0.8), font=self.font)
         self.tutorial = False
         self.intro(full)
