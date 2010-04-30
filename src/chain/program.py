@@ -64,6 +64,8 @@ class Program(Agent):
             self.collider.removeNode()
         if self.pusher:
             self.pusher.removeNode()
+        if self.wall_pusher:
+            self.wall_pusher.removeNode()
         if self.hitter:
             self.hitter.removeNode()
         if self.model:
@@ -72,6 +74,7 @@ class Program(Agent):
         self.desc = None
         self.collider = None
         self.pusher = None
+        self.wall_pusher = None
         self.hitter = None
         self.model = None
         del self.game.programs[self.unique_str()]
@@ -82,22 +85,17 @@ class Program(Agent):
         programPoses = []
         for program in self.game.programs :
             programPoses.append(self.game.programs[program].get_model().getPos())
-        tooClose = False
+        tooClose = True
         while tooClose :
+            tooClose = False
             for programPos in programPoses :
-                if (programPos - pos).lengthSquared() < 2500 :
+                if (programPos - pos).lengthSquared() < 200 :
                     tooClose = True
                     break
-            if tooClose : pos = (pos[0] + 10, pos[1], pos[2])
+            if tooClose : pos = (pos[0] + 2, pos[1], pos[2])
         self.load_model()
         self.load_desc(self.description)
-        #self.model.unstash()
-        #self.collider.unstash()
-        #self.pusher.unstash()
         self.setFloorPos(pos)
-        #self.collider.node().setIntoCollideMask(DRONE_COLLIDER_MASK)
-        #self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
-        #self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
         self.setup_interval()
         self.setup_collider()
         self.game.readd_program(self)
@@ -156,6 +154,10 @@ class Program(Agent):
         self.pusher.node().addSolid(pusherSolid)
         self.pusher.node().setIntoCollideMask(PROGRAM_PUSHER_MASK)
         self.pusher.node().setFromCollideMask(PROGRAM_PUSHER_MASK)
+        
+        self.wall_pusher = self.pusher.copyTo(self.parent)
+        self.wall_pusher.node().setIntoCollideMask(0)
+        self.wall_pusher.node().setFromCollideMask(WALL_COLLIDER_MASK)
         
         self.hitter = self.model.attachNewNode(CollisionNode(self.unique_str()))
         self.hitter.node().addSolid(hitterSolid)

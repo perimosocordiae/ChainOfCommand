@@ -84,8 +84,10 @@ class GameEventHandler(DirectObject):
             #base.cTrav.addCollider(d.collider,self.collisionHandler)
             self.pusherHandler.addCollider(d.pusher, d.parent)
         for p in game.programs.itervalues():
-            base.cTrav.addCollider(p.pusher, self.pusherHandler)
+            self.game.ctrav.addCollider(p.pusher, self.pusherHandler)
             self.pusherHandler.addCollider(p.pusher, p.parent)
+            base.cTrav.addCollider(p.wall_pusher, self.pusherHandler)
+            self.pusherHandler.addCollider(p.wall_pusher, p.parent)
         
         drones = game.drones.keys()
         progs  = game.programs.keys()
@@ -105,8 +107,10 @@ class GameEventHandler(DirectObject):
             #self.accept("%s_wall-repeat-%s"%(t,"tower_base"),  self.tronHitsWall)
     
     def addProgramHandler(self, p):
-        base.cTrav.addCollider(p.pusher, self.pusherHandler)
+        self.game.ctrav.addCollider(p.pusher, self.pusherHandler)
+        base.cTrav.addCollider(p.wall_pusher, self.pusherHandler)
         self.pusherHandler.addCollider(p.pusher, p.parent)
+        self.pusherHandler.addCollider(p.wall_pusher, p.parent)
         for t in self.game.players.iterkeys():
             self.accept("%s-into-%s_donthitthis"%(t,p.unique_str()),  self.tronHitsProg)
             self.accept("%s-out-%s_donthitthis"%(t,p.unique_str()), self.tronOutProg)

@@ -89,7 +89,8 @@ class Drone(Agent):
         cNode3.addSolid(CollisionSphere(center, radius * .05))
         self.pusher = self.parent.attachNewNode(cNode3)
         self.pusher.node().setFromCollideMask(WALL_COLLIDER_MASK)
-        self.pusher.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        #self.pusher.node().setIntoCollideMask(WALL_COLLIDER_MASK)
+        self.pusher.node().setIntoCollideMask(0)
         
     def get_shield_sphere(self):
         return self.pusher

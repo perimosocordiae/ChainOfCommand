@@ -55,6 +55,7 @@ class Player(Agent):
     def setup_collider(self):
         self.collider = self.attach_collision_node(self.name, CollisionSphere(0, 0, 0, 10), DRONE_COLLIDER_MASK)
         self.pusher = self.attach_collision_node("%s_wall_donthitthis" % self.name, CollisionSphere(0, 0, 0, 12), WALL_COLLIDER_MASK)
+        self.pusher.node().setIntoCollideMask(0)
     
     def set_glow(self, glow):
         if glow:

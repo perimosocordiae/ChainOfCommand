@@ -21,6 +21,8 @@ class Game(object):
     def __init__(self,client,shell,tile_size=100):
         self.shell, self.tile_size = shell, tile_size
         self.players, self.programs,self.drones = {},{},{}
+        self.ctrav = CollisionTraverser("maintrav")
+        self.ctrav.setRespectPrevTransform(False)
         self.modes = [Deathmatch(self,False,False),Deathmatch(self,False,True),
                            Deathmatch(self,True,False), Deathmatch(self,True,True),
                            CaptureTheFlag(self), ForTheHoard(self),Pwnage(self),Tutorial(self)]
@@ -159,6 +161,8 @@ class Game(object):
     def kill_everything(self):
         base.enableMusic(False)
         base.enableSoundEffects(False)
+        self.ctrav.clearColliders()
+        base.cTrav.clearColliders()
         self.network_listener.finish()
         self.eventHandle.ignoreAll()
         self.local_player().eventHandle.ignoreAll()
@@ -177,6 +181,7 @@ class Game(object):
             self.programs[k].die(False) # will remove self from hash
         self.client.close_connection()
         base.enableMouse()
+        self.ctrav = None
         base.cTrav = None
     
     def send_type_change(self, change):
@@ -258,7 +263,7 @@ class Game(object):
         if self.mode.level:
             for terminal in self.mode.level.terminals:
                 self.mode.level.terminals[terminal].act()
-            
+        self.ctrav.traverse(render)
         base.cTrav.traverse(render)
         
     def make_tile(self, parent,fname,pos,hpr, scale=1.0):
