@@ -79,6 +79,16 @@ class Program(Agent):
         #self.pusher.stash()
         
     def reappear(self, pos):
+        programPoses = []
+        for program in self.game.programs :
+            programPoses.append(self.game.programs[program].get_model().getPos())
+        tooClose = False
+        while tooClose :
+            for programPos in programPoses :
+                if (programPos - pos).lengthSquared() < 2500 :
+                    tooClose = True
+                    break
+            if tooClose : pos = (pos[0] + 10, pos[1], pos[2])
         self.load_model()
         self.load_desc(self.description)
         #self.model.unstash()
