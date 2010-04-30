@@ -39,6 +39,10 @@ class Game(object):
         self.load_models()
         self.had_locate = False # used by Locate to figure out whether to add "Right click to scope"
         self.drone_spawner = False # indicates if I'm the assigned drone spawner
+        self.handshakes = {'seed': self.seed,'append_name':self.append_name,
+                   'DroneSpawner':self.drone_spawn,'player':self.reg_player,
+                   'unreg':self.unreg_player,'staging':self.staging,
+                   'echo':self.echo,'start':self.start_game,'go':self.go}
     
     def rest_of_init(self):
         base.cTrav = CollisionTraverser()
@@ -79,7 +83,7 @@ class Game(object):
         LocalPlayer.setup_sounds() # sound effects and background music
         # just load all the eggs in the MODEL_PATH
         models = filter(lambda p: splitext(p)[-1] == '.bam', listdir(MODEL_PATH))
-        print "loading models now:",models
+        print "loading models now"
         loader.loadModel(map(lambda p: "%s/%s"%(MODEL_PATH,p), models), callback=self.load_callback)
     
     def load_callback(self, models):
@@ -126,7 +130,6 @@ class Game(object):
         self.client.send("AddaDrone: %s"%dronePos)
     
     def add_drone(self, pos, speed=10):
-        print "Adding a drone at position",pos
         d = Drone(self, speed=speed, pos=pos)
         self.drones[d.name] = d 
         self.eventHandle.addDroneHandler(d)
@@ -139,7 +142,6 @@ class Game(object):
         self.mode.load_level(self.environ) # simply change the level based on game type, for now
 
     def game_over(self):
-        print "Game over"
         p = self.local_player()
         p.hide()
         p.handleEvents = False
@@ -190,57 +192,53 @@ class Game(object):
     def send_color_change(self, change):
         color = (self.players[self.shell.name]+change) % len(TEAM_COLORS)
         self.client.send('staging %s color %d'%(self.shell.name, color))
+        
+    def seed(self,seed_val):
+        self.rand_seed = int(seed_val)
+        seed(self.rand_seed)
+    def append_name(self,pname):
+        self.shell.name += pname
+    def drone_spawn(self):
+        self.drone_spawner = True
+    def reg_player(self,pname):
+        if pname in self.players: return
+        self.players[pname] = 0 # default color index == blue
+        self.shell.refresh_staging()
+    def unreg_player(self,pname):
+        if pname not in self.players: return
+        del self.players[pname]
+        if pname == self.shell.name:
+            self.client.close_connection()
+            return True # finish task
+        else:
+            self.shell.refresh_staging()
+    def staging(self,pname,attrib,val):
+        if pname not in self.players : return
+        if attrib == 'color':
+            self.players[pname] = int(val)
+        elif attrib == 'type':
+            self.mode_idx = int(val)
+        self.shell.refresh_staging()
+    def echo(self,change):
+        if change == 'lobbyinfo' :
+            self.send_color_change(0)
+        elif change == 'gametype' :
+            self.send_type_change(0)
+    def start_game(self):
+        Sequence(Func(self.shell.finish_staging), Wait(0.05), 
+         Func(self.rest_of_init),
+         Func(self.shell.show_sync)).start()
+    def go(self):
+        self.synced_init()
+        return True # finish task
     
     def handshakeTask(self,task):
-        data = self.client.getData()
-        if len(data) == 0: return task.cont
-        tempData = list()
-        for d in data:
-            tempData.append(d[0])
-        print "handshake:",tempData
-        for d in tempData:
-            ds = d.split()
-            if ds[0] == 'seed':
-                self.rand_seed = int(ds[1])
-                seed(self.rand_seed)
-            elif ds[0] == 'append_name':
-                assert len(ds) == 2
-                self.shell.name += ds[1]
-            elif ds[0] == 'DroneSpawner':
-                self.drone_spawner = True
-            elif ds[0] == 'player':
-                if ds[1] not in self.players:
-                    self.players[ds[1]] = 0 # default color index == blue?
-                    self.shell.refresh_staging()
-            elif ds[0] == 'unreg':
-                if ds[1] in self.players:
-                    del self.players[ds[1]]
-                    if ds[1] == self.shell.name:
-                        self.client.close_connection()
-                        return task.done
-                    else:
-                        self.shell.refresh_staging()
-            elif ds[0] == 'staging':
-                if ds[1] not in self.players : continue
-                assert len(ds) == 4
-                if ds[2] == 'color':
-                    self.players[ds[1]] = int(ds[3])
-                elif ds[2] == 'type':
-                    self.mode_idx = int(ds[3])
-                self.shell.refresh_staging()
-            elif ds[0] == 'echo':
-                assert len(ds) == 2
-                if ds[1] == 'lobbyinfo' :
-                    self.send_color_change(0)
-                elif ds[1] == 'gametype' :
-                    self.send_type_change(0)
-            elif ds[0] == 'start':
-                print "handshake over, starting game"
-                Sequence(Func(self.shell.finish_staging), Wait(0.05), Func(self.rest_of_init),
-                         Func(self.shell.show_sync)).start()
-            elif ds[0] == 'go':
-                self.synced_init()
-                return task.done # ends task
+        datagrams = self.client.getData()
+        if len(datagrams) == 0: return task.cont
+        data = (dg[0].split() for dg in datagrams)
+        for ds in data:
+            if self.handshakes[ds[0]](*ds[1:]):
+                return task.done
         return task.cont
     
     def network_listen(self):

@@ -248,8 +248,6 @@ class Player(Agent):
                 if t.is_dead():
                     print "YOU KILLED %s!!!"%objHit
                     self.add_kill(t)
-        else:
-            print objHit
         #end if 
         self.fire_laser(objHit,spotHit,playSound)
     

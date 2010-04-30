@@ -80,7 +80,7 @@ class Pwnage(Mode):
     def score(self,player):
         if not hasattr(self,'level'): return 0
         if player.color not in self.level.bases: return 0
-        return self.level.terminals[player.color].health
+        return sum(p.stats.get('BaseTerminal_kill',0) for p in player.my_team())
 
 class Deathmatch(Mode):
     def __init__(self,game,is_team,is_timed):
