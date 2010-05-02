@@ -38,7 +38,7 @@ class HUD(object):
         self.redScreen = None
         self.flashRed = Sequence(Func(self.flash_red), Wait(0.25), Func(self.flash_red))
         self.grayScreen = None
-        self.scopeScreen = DirectFrame(frameSize=(1.78,-1.78,1,-1), pos=(0,0,0), frameColor=(0,0,0,0), image="%s/scope_screen.png" % TEXTURE_PATH, image_scale=(1.34,1,1), sortOrder=4)
+        self.scopeScreen = DirectFrame(frameSize=(1.78,-1.78,1,-1), pos=(0,0,0), frameColor=(0,0,0,0), image="%s/scope_screen.png" % TEXTURE_PATH, image_scale=(1.78,1,1), sortOrder=4)
         self.scopeScreen.setTransparency(TransparencyAttrib.MAlpha)
         self.scopeScreen.stash()
         self.topHUD = DirectFrame(frameSize=(-0.57,0.57,-0.04,0.04), frameColor=HUD_BG, pos=(0,0,0.96))
