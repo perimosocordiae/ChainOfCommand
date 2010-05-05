@@ -21,17 +21,7 @@ class Program(Agent):
         super(Program, self).__init__(game, name, False)
         self.game = game
         if not pos:
-            programPoses = []
-            for program in self.game.programs :
-                programPoses.append(self.game.programs[program].get_model().getPos())
-            tooClose = True
-            while tooClose :
-                pos = room.rand_point()
-                tooClose = False
-                for programPos in programPoses :
-                    if (programPos - pos).lengthSquared() < 2500 :
-                        tooClose = True
-                        break
+            pos = self.check_for_spawn_conflicts(room.rand_point())
         self.prefix = prefix
         self.scale = scale
         self.pos = pos # in time
@@ -82,6 +72,15 @@ class Program(Agent):
         #self.pusher.stash()
         
     def reappear(self, pos):
+        pos = self.check_for_spawn_conflicts(pos)
+        self.load_model()
+        self.load_desc(self.description)
+        self.setFloorPos(pos)
+        self.setup_interval()
+        self.setup_collider()
+        self.game.readd_program(self)
+        
+    def check_for_spawn_conflicts(self, pos):
         programPoses = []
         for program in self.game.programs :
             programPoses.append(self.game.programs[program].get_model().getPos())
@@ -93,12 +92,8 @@ class Program(Agent):
                     tooClose = True
                     break
             if tooClose : pos = (pos[0] + 2, pos[1], pos[2])
-        self.load_model()
-        self.load_desc(self.description)
-        self.setFloorPos(pos)
-        self.setup_interval()
-        self.setup_collider()
-        self.game.readd_program(self)
+        return pos
+        
         
     def load_model(self):
         self.parent = render.attachNewNode("%s_Parent"%str(hash(self)))
@@ -287,6 +282,7 @@ class Sudo(Basic):
 
     def do_effect(self, agent):
         agent.toggle_god()
+        agent.star_power_amazingness()
         taskMgr.doMethodLater(0.2, agent.updateGodModeTask, "updateGodModeTask")
         taskMgr.doMethodLater(10, agent.stopGodModeTask, "stopGodModeTask")
         

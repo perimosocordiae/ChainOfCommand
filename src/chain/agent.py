@@ -101,6 +101,7 @@ class Agent(object):
     def set_glow(self, glow): pass
     def die(self): pass
     def show_locate_hint(self): pass
+    def star_power_amazingness(self): pass
     
     def act(self):
         self.do_debug()

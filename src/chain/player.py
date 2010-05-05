@@ -405,6 +405,9 @@ class LocalPlayer(Player):
         
     def die(self):
         print "About to die", self.handleEvents, self.current_damage_taken
+        if taskMgr.hasTaskNamed('stopGodModeTask') :
+            taskMgr.remove('stopGodModeTask')
+            p.stopGodMode()
         self.sendUpdate()
         super(LocalPlayer,self).die()
         if hasattr(self, "hud") and self.hud:
@@ -429,11 +432,12 @@ class LocalPlayer(Player):
 
     @staticmethod
     def setup_sounds():
-        keys = ['laser', 'yes', 'grunt']
-        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Grunt.wav"]
+        keys = ['laser', 'yes', 'grunt', 'mario']
+        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Grunt.wav", "%s/Mario Star Power.mp3"]
         LocalPlayer.sounds = dict(zip(keys, [base.sfxManagerList[0].getSound(f % SOUND_PATH) for f in fnames]))
-        for s in LocalPlayer.sounds.itervalues():
-            s.setVolume(0.3)
+        for s in LocalPlayer.sounds:
+            if s != 'mario' :
+                LocalPlayer.sounds[s].setVolume(0.3)
         LocalPlayer.backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
         base.enableMusic(True)
         base.enableSoundEffects(True)
@@ -446,10 +450,14 @@ class LocalPlayer(Player):
         print "Author: Trevor Dericks"
     
     def toggle_background_music(self):
+        if taskMgr.hasTaskNamed('stopGodModeTask') : 
+            self.wasPlayingMusic = not self.wasPlayingMusic
+            self.hud.toggle_background_music(self.wasPlayingMusic)  
+            return
         active = base.musicManager.getActive()
         base.enableMusic(not active)
-        if active: LocalPlayer.backgroundMusic.setTime(35)
         self.hud.toggle_background_music()
+        if not active : LocalPlayer.backgroundMusic.setTime(35)
         
     def toggle_sound_effects(self):
         base.enableSoundEffects(not base.sfxManagerList[0].getActive())
@@ -566,6 +574,14 @@ class LocalPlayer(Player):
         #self.sendUpdate()
     #    return Task.cont
     
+    def star_power_amazingness(self):
+        print "playing star power"
+        self.wasPlayingMusic = base.musicManager.getActive()
+        if self.wasPlayingMusic :
+            base.enableMusic(False) # stop background music          
+        LocalPlayer.sounds['mario'].setLoop(True)
+        LocalPlayer.sounds['mario'].play() # start mario star power
+    
     def updateGodModeTask(self, task):
         glow = not self.laserGlow
         self.set_laser_glow(glow)
@@ -573,7 +589,15 @@ class LocalPlayer(Player):
         return task.again        
     
     def stopGodModeTask(self, task):
+        self.stopGodMode()
+        return task.done
+    
+    def stopGodMode(self):
         print "Sudo wore off"
+        if self.wasPlayingMusic :
+            base.enableMusic(True)
+            LocalPlayer.backgroundMusic.setTime(35)
+        self.wasPlayingMusic = False
         taskMgr.remove('updateGodModeTask')
         self.toggle_god()
         self.set_laser_glow(False)
@@ -583,7 +607,7 @@ class LocalPlayer(Player):
                 self.set_laser_glow(True)
                 self.set_glow(True)
                 break
-        return task.done
+        LocalPlayer.sounds['mario'].stop()
     
     def sendUpdate(self):
         if not self.handleEvents: return Task.cont

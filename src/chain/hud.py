@@ -86,8 +86,8 @@ class HUD(object):
         try: self.score_screen.destroy()
         except: pass        
     
-    def toggle_background_music(self):
-        if base.musicManager.getActive():
+    def toggle_background_music(self, force=False):
+        if base.musicManager.getActive() or force:
             self.musicHUD.setImage("%s/music_on.png" % TEXTURE_PATH)
             self.musicHUD.setTransparency(TransparencyAttrib.MAlpha)
         else:
