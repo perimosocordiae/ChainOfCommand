@@ -144,8 +144,16 @@ class Game(object):
         self.environ.reparentTo(render)
         self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         self.environ.setPos(0, 0, 0)
+        self.dr = 0.2;
         self.mode.load_level(self.environ,[p.color for p in self.players.itervalues()])
-
+    
+    def rotate_world(self):
+        self.environ.setR(self.environ.getR() + self.dr)
+        if self.environ.getR() > 10:
+            self.dr = -0.2;
+        elif self.environ.getR() < -10:
+            self.dr = 0.2;
+    
     def game_over(self):
         p = self.local_player()
         p.hide()
@@ -276,6 +284,7 @@ class Game(object):
                 self.mode.level.terminals[terminal].act()
         self.ctrav.traverse(render)
         base.cTrav.traverse(render)
+        self.rotate_world()
     
     def local_player(self):
         return self.players[self.shell.name]
