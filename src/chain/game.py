@@ -155,9 +155,7 @@ class Game(object):
         p.hud.show_scores()
         taskMgr.remove('scoreTask')
         taskMgr.remove('timerTask')
-        if taskMgr.hasTaskNamed('stopGodModeTask') :
-            taskMgr.remove('stopGodModeTask')
-            p.stopGodMode()
+        taskMgr.remove('stopGodModeTask')
         if not self.end_sequence:
             winning_score = max(p.score() for p in self.players.itervalues())
             stats = [(p.name, p.score()==winning_score, p.stats) for p in self.players.itervalues()]

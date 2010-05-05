@@ -405,9 +405,6 @@ class LocalPlayer(Player):
         
     def die(self):
         print "About to die", self.handleEvents, self.current_damage_taken
-        if taskMgr.hasTaskNamed('stopGodModeTask') :
-            taskMgr.remove('stopGodModeTask')
-            p.stopGodMode()
         self.sendUpdate()
         super(LocalPlayer,self).die()
         if hasattr(self, "hud") and self.hud:

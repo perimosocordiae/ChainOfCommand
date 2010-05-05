@@ -86,18 +86,18 @@ class Deathmatch(Mode):
             self.min_players = 1
             if not is_timed:
                 self.name = 'deathmatch'
-                self.desc = "Free for all, first to 5 kills wins"
+                self.desc = "Free for all, first to 5 kills"
             else:
                 self.name = 'timed deathmatch'
-                self.desc = "Free for all, most kills after 3 minutes wins"
+                self.desc = "Free for all, 3 minute limit"
         else: # team game 
             self.min_players = 2
             if not is_timed:
                 self.name = 'team deathmatch'
-                self.desc = "Team vs team, first to 15 kills wins"
+                self.desc = "Team vs team, first to 15 kills"
             else:
                 self.name = 'timed team deathmatch'
-                self.desc = "Team vs team, most kills after 3 minutes wins"
+                self.desc = "Team vs team, 3 minute limit"
     
     def score(self,player):
         if 'team' in self.name.split():
