@@ -19,8 +19,8 @@ class Mode(object):
             self.drone_adder.finish()
         self.level.destroy()
     
-    def load_level(self,environ):
-        self.level = self.game.levels[self.game.level_idx](self.game,environ)
+    def load_level(self,environ,colors):
+        self.level = self.game.levels[self.game.level_idx](self.game,environ,colors)
         
     def post_environment_init(self): pass
     def score(self,player): return 0
@@ -37,8 +37,8 @@ class CaptureTheFlag(Mode):
     def post_environment_init(self):
         self.ctf_scores = dict((p.color,0) for p in self.game.players.itervalues())
     
-    def load_level(self,environ):
-        self.level = self.game.levels[self.game.level_idx](self.game,environ,addFlags=True)
+    def load_level(self,environ,colors):
+        self.level = self.game.levels[self.game.level_idx](self.game,environ,colors,addFlags=True)
     
     def score(self,player):
         if player.color in self.ctf_scores:

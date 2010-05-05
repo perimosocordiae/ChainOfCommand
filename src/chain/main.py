@@ -17,4 +17,9 @@ if __name__ == '__main__':
         OnscreenText(text="Server on port %d at IP: %s"%(port,ip))
     else:
         Shell(True)
-    run()
+        while True:
+            try: 
+                run()
+                break
+            except: pass 
+

@@ -292,9 +292,9 @@ class Shell(object):
             
     def load_finished(self):
         idx = len(LOADINGTEXT.splitlines())
-        self.overwrite_line(idx+1,"Loading... Done.")
-        self.overwrite_line(idx+2,"Players: (up/down changes team)")
-        self.overwrite_line(idx+5,"Game: (<-/-> changes type, pgUp/pgDown changes level)")
+        self.overwrite_line(idx+1,"")
+        self.overwrite_line(idx+6,"up/down changes team, left/right changes type".center(60))
+        self.overwrite_line(idx+7,"pgUp/pgDown changes level".center(60))
         self.overwrite_line(idx+9,"When everyone is ready, press 'b' to begin")
         self.overwrite_line(idx+10,"To go back to the shell, press 'x'")
         self.g.client.send("player %s"%self.name)
@@ -325,16 +325,16 @@ class Shell(object):
         player_names = ("%s (%s)"%(n,TEAM_COLORS.keys()[t]) for n,t in self.g.players.iteritems())
         type,desc = self.g.get_mode().name, self.g.get_mode().desc
         level = self.g.get_level_name()
-        name_idx = len(LOADINGTEXT.splitlines())+3
-        self.overwrite_line(name_idx," | ".join(player_names).center(60))
-        self.overwrite_line(name_idx+3,("%s -- %s"%(type.upper(),desc)).center(60))
-        self.overwrite_line(name_idx+4,level.center(60))
-        self.overwrite_line(name_idx+5,'')
+        idx = len(LOADINGTEXT.splitlines())
+        self.overwrite_line(idx+2,"Players:"+" | ".join(player_names).center(52))
+        self.overwrite_line(idx+3,"Game:"+("%s -- %s"%(type.upper(),desc)).center(55))
+        self.overwrite_line(idx+4,"Level:"+level.center(54))  # 54 = 60 - len("Level:")
+        self.overwrite_line(idx+5,'')
 
     def finish_staging(self):
         idx = len(LOADINGTEXT.splitlines())
-        self.overwrite_line(idx+2,"Players:")
-        self.overwrite_line(idx+5,"Game:")
+        self.overwrite_line(idx+6,"")
+        self.overwrite_line(idx+7,"")
         self.overwrite_line(idx+9,"Starting game...")
         self.overwrite_line(idx+10,"")
         self.screen.ignoreAll()
@@ -721,6 +721,6 @@ if __name__ == '__main__':
         try: 
             run()
             break
-        except: 
+        except:
             raw_input('restart?')
             # re-load the modules (I wish)

@@ -144,7 +144,7 @@ class Game(object):
         self.environ.reparentTo(render)
         self.environ.setScale(self.tile_size, self.tile_size, self.tile_size)
         self.environ.setPos(0, 0, 0)
-        self.mode.load_level(self.environ) # simply change the level based on game type, for now
+        self.mode.load_level(self.environ,[p.color for p in self.players])
 
     def game_over(self):
         p = self.local_player()
