@@ -58,10 +58,11 @@ class Player(Agent):
         self.pusher.node().setIntoCollideMask(0)
     
     def set_glow(self, glow):
-        if glow:
-            self.tron.setTexture(self.ts, self.glow)
-        else:
-            self.tron.clearTexture(self.ts)
+        if not self.tron.isEmpty():
+            if glow:
+                self.tron.setTexture(self.ts, self.glow)
+            else:
+                self.tron.clearTexture(self.ts)
     
     def get_shield_sphere(self):
         return self.collider

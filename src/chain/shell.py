@@ -722,5 +722,6 @@ if __name__ == '__main__':
             run()
             break
         except:
-            raw_input('restart?')
+            #raw_input('restart?')
+            pass
             # re-load the modules (I wish)

@@ -1,7 +1,7 @@
 from pandac.PandaModules import BitMask32
 
 #The lowest point imaginable - if below this, you fell!
-BOTTOM_OF_EVERYTHING = -100
+BOTTOM_OF_EVERYTHING = -1000
 
 #masks
 DRONE_COLLIDER_MASK = BitMask32.bit(1)

@@ -101,29 +101,33 @@ class CubeLevel(Level):
         self.default_environment()
         
 class BasicBaseLevel(Level):
-    def __init__(self, game, parent, teams=[], addFlags = False, hallwayAngle = 20):
+    def __init__(self, game, parent, teams=[], addFlags = False, hallwayAngle = -15):
         super(BasicBaseLevel, self).__init__(game, parent)
+        teams.extend(TEAM_COLORS.keys())
+        team1, team2 = uniqify(teams)[:2]
+        t1 = team1.capitalize()
+        t2 = team2.capitalize()
         self.rooms["Cube_Room"] = CubeRoom("Cube_Room", self.parent, (0,0,0),
                         (0,0,0), 1.0, "white", holes=(5,0,5,0,0,0,0,0))
-        self.rooms["Blue_Hall"] = Hallway("Blue_Hall", self.parent, (-0.5,3,0),
-                        (0,0,0), (0.5,4.0,0.5), "blue", hallwayAngle)
-        self.rooms["Red_Hall"] = Hallway("Red_Hall", self.parent, (0.5,-3,0),
-                        (180,0,0), (0.5,4.0,0.5), "red", hallwayAngle)
+        self.rooms["%s_Hall"%t1] = Hallway("%s_Hall"%t1, self.parent, (-0.5,3,0),
+                        (0,0,0), (0.5,4.0,0.5), team1, hallwayAngle)
+        self.rooms["%s_Hall"%t1] = Hallway("%s_Hall"%t1, self.parent, (0.5,-3,0),
+                        (180,0,0), (0.5,4.0,0.5), team2, hallwayAngle)
         radAng = radians(hallwayAngle)
         basey = (cos(radAng) * 8.0) + 3.75
         basez = sin(radAng) * 8.0
-        self.rooms["Blue_Base"] = Base(self.game, "Blue_Base", self.parent, (0,basey,basez),
-                    (180,0,0), (1.0,0.25,1.0), "blue", holes=(10,0,0,0,0,0,0,0))
-        self.terminals['blue'] = self.rooms["Blue_Base"].obstacles["terminal"]
-        self.bases["blue"] = self.rooms["Blue_Base"]
-        self.rooms["Red_Base"] = Base(self.game, "Red_Base", self.parent, (0,-basey,basez),
-                    (0,0,0), (1.0,0.25,1.0), "red", holes=(10,0,0,0,0,0,0,0))
-        self.terminals['red'] = self.rooms["Red_Base"].obstacles["terminal"]
-        self.bases["red"] = self.rooms["Red_Base"]
+        self.rooms["%s_Base"%t1] = Base(self.game, "%s_Base"%t1, self.parent, (0,basey,basez),
+                    (180,0,0), (1.0,0.25,1.0), team1, holes=(10,0,0,0,0,0,0,0))
+        self.terminals[team1] = self.rooms["%s_Base"%t1].obstacles["terminal"]
+        self.bases[team1] = self.rooms["%s_Base"%t1]
+        self.rooms["%s_Base"%t2] = Base(self.game, "%s_Base"%t2, self.parent, (0,-basey,basez),
+                    (0,0,0), (1.0,0.25,1.0), team2, holes=(10,0,0,0,0,0,0,0))
+        self.terminals[team2] = self.rooms["%s_Base"%t2].obstacles["terminal"]
+        self.bases[team2] = self.rooms["%s_Base"%t2]
         self.default_environment()
         if addFlags:
-            self.rooms["Blue_Base"].add_program(self.game, Flag, "blue")
-            self.rooms["Red_Base"].add_program(self.game, Flag, "red")
+            self.rooms["%s_Base"%t1].add_program(self.game, Flag, team1)
+            self.rooms["%s_Base"%t2].add_program(self.game, Flag, team2)
         
 class SniperLevel(Level):
     def __init__(self, game, parent, teams=[], addFlags = False):
@@ -211,6 +215,7 @@ class HillLevel(Level):
         self.rooms["%s_Base"%t1] = Base(self.game, "%s_Base"%t1, self.parent, (-7,-7,0),
                     (0,0,0), (1.0,1.0,1.0), team1, holes=(10,0,0,5,0,0,0,0))
         self.bases[team1] = self.rooms["%s_Base"%t1]
+        self.terminals[team1] = self.rooms["%s_Base"%t1].obstacles["terminal"]
         self.rooms["%s_Hall1"%t1] = Hallway("%s_Hall1"%t1, self.parent, (-6.5,0,0),
                     (180,0,0), (0.5,2,0.5), team1, 0)
         self.rooms["%s_Hall2"%t1] = Hallway("%s_Hall2"%t1, self.parent, (-4,-6.5,0),
@@ -220,6 +225,7 @@ class HillLevel(Level):
         self.rooms["%s_Base"%t2] = Base(self.game, "%s_Base"%t2, self.parent, (-7,7,0),
                     (270,0,0), (1.0,1.0,1.0), team2, holes=(10,0,0,5,0,0,0,0))
         self.bases[team2] = self.rooms["%s_Base"%t2]
+        self.terminals[team2] = self.rooms["%s_Base"%t2].obstacles["terminal"]
         self.rooms["%s_Hall1"%t2] = Hallway("%s_Hall1"%t2, self.parent, (-6.5,1,0),
                     (0,0,0), (0.5,1.5,0.5), team2, 0)
         self.rooms["%s_Hall2"%t2] = Hallway("%s_Hall2"%t2, self.parent, (-4,6.5,0),
@@ -229,6 +235,7 @@ class HillLevel(Level):
         self.rooms["%s_Base"%t3] = Base(self.game, "%s_Base"%t3, self.parent, (7,7,0),
                     (180,0,0), (1.0,1.0,1.0), team3, holes=(10,0,0,5,0,0,0,0))
         self.bases[team3] = self.rooms["%s_Base"%t3]
+        self.terminals[team3] = self.rooms["%s_Base"%t3].obstacles["terminal"]
         self.rooms["%s_Hall1"%t3] = Hallway("%s_Hall1"%t3, self.parent, (6.5,0,0),
                     (0,0,0), (0.5,2,0.5), team3, 0)
         self.rooms["%s_Hall2"%t3] = Hallway("%s_Hall2"%t3, self.parent, (4,6.5,0),
@@ -238,6 +245,7 @@ class HillLevel(Level):
         self.rooms["%s_Base"%t4] = Base(self.game, "%s_Base"%t4, self.parent, (7,-7,0),
                     (90,0,0), (1.0,1.0,1.0), team4, holes=(10,0,0,5,0,0,0,0))
         self.bases[team4] = self.rooms["%s_Base"%t4]
+        self.terminals[team4] = self.rooms["%s_Base"%t4].obstacles["terminal"]
         self.rooms["%s_Hall1"%t4] = Hallway("%s_Hall1"%t4, self.parent, (6.5,-1,0),
                     (180,0,0), (0.5,1.5,0.5), team4, 0)
         self.rooms["%s_Hall2"%t4] = Hallway("%s_Hall2"%t4, self.parent, (4,-6.5,0),
