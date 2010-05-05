@@ -425,8 +425,8 @@ class LocalPlayer(Player):
 
     @staticmethod
     def setup_sounds():
-        keys = ['laser', 'yes', 'grunt', 'mario']
-        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Grunt.wav", "%s/Mario Star Power.mp3"]
+        keys = ['laser', 'yes', 'grunt', 'mario', 'false']
+        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Grunt.wav", "%s/Mario Star Power.mp3","%s/Collect_fail.mp3"]
         LocalPlayer.sounds = dict(zip(keys, [base.sfxManagerList[0].getSound(f % SOUND_PATH) for f in fnames]))
         for s in LocalPlayer.sounds:
             if s != 'mario' :
@@ -536,7 +536,8 @@ class LocalPlayer(Player):
         #sound/message depends on status
         i, prog = super(LocalPlayer, self).collect()
         if prog:
-            LocalPlayer.sounds['yes'].play()
+            if prog.name == 'false' : LocalPlayer.sounds['false'].play()
+            else : LocalPlayer.sounds['yes'].play()
             if i >= 0:
                 self.hud.collect(i,prog.name)
     

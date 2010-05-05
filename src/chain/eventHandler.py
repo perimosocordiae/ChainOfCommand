@@ -161,7 +161,8 @@ class GameEventHandler(DirectObject):
             tron,prog = self.game.players[tn], self.game.programs[pn]
             #tron.collect(prog)
             tron.canCollect = prog
-            prog.show_desc()
+            if tron == self.game.local_player() :
+                prog.show_desc()
             
     def tronOutProg(self,entry):
         tn,pn = entry.getFromNodePath().getName(),entry.getIntoNodePath().getName()
