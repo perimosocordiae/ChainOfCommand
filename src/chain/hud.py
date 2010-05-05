@@ -128,7 +128,7 @@ class HUD(object):
         self.scopehairs.setTransparency(TransparencyAttrib.MAlpha)
     
     def hit(self, hitter=None):
-        if hitter :
+        if hitter and hitter is not self.player:
             hitterPos = None
             if hitter in self.player.game.drones :
                 hitterPos = self.player.game.drones[hitter].get_model().getPos()
