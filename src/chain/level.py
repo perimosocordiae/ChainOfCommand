@@ -99,7 +99,7 @@ class CubeLevel(Level):
         self.default_environment()
         
 class BasicBaseLevel(Level):
-    def __init__(self, game, parent, hallwayAngle = 20):
+    def __init__(self, game, parent, addFlags = False, hallwayAngle = 20):
         super(BasicBaseLevel, self).__init__(game, parent)
         self.rooms["Cube_Room"] = CubeRoom("Cube_Room", self.parent, (0,0,0),
                         (0,0,0), 1.0, "white", holes=(5,0,5,0,0,0,0,0))
@@ -119,11 +119,12 @@ class BasicBaseLevel(Level):
         self.terminals['red'] = self.rooms["Red_Base"].obstacles["terminal"]
         self.bases["red"] = self.rooms["Red_Base"]
         self.default_environment()
-        self.rooms["Blue_Base"].add_program(self.game, Flag, "blue")
-        self.rooms["Red_Base"].add_program(self.game, Flag, "red")
+        if addFlags:
+            self.rooms["Blue_Base"].add_program(self.game, Flag, "blue")
+            self.rooms["Red_Base"].add_program(self.game, Flag, "red")
         
 class SniperLevel(Level):
-    def __init__(self, game, parent, team1="blue", team2="red"):
+    def __init__(self, game, parent, addFlags = False, team1="blue", team2="red"):
         super(SniperLevel, self).__init__(game, parent)
         t1 = team1.capitalize()
         t2 = team2.capitalize()
@@ -166,14 +167,14 @@ class SniperLevel(Level):
         #Add specific programs - the Locates, the Sudo, (etc?)
         self.rooms["%s_Platform"%t1].add_program(self.game, Locate)
         self.rooms["%s_Platform"%t2].add_program(self.game, Locate)
-        self.rooms["%s_Base"%t1].add_program(self.game, Flag, team1)
-        self.rooms["%s_Base"%t2].add_program(self.game, Flag, team2)
+        if addFlags:
+            self.rooms["%s_Base"%t1].add_program(self.game, Flag, team1)
+            self.rooms["%s_Base"%t2].add_program(self.game, Flag, team2)
         
         self.add_program(Sudo, self.rooms["%s_Platform2"%t1], Point3(0,0,0))
-        
-        
+     
 class Beaumont(Level):
-    def __init__(self, game, parent, team1="blue", team2="red"):
+    def __init__(self, game, parent, addFlags = False, team1="blue", team2="red"):
         super(Beaumont, self).__init__(game, parent)
         t1 = team1.capitalize()
         t2 = team2.capitalize()
