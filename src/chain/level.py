@@ -46,7 +46,7 @@ class Level(Obstacle):
             name = "RAM_slot_%d"%slot
             scale = randint(5,10) * 0.75
             self.rooms["Cube_Room"].add_ram(self.game, name, Point3(pos[0], pos[1], pos[2]), scale, Point3(0, 0, 0))
-        print "slots loaded"
+
         for _ in range(4):
             self.rooms["Cube_Room"].add_program(self.game, Rm)
             self.rooms["Cube_Room"].add_program(self.game, Chmod)
@@ -56,20 +56,18 @@ class Level(Obstacle):
             #self.rooms["Cube_Room"].add_program(self.game, Locate)
             self.rooms["Cube_Room"].add_program(self.game, Ls)
             self.rooms["Cube_Room"].add_program(self.game, Ln)
-        print "Check"
+            
         for dummyVar in range(2):
             self.rooms["Cube_Room"].add_program(self.game, FalseP)
             self.rooms["Cube_Room"].add_program(self.game, TrueP)
             self.rooms["Cube_Room"].add_program(self.game, Kill)
             self.rooms["Cube_Room"].add_program(self.game, KillAll)
 
-        print "check2"
         for tower in range(4):
             pos = self.rooms["Cube_Room"].rand_point()
             name = "tower_%d"%tower
             self.rooms["Cube_Room"].obstacles[name] = Tower(render, pos[0], pos[1], 
                                      randint(10,4*self.tower_size))
-        print "exiting"
         
     def point_for(self, color):
         if color in self.bases.iterkeys():

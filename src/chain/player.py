@@ -572,7 +572,6 @@ class LocalPlayer(Player):
     #    return Task.cont
     
     def star_power_amazingness(self):
-        print "playing star power"
         self.wasPlayingMusic = base.musicManager.getActive()
         if self.wasPlayingMusic :
             base.enableMusic(False) # stop background music          
