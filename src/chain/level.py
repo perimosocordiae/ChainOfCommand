@@ -1,6 +1,7 @@
 from room import *
 from program import *
 from random import choice
+from constants import *
 
 class Level(Obstacle):
     def __init__(self, game, parent):
@@ -52,16 +53,17 @@ class Level(Obstacle):
             self.rooms["Cube_Room"].add_program(self.game, Chmod)
             self.rooms["Cube_Room"].add_program(self.game, DashR)
             #self.rooms["Cube_Room"].add_program(self.game, RAM)
-            self.rooms["Cube_Room"].add_program(self.game, Gdb)
             #self.rooms["Cube_Room"].add_program(self.game, Locate)
             self.rooms["Cube_Room"].add_program(self.game, Ls)
+        
+        for _ in range(2):
+            self.rooms["Cube_Room"].add_program(self.game, Gdb)
             self.rooms["Cube_Room"].add_program(self.game, Ln)
             
-        for dummyVar in range(2):
-            self.rooms["Cube_Room"].add_program(self.game, FalseP)
-            self.rooms["Cube_Room"].add_program(self.game, TrueP)
-            self.rooms["Cube_Room"].add_program(self.game, Kill)
-            self.rooms["Cube_Room"].add_program(self.game, KillAll)
+        self.rooms["Cube_Room"].add_program(self.game, FalseP)
+        self.rooms["Cube_Room"].add_program(self.game, TrueP)
+        self.rooms["Cube_Room"].add_program(self.game, Kill)
+        self.rooms["Cube_Room"].add_program(self.game, KillAll)
 
         for tower in range(4):
             pos = self.rooms["Cube_Room"].rand_point()
@@ -92,14 +94,14 @@ class Level(Obstacle):
         self.game.readd_program(program)
         
 class CubeLevel(Level):
-    def __init__(self, game, parent):
+    def __init__(self, game, parent, teams=[]):
         super(CubeLevel, self).__init__(game, parent)
         self.rooms["Cube_Room"] = CubeRoom("Cube_Room", self.parent, (0,0,0),
                         (0,0,0), 1.0, "white", holes=(0,0,0,0,0,0,0,0))
         self.default_environment()
         
 class BasicBaseLevel(Level):
-    def __init__(self, game, parent, addFlags = False, hallwayAngle = 20):
+    def __init__(self, game, parent, teams=[], addFlags = False, hallwayAngle = 20):
         super(BasicBaseLevel, self).__init__(game, parent)
         self.rooms["Cube_Room"] = CubeRoom("Cube_Room", self.parent, (0,0,0),
                         (0,0,0), 1.0, "white", holes=(5,0,5,0,0,0,0,0))
@@ -124,8 +126,11 @@ class BasicBaseLevel(Level):
             self.rooms["Red_Base"].add_program(self.game, Flag, "red")
         
 class SniperLevel(Level):
-    def __init__(self, game, parent, addFlags = False, team1="blue", team2="red"):
+    def __init__(self, game, parent, teams=[], addFlags = False):
         super(SniperLevel, self).__init__(game, parent)
+        teams.extend(TEAM_COLORS.keys())
+        teams = list(set(teams))
+        team1, team2 = teams[:2]
         t1 = team1.capitalize()
         t2 = team2.capitalize()
         hallwayAngle = 14.47751219 #arcsin(0.25)
@@ -172,6 +177,88 @@ class SniperLevel(Level):
             self.rooms["%s_Base"%t2].add_program(self.game, Flag, team2)
         
         self.add_program(Sudo, self.rooms["%s_Platform2"%t1], Point3(0,0,0))
+
+class HillLevel(Level):
+    def __init__(self, game, parent, teams=[], addFlags = False):
+        super(HillLevel, self).__init__(game, parent)
+        teams.extend(TEAM_COLORS.keys())
+        teams = list(set(teams))
+        team1, team2, team3, team4 = teams[:4]
+        t1 = team1.capitalize()
+        t2 = team2.capitalize()
+        t3 = team3.capitalize()
+        t4 = team4.capitalize()
+        hallwayAngle = 18.435 #arctan(0.5)
+        self.rooms["Cube_Room"] = CubeRoom("Cube_Room", self.parent, (0,0,1),
+                    (0,0,0), 1.0, "white", holes=(10,10,10,10,0,0,0,0))
+        self.rooms["Ramp1"] = Hallway("Ramp1", self.parent, (-6,0.5,0),
+                    (270,0,0), (0.5,1.58113,0.5), "white", hallwayAngle)
+        self.rooms["Ramp2"] = Hallway("Ramp2", self.parent, (6,-0.5,0),
+                    (90,0,0), (0.5,1.58113,0.5), "white", hallwayAngle)
+        self.rooms["Ramp3"] = Hallway("Ramp3", self.parent, (0.5,6,0),
+                    (180,0,0), (0.5,1.58113,0.5), "white", hallwayAngle)
+        self.rooms["Ramp4"] = Hallway("Ramp4", self.parent, (-0.5,-6,0),
+                    (0,0,0), (0.5,1.58113,0.5), "white", hallwayAngle)
+        
+        self.rooms["T1"] = HallwayIntersection("T1", self.parent, (-6,0.5,0),
+                    (90,0,0), (0.5,0.5,0.5), "white", 3)
+        self.rooms["T2"] = HallwayIntersection("T2", self.parent, (6,-0.5,0),
+                    (270,0,0), (0.5,0.5,0.5), "white", 3)
+        self.rooms["T3"] = HallwayIntersection("T3", self.parent, (0.5,6,0),
+                    (0,0,0), (0.5,0.5,0.5), "white", 3)
+        self.rooms["T4"] = HallwayIntersection("T4", self.parent, (-0.5,-6,0),
+                    (180,0,0), (0.5,0.5,0.5), "white", 3)
+        
+        #blue base
+        self.rooms["%s_Base"%t1] = Base(self.game, "%s_Base"%t1, self.parent, (-7,-7,0),
+                    (0,0,0), (1.0,1.0,1.0), team1, holes=(10,0,0,5,0,0,0,0))
+        self.bases[team1] = self.rooms["%s_Base"%t1]
+        self.rooms["%s_Hall1"%t1] = Hallway("%s_Hall1"%t1, self.parent, (-6.5,0,0),
+                    (180,0,0), (0.5,2,0.5), team1, 0)
+        self.rooms["%s_Hall2"%t1] = Hallway("%s_Hall2"%t1, self.parent, (-4,-6.5,0),
+                    (270,0,0), (0.5,1.5,0.5), team1, 0)
+        
+        #red base
+        self.rooms["%s_Base"%t2] = Base(self.game, "%s_Base"%t2, self.parent, (-7,7,0),
+                    (270,0,0), (1.0,1.0,1.0), team2, holes=(10,0,0,5,0,0,0,0))
+        self.bases[team2] = self.rooms["%s_Base"%t2]
+        self.rooms["%s_Hall1"%t2] = Hallway("%s_Hall1"%t2, self.parent, (-6.5,1,0),
+                    (0,0,0), (0.5,1.5,0.5), team2, 0)
+        self.rooms["%s_Hall2"%t2] = Hallway("%s_Hall2"%t2, self.parent, (-4,6.5,0),
+                    (270,0,0), (0.5,2,0.5), team2, 0)
+        
+        #green base
+        self.rooms["%s_Base"%t3] = Base(self.game, "%s_Base"%t3, self.parent, (7,7,0),
+                    (180,0,0), (1.0,1.0,1.0), team3, holes=(10,0,0,5,0,0,0,0))
+        self.bases[team3] = self.rooms["%s_Base"%t3]
+        self.rooms["%s_Hall1"%t3] = Hallway("%s_Hall1"%t3, self.parent, (6.5,0,0),
+                    (0,0,0), (0.5,2,0.5), team3, 0)
+        self.rooms["%s_Hall2"%t3] = Hallway("%s_Hall2"%t3, self.parent, (4,6.5,0),
+                    (90,0,0), (0.5,1.5,0.5), team3, 0)
+        
+        #yellow base
+        self.rooms["%s_Base"%t4] = Base(self.game, "%s_Base"%t4, self.parent, (7,-7,0),
+                    (90,0,0), (1.0,1.0,1.0), team4, holes=(10,0,0,5,0,0,0,0))
+        self.bases[team4] = self.rooms["%s_Base"%t4]
+        self.rooms["%s_Hall1"%t4] = Hallway("%s_Hall1"%t4, self.parent, (6.5,-1,0),
+                    (180,0,0), (0.5,1.5,0.5), team4, 0)
+        self.rooms["%s_Hall2"%t4] = Hallway("%s_Hall2"%t4, self.parent, (4,-6.5,0),
+                    (90,0,0), (0.5,2,0.5), team4, 0)
+        
+        radAng = radians(hallwayAngle)
+        basey = (cos(radAng) * 6.0) + 3.75
+        basez = sin(radAng) * 6.0
+        
+        self.default_environment()
+        
+        #Add flags and sudo
+        if addFlags:
+            self.rooms["%s_Base"%t1].add_program(self.game, Flag, team1)
+            self.rooms["%s_Base"%t2].add_program(self.game, Flag, team2)
+            self.rooms["%s_Base"%t3].add_program(self.game, Flag, team3)
+            self.rooms["%s_Base"%t4].add_program(self.game, Flag, team4)
+        
+        self.add_program(Sudo, self.rooms["Cube_Room"], Point3(0,0,0))
      
 class Beaumont(Level):
     def __init__(self, game, parent, addFlags = False, team1="blue", team2="red"):

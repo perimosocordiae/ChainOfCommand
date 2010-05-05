@@ -261,7 +261,7 @@ class HallwayIntersection(Room):
         
         if type >= 3:
             #T or 4-way - use full length x wire
-            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0,0,0.001), (0,0,0),(1,0.2))
+            self.obstacles['wire2'] = CopperWire("wire2", self.environ, (0,1,0.001), (0,0,0),(1,0.2))
         elif type == 2:
             #angle left
             self.obstacles['wire2'] = CopperWire("wire2", self.environ, (-0.5,0,0.001), (0,0,0),(0.5,0.2))
