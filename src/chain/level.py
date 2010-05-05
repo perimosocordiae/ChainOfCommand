@@ -129,8 +129,7 @@ class SniperLevel(Level):
     def __init__(self, game, parent, teams=[], addFlags = False):
         super(SniperLevel, self).__init__(game, parent)
         teams.extend(TEAM_COLORS.keys())
-        teams = list(set(teams))
-        team1, team2 = teams[:2]
+        team1, team2 = uniqify(teams)[:2]
         t1 = team1.capitalize()
         t2 = team2.capitalize()
         hallwayAngle = 14.47751219 #arcsin(0.25)
@@ -182,8 +181,7 @@ class HillLevel(Level):
     def __init__(self, game, parent, teams=[], addFlags = False):
         super(HillLevel, self).__init__(game, parent)
         teams.extend(TEAM_COLORS.keys())
-        teams = list(set(teams))
-        team1, team2, team3, team4 = teams[:4]
+        team1, team2, team3, team4 = uniqify(teams)[:4]
         t1 = team1.capitalize()
         t2 = team2.capitalize()
         t3 = team3.capitalize()
@@ -261,8 +259,10 @@ class HillLevel(Level):
         self.add_program(Sudo, self.rooms["Cube_Room"], Point3(0,0,0))
      
 class Beaumont(Level):
-    def __init__(self, game, parent, addFlags = False, team1="blue", team2="red"):
+    def __init__(self, game, parent, teams=[], addFlags = False):
         super(Beaumont, self).__init__(game, parent)
+        teams.extend(TEAM_COLORS.keys())
+        team1, team2 = uniqify(teams)[:2]
         t1 = team1.capitalize()
         t2 = team2.capitalize()
         z = 4 #All rooms on the top floor have this z
@@ -399,3 +399,7 @@ class Beaumont(Level):
         self.rooms[room.name] = room
         #TODO - the turn
         #************* End of Symmetry *************
+
+def uniqify(lst):
+    seen = set()
+    return [x for x in lst if x not in seen and not seen.add(x)]
