@@ -1,7 +1,7 @@
 from direct.task import Task
 from direct.actor import Actor
 from pandac.PandaModules import CollisionNode, CollisionSphere, CollisionTube, BitMask32
-from pandac.PandaModules import DirectionalLight, VBase4, NodePath
+from pandac.PandaModules import DirectionalLight, VBase4, NodePath, Vec3
 from direct.interval.IntervalGlobal import *
 from agent import Agent
 from constants import *
@@ -123,9 +123,13 @@ class Drone(Agent):
         self.parent.setP(0)
         #move one "unit" towards tron
         tronVec = tron.getPos() - self.parent.getPos()
-        tronVec.setZ(0)
-        tronVec.normalize()
-        tronVec *= self.speed
+        if tronVec.lengthSquared() < 100:
+            tronVec = Vec3(0,0,0)
+            print "no move"
+        else:
+            tronVec.setZ(0)
+            tronVec.normalize()
+            tronVec *= self.speed
         self.handleGravity()
         self.velocity.setX(tronVec.getX())
         self.velocity.setY(tronVec.getY())
@@ -136,11 +140,11 @@ class Drone(Agent):
                 self.die()
         
         if self.pose != 52 or len(self.hittables) > 0:
-            self.pose += 1
-            if self.pose == 65:
+            self.pose += 2
+            if self.pose == 66:
                 for tron in self.hittables.itervalues():
                     tron.hit(self.damage(),self.name)
-            elif self.pose == 73:
+            elif self.pose >= 73:
                 self.pose = 52
             self.model.pose("sword", self.pose)
             

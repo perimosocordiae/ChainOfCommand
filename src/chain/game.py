@@ -284,7 +284,7 @@ class Game(object):
                 self.mode.level.terminals[terminal].act()
         self.ctrav.traverse(render)
         base.cTrav.traverse(render)
-        self.rotate_world()
+        #self.rotate_world()
     
     def local_player(self):
         return self.players[self.shell.name]
