@@ -255,7 +255,7 @@ class Debug(Basic):
     def pick_up(self, agent):
         if agent.health < agent.get_max_health(): # no effect if full health
             super(Debug, self).pick_up(agent)
-        else:
+        elif agent == self.game.local_player():
             agent.hud.show_hint("Already at full health",1)
             print "Already at full health"
         return False
@@ -275,7 +275,7 @@ class Sudo(Basic):
         if not agent.invincible: # no effect if already in God Mode
             super(Sudo, self).pick_up(agent)
             print "Sudo God Mode"
-        else:
+        elif agent == self.game.local_player():
             agent.hud.show_hint('Already in God Mode',1)
             print "Already in God Mode"
         return False
