@@ -15,7 +15,7 @@ from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
 from mode import CaptureTheFlag,Deathmatch,ForTheHoard,Pwnage,Tutorial
-from level import CubeLevel, SniperLevel, BasicBaseLevel, HillLevel
+from level import *
 from constants import *
 
 class Game(object):
@@ -28,7 +28,7 @@ class Game(object):
         self.modes = [Deathmatch(self,False,False),Deathmatch(self,False,True),
                            Deathmatch(self,True,False), Deathmatch(self,True,True),
                            CaptureTheFlag(self), ForTheHoard(self),Pwnage(self),Tutorial(self)]
-        self.levels = [CubeLevel,SniperLevel,BasicBaseLevel,HillLevel]
+        self.levels = [TheCubeLevel,SniperLevel,BunkerLevel,TheHillLevel]
         if self.shell.tutorial or self.shell.name not in self.shell.hiscores :
             self.mode_idx = 7
             self.level_idx = 0

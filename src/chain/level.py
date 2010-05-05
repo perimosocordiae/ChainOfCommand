@@ -93,16 +93,16 @@ class Level(Obstacle):
         program.setFloorPos(render.getRelativePoint(room.environ, pos))
         self.game.readd_program(program)
         
-class CubeLevel(Level):
+class TheCubeLevel(Level):
     def __init__(self, game, parent, teams=[]):
-        super(CubeLevel, self).__init__(game, parent)
+        super(TheCubeLevel, self).__init__(game, parent)
         self.rooms["Cube_Room"] = CubeRoom("Cube_Room", self.parent, (0,0,0),
                         (0,0,0), 1.0, "white", holes=(0,0,0,0,0,0,0,0))
         self.default_environment()
         
-class BasicBaseLevel(Level):
+class BunkerLevel(Level):
     def __init__(self, game, parent, teams=[], addFlags = False, hallwayAngle = -15):
-        super(BasicBaseLevel, self).__init__(game, parent)
+        super(BunkerLevel, self).__init__(game, parent)
         teams.extend(TEAM_COLORS.keys())
         team1, team2 = uniqify(teams)[:2]
         t1 = team1.capitalize()
@@ -181,9 +181,9 @@ class SniperLevel(Level):
         
         self.add_program(Sudo, self.rooms["%s_Platform2"%t1], Point3(0,0,0))
 
-class HillLevel(Level):
+class TheHillLevel(Level):
     def __init__(self, game, parent, teams=[], addFlags = False):
-        super(HillLevel, self).__init__(game, parent)
+        super(TheHillLevel, self).__init__(game, parent)
         teams.extend(TEAM_COLORS.keys())
         team1, team2, team3, team4 = uniqify(teams)[:4]
         t1 = team1.capitalize()
