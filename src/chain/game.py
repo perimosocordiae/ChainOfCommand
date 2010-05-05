@@ -248,6 +248,9 @@ class Game(object):
         if len(datagrams) == 0: return task.cont
         data = (dg[0].split() for dg in datagrams)
         for ds in data:
+            if ds[0] not in self.handshakes:
+                print "Got mismatching handshake data:",ds
+                continue
             if self.handshakes[ds[0]](*ds[1:]):
                 return task.done
         return task.cont

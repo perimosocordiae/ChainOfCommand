@@ -30,7 +30,7 @@ class CaptureTheFlag(Mode):
         super(CaptureTheFlag,self).__init__(game,20)
         self.fragLimit = 3
         self.name = 'capture the --flag'
-        self.desc = "Steal another team's flag to score points"
+        self.desc = "Steal another team's flag"
         self.ctf_scores = {}
         self.min_players = 2
     
@@ -51,7 +51,7 @@ class ForTheHoard(Mode):
         self.gameLength = 180
         self.ctf_scores = {}
         self.name = 'for the hoard'
-        self.desc = "Hoard programs at your base to score points"
+        self.desc = "Hoard programs at your base"
         self.min_players = 1
     
     def score(self,player):
@@ -69,7 +69,7 @@ class Pwnage(Mode):
         self.gameLength = 180
         self.ctf_scores = {}
         self.name = 'pwnage'
-        self.desc = "Attack another team's base to score points"
+        self.desc = "Attack another team's base"
         self.min_players = 1
     
     def score(self,player):
@@ -86,10 +86,10 @@ class Deathmatch(Mode):
             self.min_players = 1
             if not is_timed:
                 self.name = 'deathmatch'
-                self.desc = "Every man for himself, first to 5 kills wins"
+                self.desc = "Free for all, first to 5 kills wins"
             else:
                 self.name = 'timed deathmatch'
-                self.desc = "Every man for himself, highest score after 3 minutes wins"
+                self.desc = "Free for all, most kills after 3 minutes wins"
         else: # team game 
             self.min_players = 2
             if not is_timed:
@@ -97,7 +97,7 @@ class Deathmatch(Mode):
                 self.desc = "Team vs team, first to 15 kills wins"
             else:
                 self.name = 'timed team deathmatch'
-                self.desc = "Team vs team, highest score after 3 minutes wins"
+                self.desc = "Team vs team, most kills after 3 minutes wins"
     
     def score(self,player):
         if 'team' in self.name.split():
