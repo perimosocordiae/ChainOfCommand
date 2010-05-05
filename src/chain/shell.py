@@ -329,7 +329,7 @@ class Shell(object):
         self.overwrite_line(idx+2,"Players:"+" | ".join(player_names).center(52))
         self.overwrite_line(idx+3,"Game:"+("%s -- %s"%(type.upper(),desc)).center(55))
         self.overwrite_line(idx+4,"Level:"+level.center(54))  # 54 = 60 - len("Level:")
-        self.overwrite_line(idx+5,'')
+        self.overwrite_line(idx+8,'')
 
     def finish_staging(self):
         idx = len(LOADINGTEXT.splitlines())
