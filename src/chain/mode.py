@@ -1,6 +1,5 @@
 from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from direct.gui.OnscreenText import OnscreenText
-from itertools import izip
 
 class Mode(object):
     def __init__(self,game,drone_rate):

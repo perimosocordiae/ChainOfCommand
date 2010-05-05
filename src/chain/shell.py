@@ -2,7 +2,7 @@ from platform import uname,system as getOS
 from subprocess import Popen,PIPE
 from itertools import izip
 from pickle import load,dump
-from re import match
+from re import match, findall
 import direct.directbase.DirectStart
 from direct.gui.DirectGui import DirectEntry, DirectLabel, DirectFrame
 from direct.gui.OnscreenText import OnscreenText
@@ -11,7 +11,6 @@ from direct.filter.CommonFilters import CommonFilters
 from pandac.PandaModules import TextNode, Thread, TransparencyAttrib
 from direct.interval.IntervalGlobal import Func, Sequence, Wait
 from networking import Server, Client
-import re
 from game import Game
 from constants import MODEL_PATH,USE_GLOW,TEAM_COLORS,TEXTURE_PATH
 
@@ -435,7 +434,7 @@ class Shell(object):
             elif key in self.draftControls.values() :
                 errorMessage = "Key already in use"
             else :
-                self.draftControls[re.findall("%\(([^)]*)\)s", SETTINGSTEXT)[self.controlIndex]] = key
+                self.draftControls[findall("%\(([^)]*)\)s", SETTINGSTEXT)[self.controlIndex]] = key
         if errorMessage != "" : 
             errorMessage = "Error: " + errorMessage
             self.settingsBorder.setColor(1,0,0,.8)
