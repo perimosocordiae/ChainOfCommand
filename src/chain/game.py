@@ -1,6 +1,7 @@
 from time import time
 from os import listdir
 from os.path import splitext
+from re import findall
 from random import seed
 import direct.directbase.DirectStart
 from eventHandler import GameEventHandler
@@ -14,6 +15,7 @@ from direct.showbase.InputStateGlobal import inputState
 from player import Player,LocalPlayer
 from drone import Drone
 from mode import CaptureTheFlag,Deathmatch,ForTheHoard,Pwnage,Tutorial
+from level import CubeLevel, SniperLevel, BasicBaseLevel
 from constants import *
 
 class Game(object):
@@ -26,10 +28,13 @@ class Game(object):
         self.modes = [Deathmatch(self,False,False),Deathmatch(self,False,True),
                            Deathmatch(self,True,False), Deathmatch(self,True,True),
                            CaptureTheFlag(self), ForTheHoard(self),Pwnage(self),Tutorial(self)]
+        self.levels = [CubeLevel,SniperLevel,BasicBaseLevel]
         if self.shell.tutorial or self.shell.name not in self.shell.hiscores :
             self.mode_idx = 7
+            self.level_idx = 0
         else :
-            self.mode_idx = 2 # index into game_modes, can be changed from the staging shell
+            self.mode_idx = 2  # index into game_modes, can be changed from the staging shell
+            self.level_idx = 1 # similar, but for levels
         
         #The size of a cube
         num_tiles = 3
@@ -95,6 +100,11 @@ class Game(object):
         if hasattr(self,'mode'):
             return self.mode
         return self.modes[self.mode_idx]
+    
+    def get_level_name(self):
+        name = self.levels[self.level_idx].__name__
+        words = findall('[A-Z][a-z]+',name)
+        return ' '.join(words[:-1])
     
     def point_for(self, color):
         return self.mode.level.point_for(color)
@@ -188,7 +198,10 @@ class Game(object):
     
     def send_type_change(self, change):
         self.client.send('staging %s type %d'%(self.shell.name, (self.mode_idx+change) % len(self.modes)))
-    
+        
+    def send_level_change(self, change):
+        self.client.send('staging %s level %d'%(self.shell.name, (self.level_idx+change) % len(self.levels)))
+        
     def send_color_change(self, change):
         color = (self.players[self.shell.name]+change) % len(TEAM_COLORS)
         self.client.send('staging %s color %d'%(self.shell.name, color))
@@ -218,6 +231,8 @@ class Game(object):
             self.players[pname] = int(val)
         elif attrib == 'type':
             self.mode_idx = int(val)
+        elif attrib == 'level':
+            self.level_idx = int(val)
         self.shell.refresh_staging()
     def echo(self,change):
         if change == 'lobbyinfo' :
@@ -263,17 +278,6 @@ class Game(object):
                 self.mode.level.terminals[terminal].act()
         self.ctrav.traverse(render)
         base.cTrav.traverse(render)
-        
-    def make_tile(self, parent,fname,pos,hpr, scale=1.0):
-        tile = loader.loadModel("%s/white_floor.bam"%MODEL_PATH)
-        tile.reparentTo(parent)
-        tile.setScale(scale, scale, scale)
-        tile.setPos(pos)
-        tile.setHpr(*hpr)
-        ts = TextureStage('ts')
-        tex = loader.loadTexture(fname)
-        ts.setMode(TextureStage.MModulate)
-        tile.setTexture(ts, tex)
     
     def local_player(self):
         return self.players[self.shell.name]

@@ -1,7 +1,6 @@
 from direct.interval.IntervalGlobal import Parallel, Func, Sequence, Wait
 from direct.gui.OnscreenText import OnscreenText
 from itertools import izip
-from level import SniperLevel,CubeLevel,Beaumont
 
 class Mode(object):
     def __init__(self,game,drone_rate):
@@ -20,8 +19,10 @@ class Mode(object):
             self.drone_adder.finish()
         self.level.destroy()
     
+    def load_level(self,environ):
+        self.level = self.game.levels[self.game.level_idx](self.game,environ)
+        
     def post_environment_init(self): pass
-    def load_level(self,environ): pass
     def score(self,player): return 0
     
 class CaptureTheFlag(Mode):
@@ -37,7 +38,7 @@ class CaptureTheFlag(Mode):
         self.ctf_scores = dict((p.color,0) for p in self.game.players.itervalues())
     
     def load_level(self,environ):
-        self.level = SniperLevel(self.game, environ, addFlags=True)
+        self.level = self.game.levels[self.game.level_idx](self.game,environ,addFlags=True)
     
     def score(self,player):
         if player.color in self.ctf_scores:
@@ -52,9 +53,6 @@ class ForTheHoard(Mode):
         self.name = 'for the hoard'
         self.desc = "Hoard programs at your base to score points"
         self.min_players = 1
-        
-    def load_level(self,environ):
-        self.level = SniperLevel(self.game, environ)
     
     def score(self,player):
         if not hasattr(self,'level'): return 0
@@ -73,9 +71,6 @@ class Pwnage(Mode):
         self.name = 'pwnage'
         self.desc = "Attack another team's base to score points"
         self.min_players = 1
-        
-    def load_level(self,environ):
-        self.level = SniperLevel(self.game, environ)
     
     def score(self,player):
         if not hasattr(self,'level'): return 0
@@ -103,12 +98,6 @@ class Deathmatch(Mode):
             else:
                 self.name = 'timed team deathmatch'
                 self.desc = "Team vs team, highest score after 3 minutes wins"
-                
-    def load_level(self,environ):
-        if 'team' in self.name.split():
-            self.level = SniperLevel(self.game, environ)
-        else:
-            self.level = Beaumont(self.game, environ)
     
     def score(self,player):
         if 'team' in self.name.split():
@@ -153,9 +142,6 @@ class Tutorial(Mode):
         self.tutorialScreen.hide()
         self.min_players = 1
         self.read_prompt = (p for p in (PROMPTS%self.game.shell.nice_controls()).split('EOF\n')) # generator ftw
-    
-    def load_level(self,environ):
-        self.level = CubeLevel(self.game, environ)
     
     def post_environment_init(self):
         self.tutorialScreen.show() # maybe here
