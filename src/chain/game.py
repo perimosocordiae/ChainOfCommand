@@ -229,12 +229,11 @@ class Game(object):
             self.level_idx = int(val)
         self.shell.refresh_staging()
     def echo(self,change):
-        try:
-            if change == 'lobbyinfo' :
-                self.send_color_change(0)
-            elif change == 'gametype' :
-                self.send_type_change(0)
-        except KeyError: pass
+        if change == 'lobbyinfo' and self.shell.name in self.players:
+            self.send_color_change(0)
+        elif change == 'gametype' :
+            self.send_type_change(0)
+            self.send_level_change(0)
     def start_game(self):
         Sequence(Func(self.shell.finish_staging), Wait(0.05), 
          Func(self.rest_of_init),
