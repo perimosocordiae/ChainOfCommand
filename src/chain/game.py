@@ -76,7 +76,7 @@ class Game(object):
         self.shell.output.setText("\n"*24)
         self.shell.hide_shell()
         self.network_listener.loop()
-        if self.drone_spawner: 
+        if self.drone_spawner and len(self.players) == 1: 
             self.mode.start_drones()
         self.local_player().add_background_music()
         if self.mode.gameLength > 0:
