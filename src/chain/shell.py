@@ -109,7 +109,7 @@ class Shell(object):
             'quit' : self.quit, 'exit' : self.quit, 'bye' : self.quit, 'logout' : self.quit,
             'help' : self.help, 'ls' : self.help, 'dir' : self.help, 'wtf': self.help,
             'man' : self.manual,'clear' : self.clear, 'echo' : self.echo, 'su' : self.su,
-            'scores' : self.scores, 'score' : self.scores, 'highscore' : self.scores,
+            'scores' : self.scores, 'highscore' : self.scores,
             'rm': self.rm, 'sudo': self.sudo, 'make':self.make, '!!':self.bangbang,
             'host': self.start_server, 'server': self.start_server,
             'start': self.start_game, 'run': self.start_game, 'join': self.start_game,

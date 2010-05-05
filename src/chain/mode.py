@@ -37,7 +37,7 @@ class CaptureTheFlag(Mode):
         self.ctf_scores = dict((p.color,0) for p in self.game.players.itervalues())
     
     def load_level(self,environ):
-        self.level = SniperLevel(self.game, environ)
+        self.level = SniperLevel(self.game, environ, addFlags=True)
     
     def score(self,player):
         if player.color in self.ctf_scores:
