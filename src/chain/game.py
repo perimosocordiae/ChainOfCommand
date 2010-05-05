@@ -126,11 +126,6 @@ class Game(object):
         col_str = TEAM_COLORS.keys()[col_idx]
         self.players[pname] = Player(self,pname,None,col_str)
     
-    def add_point_for(self, color):
-        for p in self.players.itervalues():
-            if p.color == color:
-                p.add_point()
-    
     def readd_program(self,prog):
         self.programs[prog.unique_str()] = prog
         self.eventHandle.addProgramHandler(self.programs[prog.unique_str()])

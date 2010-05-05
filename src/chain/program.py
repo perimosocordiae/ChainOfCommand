@@ -351,7 +351,6 @@ class Flag(Achievement):
         for color,base in self.game.mode.level.bases.iteritems():
             if color != self.color and base.has_point(pos):
                 self.game.mode.ctf_scores[color] += 1
-                self.game.add_point_for(color)
                 self.game.mode.level.readd_flag(self)
                 break
     
