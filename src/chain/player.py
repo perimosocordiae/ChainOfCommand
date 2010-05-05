@@ -33,7 +33,7 @@ class Player(Agent):
         super(Player, self).__init__(game, name)
         self.setup_color(color)
         self.programs = [None, None, None]
-        self.stats = {'damage_taken': 0, 'deaths': 0, 'pickups':0, 'drops':0}
+        self.stats = {'damage_taken': 0, 'deaths': 0}
         self.laserGlow = False
         self.setup_camera()
         self.setup_collider()
@@ -272,14 +272,10 @@ class Player(Agent):
     def show_debug_hint(self): pass
     
     def drop(self, i):
-        succ=super(Player, self).drop(i)
-        if succ: self.stats['drops'] += 1
-        return succ
+        return super(Player, self).drop(i)
     
     def collect(self):
-        succ=super(Player, self).collect()
-        if succ[1]: self.stats['pickups'] += 1
-        return succ
+        return super(Player, self).collect()
         
     def kill_self(self):
         self.hit((self.shield()*self.health), None) # calculate the exact amount for a 1 hit death
