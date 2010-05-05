@@ -425,8 +425,9 @@ class LocalPlayer(Player):
 
     @staticmethod
     def setup_sounds():
-        keys = ['laser', 'yes', 'grunt', 'mario', 'false']
-        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Grunt.wav", "%s/Mario Star Power.mp3","%s/Collect_fail.mp3"]
+        keys = ['laser', 'yes', 'grunt', 'mario', 'false', 'warp']
+        fnames = ["%s/hilas.mp3", "%s/Collect_success.mp3", "%s/Grunt.wav", "%s/Mario Star Power.mp3",
+                  "%s/Collect_fail.mp3", "%s/Warp.wav"]
         LocalPlayer.sounds = dict(zip(keys, [base.sfxManagerList[0].getSound(f % SOUND_PATH) for f in fnames]))
         for s in LocalPlayer.sounds:
             if s != 'mario' :
@@ -505,6 +506,11 @@ class LocalPlayer(Player):
         
     def collectOff(self):
         self.collecting = False
+        
+    def warp(self):
+        if super(LocalPlayer, self).warp():
+            LocalPlayer.sounds['warp'].play()
+        self.warping = False
     
     def warpOn(self):
         self.warping = True
