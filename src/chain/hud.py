@@ -162,7 +162,9 @@ class HUD(object):
             vectorToHitter.setZ(0.0)
             vectorToHitter.normalize()
             vectorToHitter = vectorToHitter/3.0
-            rotation = degrees(atan(vectorToHitter.getX()/vectorToHitter.getY()))
+            rotation = 0
+            if vectorToHitter.getY() == 0 :
+                rotation = degrees(atan(vectorToHitter.getX()/vectorToHitter.getY()))
             if vectorToHitter.getY() < 0 : rotation += 180
             hitIndicatorData[0].setPos(vectorToHitter.getX(),0,vectorToHitter.getY())
             hitIndicatorData[0].setR(rotation)

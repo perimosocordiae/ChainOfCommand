@@ -293,7 +293,7 @@ class Shell(object):
         idx = len(LOADINGTEXT.splitlines())
         self.overwrite_line(idx+1,"")
         self.overwrite_line(idx+6,"up/down changes team, left/right changes type".center(60))
-        self.overwrite_line(idx+7,"pgUp/pgDown changes level".center(60))
+        self.overwrite_line(idx+7,"pgUp/pgDown changes map".center(60))
         self.overwrite_line(idx+9,"When everyone is ready, press enter to begin")
         self.overwrite_line(idx+10,"To go back to the shell, press 'x'")
         self.g.client.send("player %s"%self.name)
@@ -327,7 +327,7 @@ class Shell(object):
         idx = len(LOADINGTEXT.splitlines())
         self.overwrite_line(idx+2,"Players:"+" | ".join(player_names).center(52))
         self.overwrite_line(idx+3,"Game:"+("%s -- %s"%(type.upper(),desc)).center(55))
-        self.overwrite_line(idx+4,"Level:"+level.center(54))  # 54 = 60 - len("Level:")
+        self.overwrite_line(idx+4,"Map:"+level.center(54))  # 54 = 60 - len("Level:")
         self.overwrite_line(idx+8,'')
 
     def finish_staging(self):

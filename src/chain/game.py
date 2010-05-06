@@ -134,7 +134,7 @@ class Game(object):
         dronePos = self.point_for("white")
         self.client.send("AddaDrone: %s"%dronePos)
     
-    def add_drone(self, pos, speed=10):
+    def add_drone(self, pos, speed=8):
         d = Drone(self, speed=speed, pos=pos)
         self.drones[d.name] = d 
         self.eventHandle.addDroneHandler(d)
