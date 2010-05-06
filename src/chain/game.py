@@ -155,6 +155,7 @@ class Game(object):
             self.dr = 0.2;
     
     def game_over(self):
+        print "Game over", self.end_sequence
         p = self.local_player()
         p.hide()
         p.handleEvents = False
@@ -164,7 +165,9 @@ class Game(object):
         taskMgr.remove('scoreTask')
         taskMgr.remove('timerTask')
         taskMgr.remove('stopGodModeTask')
+        
         if not self.end_sequence:
+            print "HERE"
             winning_score = max(p.score() for p in self.players.itervalues())
             stats = [(p.name, p.score()==winning_score, p.stats) for p in self.players.itervalues()]
             self.end_sequence = Sequence(Wait(5),

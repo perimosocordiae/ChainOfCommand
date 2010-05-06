@@ -154,6 +154,8 @@ class Tutorial(Mode):
         self.tutorialScreen.setText(p)
     
     def destroy(self):
+        super(Tutorial, self).destroy()
         self.tutorialScreen.ignoreAll()
         self.tutorialScreen.destroy()
         delattr(self, 'tutorialScreen')
+        
