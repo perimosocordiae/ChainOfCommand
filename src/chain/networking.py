@@ -63,6 +63,7 @@ class Server(NetworkBase):
         
             if self.cListener.getNewConnection(rendezvous, netAddress, newConnection):
                 newConnection = newConnection.p()
+                newConnection.setNoDelay(True)
                 self.activeConnections.append(newConnection) # Remember connection
                 self.cReader.addConnection(newConnection)     # Begin reading connection
                 self.send("seed %d"%self.rand_seed,newConnection) # send the new client the random seed
@@ -151,6 +152,7 @@ class Client(NetworkBase):
         self.server_conn = self.cManager.openTCPClientConnection(host, port, timeout)
         if self.server_conn:
             self.cReader.addConnection(self.server_conn)  # receive messages from server
+            self.server_conn.setNoDelay(True)
         else:
             raise EnvironmentError()
     
