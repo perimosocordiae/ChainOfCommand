@@ -159,7 +159,7 @@ class Agent(object):
         return False
     
     def drop(self, i):
-        if 0 > i >= len(self.programs) or not self.programs[i]: return False
+        if i < 0  or i >= len(self.programs) or not self.programs[i]: return False
         pos = self.get_model().getPos()
         self.programs[i].reappear((pos[0], pos[1], pos[2] - self.get_origin_height()))
 
