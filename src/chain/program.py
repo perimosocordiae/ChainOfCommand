@@ -221,9 +221,10 @@ class Basic(Program):
         super(Basic, self).disappear()
     
     def respawn(self, pos):
-        self.reappear(pos)
-        self.health = 100
-        self.respawnSeq = None
+        if not game.is_over:
+            self.reappear(pos)
+            self.health = 100
+            self.respawnSeq = None
     
     def do_effect(self, player): pass
     

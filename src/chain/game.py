@@ -75,6 +75,7 @@ class Game(object):
         self.local_player().sendUpdate()
         self.shell.output.setText("\n"*24)
         self.shell.hide_shell()
+        self.is_over = False
         self.network_listener.loop()
         if self.drone_spawner and len(self.players) == 1: 
             self.mode.start_drones()
@@ -161,6 +162,7 @@ class Game(object):
         p.invincible = True
         p.hud.display_gray("Process Terminated.\nExit status 0")
         p.hud.show_scores()
+        self.is_over = True
         taskMgr.remove('scoreTask')
         taskMgr.remove('timerTask')
         taskMgr.remove('stopGodModeTask')
