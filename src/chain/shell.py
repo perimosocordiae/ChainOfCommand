@@ -671,7 +671,6 @@ class Shell(object):
                 if line.find('IPv4 Address') != -1 : 
                     ip = line.split(':')[1].split()[0]
                     break
-            #ip = Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
         else:
             ip = Popen('ifconfig',stdout=PIPE).stdout.readlines()[1].split(':')[1].split()[0]
         return ip

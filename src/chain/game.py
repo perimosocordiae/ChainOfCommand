@@ -176,6 +176,8 @@ class Game(object):
             self.end_sequence.start()
     
     def kill_everything(self):
+        LocalPlayer.backgroundMusic.setLoop(False)
+        LocalPlayer.sounds['mario'].setLoop(False)
         base.enableMusic(False)
         base.enableSoundEffects(False)
         self.ctrav.clearColliders()

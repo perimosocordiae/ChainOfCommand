@@ -433,6 +433,7 @@ class LocalPlayer(Player):
         for s in LocalPlayer.sounds:
             if s != 'mario' :
                 LocalPlayer.sounds[s].setVolume(0.3)
+            LocalPlayer.sounds[s].stop()
         LocalPlayer.backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
         LocalPlayer.backgroundMusic.setVolume(0.3)
         LocalPlayer.backgroundMusic.setLoop(True)
