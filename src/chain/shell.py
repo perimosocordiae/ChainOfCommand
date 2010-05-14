@@ -660,15 +660,22 @@ class Shell(object):
             self.append_line("Username changed to: %s"%self.name)
     
     def ifconfig(self,cmd,arglist=[],sudo=False):
-        self.append_line("inet addr:%s..."%self.get_IP())
+        self.append_line("inet addr:%s..."%Shell.get_IP())
         self.append_line("And that's all you need to know!")
         
-    def get_IP(self):
+    @staticmethod
+    def get_IP():
         if getOS() == 'Windows': # epic hacks
-            return Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
+            ipconfig = Popen('ipconfig',stdout=PIPE).stdout.readlines()
+            for line in ipconfig :
+                if line.find('IPv4 Address') != -1 : 
+                    ip = line.split(':')[1].split()[0]
+                    break
+            #ip = Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
         else:
-            return Popen('ifconfig',stdout=PIPE).stdout.readlines()[1].split(':')[1].split()[0]
-    
+            ip = Popen('ifconfig',stdout=PIPE).stdout.readlines()[1].split(':')[1].split()[0]
+        return ip
+       
     def default(self,cmd,arglist=[],sudo=False):
         def_cmds = {'emacs': "Sorry, emacs is not installed",
                     'vi'   : "Sorry, vi is not installed",

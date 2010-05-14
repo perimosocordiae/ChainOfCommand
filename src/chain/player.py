@@ -434,13 +434,15 @@ class LocalPlayer(Player):
             if s != 'mario' :
                 LocalPlayer.sounds[s].setVolume(0.3)
         LocalPlayer.backgroundMusic = base.musicManager.getSound("%s/City_in_Flight.mp3"%SOUND_PATH)
+        LocalPlayer.backgroundMusic.setVolume(0.3)
+        LocalPlayer.backgroundMusic.setLoop(True)
+        LocalPlayer.sounds['mario'].setLoop(True)
         base.enableMusic(True)
         base.enableSoundEffects(True)
             
     def add_background_music(self):
         # from http://www.newgrounds.com/audio/listen/287442
-        LocalPlayer.backgroundMusic.setVolume(0.3)
-        LocalPlayer.backgroundMusic.setTime(35)  # music automatically starts playing when this command is issued
+        LocalPlayer.backgroundMusic.play()
         print "Track: City in Flight in Neon Light" # attribution
         print "Author: Trevor Dericks"
     
@@ -452,7 +454,7 @@ class LocalPlayer(Player):
         active = base.musicManager.getActive()
         base.enableMusic(not active)
         self.hud.toggle_background_music()
-        if not active : LocalPlayer.backgroundMusic.setTime(35)
+        if not active : LocalPlayer.backgroundMusic.play()
         
     def toggle_sound_effects(self):
         base.enableSoundEffects(not base.sfxManagerList[0].getActive())
@@ -579,7 +581,6 @@ class LocalPlayer(Player):
         self.wasPlayingMusic = base.musicManager.getActive()
         if self.wasPlayingMusic :
             base.enableMusic(False) # stop background music          
-        LocalPlayer.sounds['mario'].setLoop(True)
         LocalPlayer.sounds['mario'].play() # start mario star power
     
     def updateGodModeTask(self, task):
@@ -596,7 +597,7 @@ class LocalPlayer(Player):
         print "Sudo wore off"
         if self.wasPlayingMusic :
             base.enableMusic(True)
-            LocalPlayer.backgroundMusic.setTime(35)
+            LocalPlayer.backgroundMusic.play()
         self.wasPlayingMusic = False
         taskMgr.remove('updateGodModeTask')
         self.toggle_god()
@@ -662,4 +663,5 @@ class LocalPlayer(Player):
         #make sure lifter continues to point straight down
         #angle = radians(self.tron.getP())
         #self.lifterRay.setDirection(Vec3(0,-sin(angle), -cos(angle)))
+    
     

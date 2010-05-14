@@ -10,11 +10,7 @@ if __name__ == '__main__':
         port = int(argv[1])
         assert 1000 <= port <= 99999
         Server(port) # dragons
-        if getOS() == 'Windows': # epic hacks
-            ip = Popen('ipconfig',stdout=PIPE).stdout.readlines()[7].split()[-1]
-        else:
-            ip = Popen('ifconfig',stdout=PIPE).stdout.readlines()[1].split(':')[1].split()[0]
-        OnscreenText(text="Server on port %d at IP: %s"%(port,ip))
+        OnscreenText(text="Server on port %d at IP: %s"%(port,Shell.get_IP()))
     else:
         Shell(True)
         while True:
