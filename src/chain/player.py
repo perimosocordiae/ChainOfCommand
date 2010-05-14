@@ -440,6 +440,17 @@ class LocalPlayer(Player):
         LocalPlayer.sounds['mario'].setLoop(True)
         base.enableMusic(True)
         base.enableSoundEffects(True)
+        
+    # Sources for sounds:
+    # (sound) - (source url) - (license)
+    # background music - http://www.newgrounds.com/audio/listen/287442 - Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported
+    # collect - http://www.freesound.org/samplesViewSingle.php?id=33108 - Creative Commons Sampling Plus 1.0
+    # collect false - http://www.freesound.org/samplesViewSingle.php?id=33109 - Creative Commons Sampling Plus 1.0
+    # grunt - http://www.freesound.org/samplesViewSingle.php?id=90164 - Creative Commons Sampling Plus 1.0
+    # laser - http://www.freesound.org/samplesViewSingle.php?id=18379 - Creative Commons Sampling Plus 1.0
+    # warp - http://www.freesound.org/samplesViewSingle.php?id=65129 - Creative Commons Sampling Plus 1.0
+    # sudo -  - Probably copyrighted by Nintendo...
+    # snarl (not used) - http://www.freesound.org/samplesViewSingle.php?id=41526 - Creative Commons Sampling Plus 1.0
             
     def add_background_music(self):
         # from http://www.newgrounds.com/audio/listen/287442
